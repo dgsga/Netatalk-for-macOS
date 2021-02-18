@@ -267,6 +267,7 @@ static int passwd_changepw(void *obj, char *username,
 
 
 /* Printer ClearTxtUAM login */
+size_t     strlcpy(char *__dst, const char *__source, size_t __size);
 static int passwd_printer(char	*start, char *stop, char *username, struct papfile *out)
 {
     struct passwd *pwd;

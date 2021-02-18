@@ -22,7 +22,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <atalk/standards.h>
-
+#include "../../etc/cnid_dbd/usockfd.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
