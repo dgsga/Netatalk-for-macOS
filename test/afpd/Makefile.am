@@ -1,5 +1,7 @@
 # Makefile.am for test/afpd/
 
+AUTOMAKE_OPTIONS = subdir-objects
+
 pkgconfdir = @PKGCONFDIR@
 
 TESTS = test.sh test
