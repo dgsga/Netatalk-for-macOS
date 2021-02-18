@@ -6,3 +6,4 @@ Makefile.in
 *.la
 .gitignore
 *.o
+*.DS_Store
