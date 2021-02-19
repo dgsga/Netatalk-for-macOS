@@ -996,7 +996,7 @@ exit:
 void dir_free_invalid_q(void)
 {
     struct dir *dir;
-    while (dir = (struct dir *)dequeue(invalid_dircache_entries))
+    while ((dir = (struct dir *)dequeue(invalid_dircache_entries)))
         dir_free(dir);
 }
 

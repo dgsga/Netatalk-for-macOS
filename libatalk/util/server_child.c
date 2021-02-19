@@ -143,7 +143,7 @@ afp_child_t *server_child_add(server_child *children, int forkid, pid_t pid, int
     fork = (server_child_fork *) children->fork + forkid;
 
     /* if we already have an entry. just return. */
-    if (child = resolve_child(fork->table, pid))
+    if ((child = resolve_child(fork->table, pid)))
         goto exit;
 
     if ((child = calloc(1, sizeof(afp_child_t))) == NULL)
