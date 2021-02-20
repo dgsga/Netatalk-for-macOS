@@ -43,8 +43,7 @@
 #include <openssl/des.h>
 
 #ifdef USE_CRACKLIB
-//#include <crack.h>
-#include <packer.h>
+#include <crack.h>
 #endif /* USE_CRACKLIB */
 
 #define OPT_ISROOT  (1 << 0)
@@ -181,7 +180,7 @@ found_entry:
   password[PASSWDLEN] = '\0';
 #ifdef USE_CRACKLIB
   if (!(flags & OPT_NOCRACK)) {
-    if (passwd = FascistCheck(password, _PATH_CRACKLIB)) { 
+    if ((passwd = FascistCheck(password, _PATH_CRACKLIB))) { 
         fprintf(stderr, "Error: %s\n", passwd);
         err = -1;
         goto update_done;
