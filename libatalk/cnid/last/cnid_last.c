@@ -132,7 +132,8 @@ static struct _cnid_db *cnid_last_new(const char *volpath)
 
     /* Set up standard fields */
     cdb->flags = 0;
-    cdb->cnid_add = cnid_last_add;
+    cdb->cnid_add = (cnid_t (*)(struct _cnid_db *, const struct stat *, const cnid_t, const char *, const size_t,
+                                cnid_t)) cnid_last_add;
     cdb->cnid_delete = cnid_last_delete;
     cdb->cnid_get = cnid_last_get;
     cdb->cnid_lookup = cnid_last_lookup;

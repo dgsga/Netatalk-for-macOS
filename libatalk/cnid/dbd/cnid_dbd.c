@@ -452,11 +452,12 @@ static struct _cnid_db *cnid_dbd_new(const char *volpath)
 
     cdb->flags = CNID_FLAG_PERSISTENT | CNID_FLAG_LAZY_INIT;
 
-    cdb->cnid_add = cnid_dbd_add;
+    cdb->cnid_add = (cnid_t (*)(struct _cnid_db *, const struct stat *, const cnid_t, const char *, const size_t,
+                                cnid_t)) cnid_dbd_add;
     cdb->cnid_delete = cnid_dbd_delete;
     cdb->cnid_get = cnid_dbd_get;
     cdb->cnid_lookup = cnid_dbd_lookup;
-    cdb->cnid_find = cnid_dbd_find;
+    cdb->cnid_find = (int (*)(struct _cnid_db *, const char *, size_t, void *, size_t)) cnid_dbd_find;
     cdb->cnid_nextid = NULL;
     cdb->cnid_resolve = cnid_dbd_resolve;
     cdb->cnid_getstamp = cnid_dbd_getstamp;

@@ -50,7 +50,8 @@ static struct _cnid_db *cnid_tdb_new(const char *volpath)
     /* Set up standard fields */
     cdb->flags = CNID_FLAG_PERSISTENT;
 
-    cdb->cnid_add = cnid_tdb_add;
+    cdb->cnid_add = (cnid_t (*)(struct _cnid_db *, const struct stat *, const cnid_t, const char *, const size_t,
+                                cnid_t)) cnid_tdb_add;
     cdb->cnid_delete = cnid_tdb_delete;
     cdb->cnid_get = cnid_tdb_get;
     cdb->cnid_lookup = cnid_tdb_lookup;
