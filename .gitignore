@@ -29,3 +29,5 @@ autoscan.log
 .gitignore
 *.o
 **/.DS_Store
+*.xml
+*.iml

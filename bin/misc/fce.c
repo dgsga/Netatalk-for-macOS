@@ -131,7 +131,7 @@ int main(void)
             exit(1);
         }
 
-        unpack_fce_packet(buf, &packet);
+        unpack_fce_packet((unsigned char *)buf, &packet);
 
         if (memcmp(packet.magic, FCE_PACKET_MAGIC, sizeof(packet.magic)) == 0) {
 

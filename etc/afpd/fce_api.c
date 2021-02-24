@@ -254,7 +254,7 @@ static void send_fce_event( char *path, int mode )
 
     /* build our data packet */
     ssize_t data_len = build_fce_packet( &packet, path, mode, ++event_id );
-    pack_fce_packet(&packet, iobuf, MAXIOBUF);
+    pack_fce_packet(&packet, (unsigned char *)iobuf, MAXIOBUF);
 
     for (int i = 0; i < udp_sockets; i++)
     {
@@ -285,7 +285,7 @@ static void send_fce_event( char *path, int mode )
 
             /* Okay, we have a running socket again, send server that we had a problem on our side*/
             data_len = build_fce_packet( &packet, "", FCE_CONN_BROKEN, 0 );
-            pack_fce_packet(&packet, iobuf, MAXIOBUF);
+            pack_fce_packet(&packet, (unsigned char *)iobuf, MAXIOBUF);
 
             sendto(udp_entry->sock,
                    iobuf,
@@ -296,7 +296,7 @@ static void send_fce_event( char *path, int mode )
 
             /* Rebuild our original data packet */
             data_len = build_fce_packet( &packet, path, mode, event_id );
-            pack_fce_packet(&packet, iobuf, MAXIOBUF);
+            pack_fce_packet(&packet, (unsigned char *)iobuf, MAXIOBUF);
         }
 
         sent_data = sendto(udp_entry->sock,

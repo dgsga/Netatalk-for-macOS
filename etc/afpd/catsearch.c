@@ -425,7 +425,7 @@ static int rslt_add ( struct vol *vol, struct path *path, char **buf, int ext)
 	else {
 		p++;
 	}
-	*p++ = isdir ? FILDIRBIT_ISDIR : FILDIRBIT_ISFILE;    /* IsDir ? */
+	*p++ = isdir ? (char)FILDIRBIT_ISDIR : FILDIRBIT_ISFILE;    /* IsDir ? */
 
 	if (ext) {
 		*p++ = 0;                  /* Pad */
