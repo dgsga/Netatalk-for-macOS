@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE([subdir-objects])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIRS([macros])
 AM_MAINTAINER_MODE([enable])
-
+AM_SILENT_RULES([yes])
 
 dnl Checks for programs.
 AC_PROG_AWK
