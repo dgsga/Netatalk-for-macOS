@@ -1,6 +1,6 @@
 dnl configure.in for netatalk
 
-AC_INIT([netatalk], [2.2.6])
+AC_INIT([netatalk], [m4_esyscmd([cat VERSION])])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_CONFIG_HEADER(config.h)
