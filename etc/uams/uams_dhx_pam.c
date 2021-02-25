@@ -255,7 +255,7 @@ static int dhx_setup(void *obj, char *ibuf, size_t ibuflen _U_,
     }
 
     /* figure out the key. store the key in rbuf for now. */
-    i = DH_compute_key((unsigned char*)rbuf, bn, dh);
+    i = DH_compute_key((unsigned char *)rbuf, bn, dh);
     
     /* set the key */
     CAST_set_key(&castkey, i, (unsigned char *)rbuf);

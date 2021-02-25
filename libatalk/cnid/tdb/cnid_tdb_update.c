@@ -52,7 +52,7 @@ int cnid_tdb_update(struct _cnid_db *cdb, const cnid_t id, const struct stat *st
     }
 
     /* search by did/name */
-    data.dptr = (char*)make_tdb_data(cdb->flags, st, did, name, len);
+    data.dptr = (char *)make_tdb_data(cdb->flags, st, did, name, len);
     data.dsize = CNID_HEADER_LEN + len + 1;
     key.dptr = (char *)data.dptr +CNID_DID_OFS;
     key.dsize = data.dsize - CNID_DID_OFS;
@@ -76,7 +76,7 @@ int cnid_tdb_update(struct _cnid_db *cdb, const cnid_t id, const struct stat *st
     
 
     /* Make a new entry. */
-    data.dptr = (char*)make_tdb_data(cdb->flags, st, did, name, len);
+    data.dptr = (char *)make_tdb_data(cdb->flags, st, did, name, len);
     data.dsize = CNID_HEADER_LEN + len + 1;
     memcpy(data.dptr, &id, sizeof(id));
 
