@@ -18,27 +18,23 @@ AC_DEFUN([AC_PATH_PAM], [
 	)
 
 	AC_MSG_CHECKING([for PAM installation directory])
-	if test "$host_os" != "solaris"; then
-		if test "x$PAMDIR" = "xNONE" -a "x$require_pam" != "xnever"; then
-		  dnl Test for PAM
-		  pam_paths="/ /usr/ /usr/local/"
-		  for path in $pam_paths; do
-			if test -d "${path}etc/pam.d"; then
-				PAMDIR="$path"
-				break
-			fi
-		  done
-		fi
+	if test "x$PAMDIR" = "xNONE" -a "x$require_pam" != "xnever"; then
+        dnl Test for PAM
+        pam_paths="/ /usr/ /usr/local/"
+        for path in $pam_paths; do
+        if test -d "${path}etc/pam.d"; then
+            PAMDIR="$path"
+            break
+        fi
+        done
+    fi
 
-		if test "x$PAMDIR" != "xNONE"; then
-			AC_MSG_RESULT([yes (path: ${PAMDIR}etc/pam.d)])
-		else
-			AC_MSG_RESULT([no])
-		fi
-	else
-		AC_MSG_RESULT([/etc/pam.conf (solaris)])
-	fi
-		
+    if test "x$PAMDIR" != "xNONE"; then
+        AC_MSG_RESULT([yes (path: ${PAMDIR}etc/pam.d)])
+    else
+        AC_MSG_RESULT([no])
+    fi
+	
 	pam_found="no"
 	if test "x$require_pam" != "xnever"; then
 
@@ -76,40 +72,19 @@ AC_DEFUN([AC_PATH_PAM], [
         dnl Check for some system|common auth file
         AC_MSG_CHECKING([for includable common PAM config])
         pampath="${PAMDIR}etc/pam.d"
-        dnl Debian/SuSE
-        if test -f "$pampath/common-auth" ; then
-           PAM_DIRECTIVE=include
-           PAM_AUTH=common-auth
-           PAM_ACCOUNT=common-account
-           PAM_PASSWORD=common-password
-           PAM_SESSION=common-session
-        dnl RHEL/FC
-        elif test -f "$pampath/system-auth" ; then
-           PAM_DIRECTIVE=include
-           PAM_AUTH=system-auth
-           PAM_ACCOUNT=system-auth
-           PAM_PASSWORD=system-auth
-           PAM_SESSION=system-auth
-        dnl FreeBSD
-        elif test -f "$pampath/system" ; then
-           PAM_DIRECTIVE=include
-           PAM_AUTH=system
-           PAM_ACCOUNT=system
-           PAM_PASSWORD=system
-           PAM_SESSION=system
-        dnl Fallback
-        else
+        dnl macOS
+        if test -f "$pampath/passwd" ; then
            PAM_DIRECTIVE=required
-           PAM_AUTH=pam_unix.so
-           PAM_ACCOUNT=pam_unix.so
-           PAM_PASSWORD="pam_unix.so use_authtok"
-           PAM_SESSION=pam_unix.so
-        fi  
+           PAM_AUTH=pam_permit.so
+           PAM_ACCOUNT=pam.opendirectory.so
+           PAM_PASSWORD=pam.opendirectory.so
+           PAM_SESSION=pam_permit.so
+        fi
 
         if test "x$PAM_DIRECTIVE" != "xrequired" ; then
             AC_MSG_RESULT([yes ($PAM_DIRECTIVE $PAM_AUTH)])
         else
-            AC_MSG_RESULT([no (using defaut pam_unix.so)])
+            AC_MSG_RESULT([no (using default pam_permit.so)])
         fi
 	fi
 

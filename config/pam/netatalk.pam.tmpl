@@ -1,5 +1,5 @@
 # netatalk: auth account
-auth       required       pam_permit.so
-account    required       pam_opendirectory.so
-password   required       pam_opendirectory.so
-session    required       pam_permit.so
+auth     @PAM_DIRECTIVE@ @PAM_AUTH@
+account  @PAM_DIRECTIVE@ @PAM_ACCOUNT@
+password @PAM_DIRECTIVE@ @PAM_PASSWORD@
+session  @PAM_DIRECTIVE@ @PAM_SESSION@
