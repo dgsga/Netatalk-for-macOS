@@ -544,13 +544,6 @@ static void show_version( void )
 	}
 	puts( "" );
 
-	printf( "DDP(AppleTalk) Support:\t" );
-#ifdef NO_DDP
-	puts( "No" );
-#else
-	puts( "Yes" );
-#endif
-
 	printf( "         CNID backends:\t" );
 #ifdef CNID_BACKEND_CDB
 	printf( "cdb ");
@@ -639,13 +632,6 @@ static void show_version_extended(void )
 	puts( "No" );
 #endif
 
-	printf( "        Dropbox kludge:\t" );
-#ifdef DROPKLUDGE
-	puts( "Yes" );
-#else
-	puts( "No" );
-#endif
-
 	printf( "  Force volume uid/gid:\t" );
 #ifdef FORCE_UIDGID
 	puts( "Yes" );
@@ -655,12 +641,6 @@ static void show_version_extended(void )
 
 	printf( "            EA support:\t" );
 	puts( EA_MODULES );
-
-	printf( "           ACL support:\t" );
-	puts( "No" );
-
-	printf( "          LDAP support:\t" );
-	puts( "No" );
 }
 
 /*
@@ -673,7 +653,6 @@ static void show_paths( void )
 	printf( "  AppleVolumes.default:\t%s\n", _PATH_AFPDDEFVOL );
 	printf( "    afp_signature.conf:\t%s\n", _PATH_AFPDSIGCONF );
 	printf( "      afp_voluuid.conf:\t%s\n", _PATH_AFPDUUIDCONF );
-	printf( "         afp_ldap.conf:\tnot supported\n");
 	printf( "       UAM search path:\t%s\n", _PATH_AFPDUAMPATH );
 	printf( "  Server messages path:\t%s\n", SERVERTEXT);
 	printf( "              lockfile:\t%s\n", _PATH_AFPDLOCK);
