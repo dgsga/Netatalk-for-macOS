@@ -7,8 +7,3 @@ libacl_la_SOURCES = cache.c uuid.c
 libacl_la_LDFLAGS =
 libacl_la_LIBADD  = @ACL_LIBS@
 
-if HAVE_LDAP
-libacl_la_SOURCES += ldap.c ldap_config.c
-libacl_la_LDFLAGS += -lldap
-endif
-
