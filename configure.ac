@@ -115,14 +115,6 @@ rm -rf conftest*
 case $host_cpu:$atalk_cv_cc_64bit_output in
 powerpc64:yes | s390x:yes | sparc*:yes | x86_64:yes | i386:yes)
     case $target_os in
-    solaris2*)
-        AC_MSG_RESULT([yes])
-        atalk_libname="lib/64"
-        ;;
-    *bsd* | dragonfly*)
-        AC_MSG_RESULT([no])
-        atalk_libname="lib"
-        ;;
     *)
         AC_MSG_RESULT([yes])
         atalk_libname="lib64"
@@ -388,111 +380,6 @@ AC_ARG_ENABLE(locking,
 
 )
 
-AC_ARG_ENABLE(redhat,
-	[  --enable-redhat         obsoleted ],[
-	echo "ERROR: --enable-redhat is obsoleted. Use --enable-redhat-sysv or --enable-redhat-systemd."
-	exit 1
-	]
-)
-
-AC_ARG_ENABLE(redhat-sysv,
-	[  --enable-redhat-sysv    use redhat-style sysv (upstart) configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=redhat-sysv
-	fi
-	AC_MSG_RESULT([enabling redhat-style sysv support])
-	]
-)
-
-AC_ARG_ENABLE(redhat-systemd,
-	[  --enable-redhat-systemd use redhat-style systemd (>=Fedora15) configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=redhat-systemd
-	fi
-	AC_MSG_RESULT([enabling redhat-style systemd support])
-	]
-)
-
-AC_ARG_ENABLE(suse,
-	[  --enable-suse           obsoleted ],[
-	echo "ERROR: --enable-suse is obsoleted. Use --enable-suse-sysv or --enable-suse-systemd."
-	exit 1
-	]
-)
-
-AC_ARG_ENABLE(suse-sysv,
-	[  --enable-suse-sysv      use suse-style sysv configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=suse-sysv
-	fi
-	AC_MSG_RESULT([enabling suse-style sysv support])
-	]
-)
-
-AC_ARG_ENABLE(suse-systemd,
-	[  --enable-suse-systemd   use suse-style systemd (>=openSUSE12.1) configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=suse-systemd
-	fi
-	AC_MSG_RESULT([enabling suse-style systemd support])
-	]
-)
-
-AC_ARG_ENABLE(gentoo,
-	[  --enable-gentoo         use gentoo-style sysv configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=gentoo
-	fi
-	AC_MSG_RESULT([enabling gentoo-style sysv support])
-	]
-)
-
-AC_ARG_ENABLE(netbsd,
-	[  --enable-netbsd         use NetBSD-style rc.d configuration ],
-	if test "x$enableval" = "xyes"; then
-		sysv_style=netbsd
-	fi
-	AC_MSG_RESULT([enabling NetBSD-style rc.d support])
-)
-
-AC_ARG_ENABLE(debian,
-	[  --enable-debian         use debian-style sysv configuration ],[
-	if test "$enableval" = "yes"; then
-		sysv_style=debian
-	fi
-	AC_MSG_RESULT([enabling debian-style sysv support])
-	]
-)
-
-AC_ARG_ENABLE(systemd,
-	[  --enable-systemd        use general systemd configuration],[
-	if test "$enableval" = "yes"; then
-		sysv_style=systemd
-	fi
-	AC_MSG_RESULT([enabling general systemd support])
-	]
-)
-
-dnl ----- timelord compilation (disabled by default)
-AC_MSG_CHECKING([whether timelord should be compiled])
-compile_timelord=no
-AC_ARG_ENABLE(timelord,
-	[  --enable-timelord       enable compilation of timelord server],
-	[compile_timelord="$enableval"],
-	[compile_timelord="no"]
-)
-AC_MSG_RESULT([$compile_timelord])
-
-dnl ----- a2boot compilation (disabled by default)
-AC_MSG_CHECKING([whether a2boot should be compiled])
-compile_a2boot=no
-AC_ARG_ENABLE(a2boot,
-	[  --enable-a2boot         enable compilation of Apple2 boot server],
-	[compile_a2boot="$enableval"],
-	[compile_a2boot="no"]
-)
-AC_MSG_RESULT([$compile_a2boot])
-
 AC_ARG_WITH(uams-path,
 	[  --with-uams-path=PATH   path to UAMs [[PKGCONF/uams]]],[
 		uams_path="$withval"
@@ -567,18 +454,8 @@ dnl ac_cv_target_os is now host_os, ac_cv_target_cpu is now host_cpu
 
 dnl --------------------- determine operating system from "target"
 case "$host_os" in
-	*aix*)				this_os=aix ;;
-	*kfreebsd*-gnu)			this_os=kfreebsd-gnu ;;
-	*freebsd*) 			this_os=freebsd ;;
-	*hpux11*)			this_os=hpux11 ;;
-	*irix*)				this_os=irix ;;
-	*linux*)   			this_os=linux ;;
 	*osx*)				this_os=macosx ;;
 	*darwin*)			this_os=macosx ;;
-	*netbsd*) 			this_os=netbsd ;;
-	*openbsd*) 			this_os=openbsd ;;
-	*osf*) 				this_os=tru64 ;;
-	*solaris*) 			this_os=solaris ;;
 esac
 
 case "$host_cpu" in
@@ -588,114 +465,7 @@ case "$host_cpu" in
 	powerpc|ppc)				this_cpu=ppc ;;
 esac
 
-dnl --------------------- GNU source
-case "$this_os" in
-	linux)	AC_DEFINE(_GNU_SOURCE, 1, [Whether to use GNU libc extensions])
-        ;;
-     kfreebsd-gnu) AC_DEFINE(_GNU_SOURCE, 1, [Whether to use GNU libc extensions])
-        ;;
-esac
-
 dnl --------------------- operating system specific flags (port from sys/*)
-
-dnl ----- AIX specific -----
-if test x"$this_os" = "xaix"; then
-	AC_MSG_RESULT([ * AIX specific configuration])
-	AC_DEFINE(NO_STRUCT_TM_GMTOFF, 1, [Define if the gmtoff member of struct tm is not available])
-
-	dnl This is probably a lie; AIX 4.3 supports a 64-bit long
-	dnl compilation environment.  It's enough to get things defined
-	dnl right in endian.h provided that long long is supported, though.
-	AC_DEFINE(HAVE_32BIT_LONGS, 1, [Define if the data type long has 32 bit])
-fi
-
-dnl ----- FreeBSD specific -----
-if test x"$this_os" = "xfreebsd"; then 
-	AC_MSG_RESULT([ * FreeBSD specific configuration])
-	AC_DEFINE(BSD4_4, 1, [BSD compatiblity macro])
-	AC_DEFINE(FREEBSD, 1, [Define if OS is FreeBSD])
-    AC_DEFINE(OPEN_NOFOLLOW_ERRNO, EMLINK, errno returned by open with O_NOFOLLOW)
-fi
-
-dnl ----- GNU/kFreeBSD specific -----
-if test x"$this_os" = "xkfreebsd-gnu"; then 
-	AC_MSG_RESULT([ * GNU/kFreeBSD specific configuration])
-	AC_DEFINE(BSD4_4, 1, [BSD compatiblity macro])
-	AC_DEFINE(FREEBSD, 1, [Define if OS is FreeBSD])
-    AC_DEFINE(OPEN_NOFOLLOW_ERRNO, EMLINK, errno returned by open with O_NOFOLLOW)
-fi
-
-dnl ----- HP-UX 11 specific -----
-if test x"$this_os" = "xhpux11"; then
-	AC_MSG_RESULT([ * HP-UX 11 specific configuration])
-
-	AC_DEFINE(_ISOC9X_SOURCE, 1, [Compatibility macro])
-	AC_DEFINE(NO_STRUCT_TM_GMTOFF, 1, [Define if the gmtoff member of struct tm is not available])
-fi
-
-dnl ----- IRIX specific -----
-if test x"$this_os" = "xirix"; then
-	AC_MSG_RESULT([ * IRIX specific configuration])
-
-	AC_DEFINE(NO_STRUCT_TM_GMTOFF, 1, [Define if the gmtoff member of struct tm is not available])
-fi
-
-dnl ----- Linux specific -----
-if test x"$this_os" = "xlinux"; then 
-	AC_MSG_RESULT([ * Linux specific configuration])
-	
-	dnl ----- kernel 2.6 changed struct at_addr to atalk_addr
-	AC_MSG_CHECKING([for struct atalk_addr])
-dnl	AC_COMPILE_IFELSE([
-	AC_TRY_COMPILE([
-#include <sys/socket.h>
-#include <asm/types.h>
-#include <linux/atalk.h>
-
-	struct atalk_addr foo;
-],
-[ ], [
-		ac_have_atalk_addr=yes
-		AC_MSG_RESULT([yes])
-	], [
-		AC_MSG_RESULT([no])
-	])
-
-if test "x$ac_have_atalk_addr" = "xyes"; then
-	AC_DEFINE(HAVE_ATALK_ADDR, 1, [set if struct at_addr is called atalk_addr])
-fi
-
-	dnl ----- check if we need the quotactl wrapper
-#	AC_CHECK_HEADERS(sys/quota.h linux/quota.h)
-#	AC_CHECK_FUNC(quotactl,,
-#		AC_DEFINE(NEED_QUOTACTL_WRAPPER, 1, [Define if the quotactl wrapper is needed])
-#		AC_MSG_RESULT([enabling quotactl wrapper])
-#	)
-
-        # For quotas on Linux XFS filesystems
-        
-        # For linux > 2.5.56
-        AC_CHECK_HEADERS(linux/dqblk_xfs.h,,
-		[AC_CHECK_HEADERS(linux/xqm.h linux/xfs_fs.h)
-        	AC_CHECK_HEADERS(xfs/libxfs.h xfs/xqm.h xfs/xfs_fs.h)]
-	)
-
-
-	dnl ----- as far as I can tell, dbtob always does the wrong thing
-	dnl ----- on every single version of linux I've ever played with.
-	dnl ----- see etc/afpd/quota.c
-	AC_DEFINE(HAVE_BROKEN_DBTOB, 1, [Define if dbtob is broken])
-
-
-	dnl ----- Linux/alpha specific -----
-	if test x"$this_cpu" = "xalpha"; then 
-		AC_MSG_RESULT([enabling gcc memcpy bug workaround])
-		AC_DEFINE(HAVE_GCC_MEMCPY_BUG, 1, [Define if memcpy is buggy])
-	fi
-	need_dash_r=no
-
-
-fi
 
 dnl ----- Mac OSX specific -----
 if test x"$this_os" = "xmacosx"; then 
@@ -706,140 +476,6 @@ if test x"$this_os" = "xmacosx"; then
 	AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
 	AC_DEFINE(NO_QUOTA_SUPPORT, 1, [Define if Quota support should be disabled])
 	AC_DEFINE(MACOSX_SERVER, 1, [Define if compiling for MacOS X Server])
-fi
-
-dnl ----- NetBSD specific -----
-if test x"$this_os" = "xnetbsd"; then 
-	AC_MSG_RESULT([ * NetBSD specific configuration])
-	AC_DEFINE(BSD4_4, 1, [BSD compatiblity macro])
-	AC_DEFINE(NETBSD, 1, [Define if OS is NetBSD])
-    AC_DEFINE(OPEN_NOFOLLOW_ERRNO, EFTYPE, errno returned by open with O_NOFOLLOW)
-
-	CFLAGS="-I\$(top_srcdir)/sys/netbsd $CFLAGS"
-	need_dash_r=yes 
-
-	dnl ----- NetBSD does not have crypt.h, uses unistd.h -----
-	AC_DEFINE(UAM_DHX, 1, [Define if the DHX UAM modules should be compiled])
-fi
-
-dnl ----- OpenBSD specific -----
-if test x"$this_os" = "xopenbsd"; then 
-	AC_MSG_RESULT([ * OpenBSD specific configuration])
-    AC_DEFINE(BSD4_4, 1, [BSD compatiblity macro])
-	dnl ----- OpenBSD does not have crypt.h, uses unistd.h -----
-	AC_DEFINE(UAM_DHX, 1, [Define if the DHX UAM modules should be compiled])
-    AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
-fi
-
-dnl ----- Solaris specific -----
-if test x"$this_os" = "xsolaris"; then 
-	AC_MSG_RESULT([ * Solaris specific configuration])
-	AC_DEFINE(__svr4__, 1, [Solaris compatibility macro])
-	AC_DEFINE(_ISOC9X_SOURCE, 1, [Compatibility macro])
-	AC_DEFINE(NO_STRUCT_TM_GMTOFF, 1, [Define if the gmtoff member of struct tm is not available])
-	AC_DEFINE(SOLARIS, 1, [Solaris compatibility macro])
-    AC_DEFINE(_XOPEN_SOURCE, 600, [Solaris compilation environment])
-    AC_DEFINE(__EXTENSIONS__,  1, [Solaris compilation environment])
-	CFLAGS="-I\$(top_srcdir)/sys/generic $CFLAGS"
-	need_dash_r=yes
-	sysv_style=solaris
-
-	solaris_module=no
-	AC_MSG_CHECKING([if we can build Solaris kernel module])
-	if test -x /usr/ccs/bin/ld && test x"$netatalk_cv_ddp_enabled" = x"yes" ; then
-		solaris_module=yes
-	fi
-	AC_MSG_RESULT([$solaris_module])
-
-	COMPILE_64BIT_KMODULE=no
-	KCFLAGS=""
-	KLDFLAGS=""
-	COMPILE_KERNEL_GCC=no
-
-	if test "$solaris_module" = "yes"; then
-	   dnl Solaris kernel module stuff
-           AC_MSG_CHECKING([if we have to build a 64bit kernel module])
-
-	   # check for isainfo, if not found it has to be a 32 bit kernel (<=2.6)	
-	   if test -x /usr/bin/isainfo; then
-		# check for 64 bit platform
-		if isainfo -kv | grep '^64-bit'; then
-			COMPILE_64BIT_KMODULE=yes
-		fi
-	   fi
-
-	   AC_MSG_RESULT([$COMPILE_64BIT_KMODULE])
-
-	   if test "${GCC}" = yes; then
-		COMPILE_KERNEL_GCC=yes
-		if test "$COMPILE_64BIT_KMODULE" = yes; then
-  	        
-                        AC_MSG_CHECKING([if we can build a 64bit kernel module])
-		        
-                        case `$CC --version 2>/dev/null` in
-			[[12]].* | 3.0.*)
-				COMPILE_64BIT_KMODULE=no
-				COMPILE_KERNEL_GCC=no	
-				solaris_module=no;;
-			*)
-			       	# use for 64 bit
-				KCFLAGS="-m64"
-				#KLDFLAGS="-melf64_sparc"
-				KLDFLAGS="-64";;
-			esac	
-			
-			AC_MSG_RESULT([$COMPILE_64BIT_KMODULE])
-			
-		else
-			KCFLAGS=""
-			KLDFLAGS=""
-		fi
-		KCFLAGS="$KCFLAGS -D_KERNEL -Wall -Wstrict-prototypes"
-           else
-		if test "$COMPILE_64BIT_KMODULE" = yes; then
-                # use Sun CC (for a 64-bit kernel, uncomment " -xarch=v9 -xregs=no%appl ")
- 			KCFLAGS="-xarch=v9 -xregs=no%appl"
-			KLDFLAGS="-64"
-		else
- 			KCFLAGS=""
-			KLDFLAGS=""
-		fi
-		KCFLAGS="-D_KERNEL $KCFLAGS -mno-app-regs -munaligned-doubles -fpcc-struct-return"
-	   fi
-
-           AC_CACHE_CHECK([for timeout_id_t],netatalk_cv_HAVE_TIMEOUT_ID_T,[
-           AC_TRY_LINK([\
-#include <sys/stream.h>
-#include <sys/ddi.h>],
-[\
-timeout_id_t dummy;
-],
-netatalk_cv_HAVE_TIMEOUT_ID_T=yes,netatalk_cv_HAVE_TIMEOUT_ID_T=no,netatalk_cv_HAVE_TIMEOUT_ID_T=cross)])
-
-	   AC_DEFINE(HAVE_TIMEOUT_ID_T, test x"$netatalk_cv_HAVE_TIMEOUT_ID" = x"yes", [define for timeout_id_t])
-	fi
-
-	AC_SUBST(COMPILE_KERNEL_GCC)
-	AC_SUBST(COMPILE_64BIT_KMODULE)
-	AC_SUBST(KCFLAGS)
-	AC_SUBST(KLDFLAGS)
-fi
-
-dnl ----- Tru64 specific -----
-if test x"$this_os" = "xtru64"; then 
-	AC_MSG_RESULT([ * Tru64 specific configuration])
-	AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
-	AC_DEFINE(HAVE_64BIT_LONGS, 1, [Define if the data type long has 64 bit])
-	dnl AC_DEFINE(USE_MOUNT_H)
-	AC_DEFINE(USE_OLD_RQUOTA, 1, [Define to use old rquota])
-	dnl AC_DEFINE(USE_UFS_QUOTA_H)
-	AC_DEFINE(TRU64, 1, [Define on Tru64 platforms])
-	AC_DEFINE(_OSF_SOURCE, 1, [Define if the *passwd UAMs should be used])
-	AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Define for Berkeley DB 4])
-	AC_CHECK_LIB(security,set_auth_parameters)
-	CFLAGS="-I\$(top_srcdir)/sys/tru64 $CFLAGS"
-	need_dash_r=no
-	sysv_style=tru64
 fi
 
 dnl ------ Check for sendfile() --------
@@ -853,23 +489,7 @@ AC_ARG_ENABLE(sendfile,
 
 if test x"$netatalk_cv_search_sendfile" = x"yes"; then
    case "$host_os" in
-   *linux*)
-        AC_DEFINE(SENDFILE_FLAVOR_LINUX,1,[Whether linux sendfile() API is available])
-        AC_CHECK_FUNC([sendfile], [netatalk_cv_HAVE_SENDFILE=yes])
-        ;;
-
-    *solaris*)
-        AC_DEFINE(SENDFILE_FLAVOR_SOLARIS, 1, [Solaris sendfile()])
-        AC_SEARCH_LIBS(sendfile, sendfile)
-        AC_CHECK_FUNC([sendfile], [netatalk_cv_HAVE_SENDFILE=yes])
-        ;;
-
-    *freebsd*)
-        AC_DEFINE(SENDFILE_FLAVOR_BSD, 1, [Define if the sendfile() function uses BSD semantics])
-        AC_CHECK_FUNC([sendfile], [netatalk_cv_HAVE_SENDFILE=yes])
-        ;;
-
-    *)
+   *)
         ;;
 
     esac
@@ -1332,9 +952,7 @@ AC_OUTPUT([Makefile
 	distrib/Makefile
 	distrib/config/Makefile
 	distrib/config/netatalk-config
-	distrib/initscripts/Makefile
 	distrib/m4/Makefile
-	distrib/systemd/Makefile
 	doc/Makefile
 	etc/Makefile
 	etc/afpd/Makefile
@@ -1370,11 +988,6 @@ AC_OUTPUT([Makefile
 	sys/generic/Makefile
 	sys/generic/sys/Makefile
 	sys/netatalk/Makefile
-	sys/netbsd/Makefile
-	sys/netbsd/netatalk/Makefile
-	sys/solaris/Makefile
-	sys/sunos/Makefile
-	sys/ultrix/Makefile
 	test/Makefile
 	test/afpd/Makefile
 	],
