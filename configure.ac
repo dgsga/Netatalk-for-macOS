@@ -981,15 +981,16 @@ dnl --------------------- check for LDAP support, for client-side ACL visibility
 AC_MSG_CHECKING(for LDAP (necessary for client-side ACL visibility))
 AC_ARG_WITH(ldap,
     [AS_HELP_STRING([--with-ldap],
-        [LDAP support (default=auto)])],
+        [LDAP support (default=no)])],
     [ case "$withval" in
       yes|no)
           with_ldap="$withval"
 		  ;;
       *)
-          with_ldap=auto
+          with_ldap=no
           ;;
-      esac ])
+      esac ],
+      [with_ldap=no])
 AC_MSG_RESULT($with_ldap)
 
 if test x"$with_ldap" != x"no" ; then
@@ -1015,16 +1016,16 @@ dnl --------------------- check for ACL support
 AC_MSG_CHECKING(whether to support ACLs)
 AC_ARG_WITH(acls,
     [AS_HELP_STRING([--with-acls],
-        [Include ACL support (default=auto)])],
+        [Include ACL support (default=no)])],
     [ case "$withval" in
       yes|no)
           with_acl_support="$withval"
 		  ;;
       *)
-          with_acl_support=auto
+          with_acl_support=no
           ;;
       esac ],
-    [with_acl_support=auto])
+    [with_acl_support=no])
 AC_MSG_RESULT($with_acl_support)
 
 if test x"$with_acl_support" = x"no"; then

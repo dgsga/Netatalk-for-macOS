@@ -754,12 +754,6 @@ static int creatvol(AFPObj *obj, struct passwd *pwd,
     /* os X start at 1 and use network order ie. 1 2 3 */
     volume->v_vid = ++lastvid;
     volume->v_vid = htons(volume->v_vid);
-#ifdef HAVE_ACLS
-    if (!check_vol_acl_support(volume)) {
-        LOG(log_debug, logtype_afpd, "creatvol(\"%s\"): disabling ACL support", volume->v_path);
-        options[VOLOPT_FLAGS].i_value &= ~AFPVOL_ACLS;
-    }
-#endif
 
     /* handle options */
     if (options) {
@@ -1241,9 +1235,6 @@ static int readvolfile(AFPObj *obj, struct afp_volume_name *p1, char *p2, int us
 
     /* Enable some default options for all volumes */
     default_options[VOLOPT_FLAGS].i_value |= AFPVOL_CACHE;
-#ifdef HAVE_ACLS
-    default_options[VOLOPT_FLAGS].i_value |= AFPVOL_ACLS;
-#endif
     default_options[VOLOPT_EA_VFS].i_value = AFPVOL_EA_AUTO;
     LOG(log_maxdebug, logtype_afpd, "readvolfile: seeding default umask: %04o",
         obj->options.umask);

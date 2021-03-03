@@ -44,9 +44,6 @@ char *strchr (), *strrchr ();
 #include "volume.h"
 #include "unix.h"
 #include "fork.h"
-#ifdef HAVE_ACLS
-#include "acls.h"
-#endif
 
 /*
  * Get the free space on a partition.
@@ -180,9 +177,6 @@ void accessmode(const struct vol *vol, char *path, struct maccess *ma, struct di
         st = &sb;
     }
     utommode( st, ma );
-#ifdef HAVE_ACLS
-    acltoownermode(vol, path, st, ma);
-#endif
 }
 
 int gmem(const gid_t gid)

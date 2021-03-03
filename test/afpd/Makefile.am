@@ -47,10 +47,6 @@ test_SOURCES =  test.c subtests.c afpfunc_helpers.c \
 				$(top_builddir)/etc/afpd/unix.c \
 				$(top_builddir)/etc/afpd/volume.c
 
-if HAVE_ACLS
-test_SOURCES += $(top_builddir)/etc/afpd/acls.c
-endif
-
 test_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/etc/afpd \
 	 @SLP_CFLAGS@ @ZEROCONF_CFLAGS@ \
 	 -DAPPLCNAME \
