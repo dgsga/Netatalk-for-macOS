@@ -1282,8 +1282,6 @@ AC_SUBST(CFLAGS)
 AC_SUBST(OVERWRITE_CONFIG)
 
 AM_CONDITIONAL(SOLARIS_MODULE, test x$solaris_module = xyes)
-AM_CONDITIONAL(COMPILE_TIMELORD, test x$compile_timelord = xyes)
-AM_CONDITIONAL(COMPILE_A2BOOT, test x$compile_a2boot = xyes)
 AM_CONDITIONAL(HAVE_LIBGCRYPT, test x$neta_cv_have_libgcrypt = xyes)
 AM_CONDITIONAL(HAVE_OPENSSL, test x$neta_cv_have_openssl = xyes)
 AM_CONDITIONAL(HAVE_ACLS, test x"$with_acl_support" = x"yes")
@@ -1308,7 +1306,6 @@ AM_CONDITIONAL(USE_DEBIAN, test x$sysv_style = xdebian)
 AM_CONDITIONAL(USE_SYSTEMD, test x$sysv_style = xsystemd || test x$sysv_style = xredhat-systemd || test x$sysv_style = xsuse-systemd)
 AM_CONDITIONAL(USE_UNDEF, test x$sysv_style = x)
 AM_CONDITIONAL(USE_BDB, test x$bdb_required = xyes)
-AM_CONDITIONAL(USE_APPLETALK, test x$netatalk_cv_ddp_enabled = xyes)
 AM_CONDITIONAL(HAVE_ATFUNCS, test x"$ac_neta_haveatfuncs" = x"yes")
 
 dnl --------------------- generate files
@@ -1317,16 +1314,11 @@ AC_OUTPUT([Makefile
 	bin/Makefile
 	bin/ad/Makefile
 	bin/adv1tov2/Makefile
-	bin/aecho/Makefile
 	bin/afppasswd/Makefile
 	bin/cnid/Makefile
 	bin/cnid/cnid2_create
-	bin/getzones/Makefile
 	bin/megatron/Makefile
 	bin/misc/Makefile
-	bin/nbp/Makefile
-	bin/pap/Makefile
-	bin/psorder/Makefile
 	bin/uniconv/Makefile
 	config/Makefile
 	config/pam/Makefile
@@ -1334,12 +1326,9 @@ AC_OUTPUT([Makefile
 	contrib/macusers/Makefile
 	contrib/macusers/macusers
 	contrib/misc/Makefile
-	contrib/printing/Makefile
 	contrib/shell_utils/Makefile
 	contrib/shell_utils/apple_dump
 	contrib/shell_utils/asip-status.pl
-	contrib/timelord/Makefile
-	contrib/a2boot/Makefile
 	distrib/Makefile
 	distrib/config/Makefile
 	distrib/config/netatalk-config
@@ -1349,19 +1338,14 @@ AC_OUTPUT([Makefile
 	doc/Makefile
 	etc/Makefile
 	etc/afpd/Makefile
-	etc/atalkd/Makefile
 	etc/cnid_dbd/Makefile
 	etc/uams/Makefile
 	etc/uams/uams_krb4/Makefile
-	etc/papd/Makefile
-	etc/psf/Makefile
 	include/Makefile
 	include/atalk/Makefile
 	libatalk/Makefile
 	libatalk/acl/Makefile
 	libatalk/adouble/Makefile
-	libatalk/asp/Makefile
-	libatalk/atp/Makefile
 	libatalk/bstring/Makefile
 	libatalk/cnid/Makefile
 	libatalk/cnid/cdb/Makefile
@@ -1370,8 +1354,6 @@ AC_OUTPUT([Makefile
 	libatalk/cnid/tdb/Makefile
 	libatalk/compat/Makefile
 	libatalk/dsi/Makefile
-	libatalk/nbp/Makefile
-	libatalk/netddp/Makefile
 	libatalk/util/Makefile
 	libatalk/tdb/Makefile
 	libatalk/unicode/Makefile

@@ -11,21 +11,11 @@ EXTRA_DIST = \
 	AppleVolumes.system \
 	afp_ldap.conf \
 	afpd.conf.tmpl \
-	atalkd.conf \
-	netatalk.conf \
-	papd.conf
+	netatalk.conf
 
 OVERWRITE_CONFIG = @OVERWRITE_CONFIG@
 
-if USE_DEBIAN
-CONFFILES = AppleVolumes.system
-else
 CONFFILES = AppleVolumes.system netatalk.conf
-endif
-
-if USE_APPLETALK
-CONFFILES += atalkd.conf papd.conf
-endif
 
 pkgconfdir = @PKGCONFDIR@
 webminpath = @WEBMIN_PATH@
