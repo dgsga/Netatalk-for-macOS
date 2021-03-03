@@ -178,23 +178,6 @@ AC_ARG_WITH(cracklib,
 AC_MSG_CHECKING([for cracklib support])
 AC_MSG_RESULT([$netatalk_cv_with_cracklib])
 
-netatalk_cv_ddp_enabled=no
-AC_MSG_CHECKING([whether to enable DDP])
-AC_ARG_ENABLE(ddp,
-	[  --enable-ddp            enable DDP (AppleTalk)],[
-	if test "$enableval" = "yes"; then 
-		AC_MSG_RESULT([yes])
-		netatalk_cv_ddp_enabled=yes
-	else
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
-	fi
-	],[
-		AC_MSG_RESULT([no])
-		AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
-	]
-)
-
 AC_MSG_CHECKING([whether to enable debug code])
 AC_ARG_ENABLE(debug1,
 	[  --enable-debug1         enable debug code],[
@@ -573,41 +556,6 @@ AC_ARG_ENABLE(overwrite,
 	[OVERWRITE_CONFIG="no"]
 )
 AC_MSG_RESULT([$OVERWRITE_CONFIG])
-
-dnl --------------------- check for LDAP support, for client-side ACL visibility
-AC_MSG_CHECKING(for LDAP (necessary for client-side ACL visibility))
-AC_ARG_WITH(ldap,
-    [AS_HELP_STRING([--with-ldap],
-        [LDAP support (default=no)])],
-    [ case "$withval" in
-      yes|no)
-          with_ldap="$withval"
-		  ;;
-      *)
-          with_ldap=no
-          ;;
-      esac ],
-      [with_ldap=no])
-AC_MSG_RESULT($with_ldap)
-
-if test x"$with_ldap" != x"no" ; then
-   	AC_CHECK_HEADER([ldap.h], with_ldap=yes,
-        [ if test x"$with_ldap" = x"yes" ; then
-            AC_MSG_ERROR([Missing LDAP headers])
-        fi
-		with_ldap=no
-        ])
-	AC_CHECK_LIB(ldap, ldap_init, with_ldap=yes,
-        [ if test x"$with_ldap" = x"yes" ; then
-            AC_MSG_ERROR([Missing LDAP library])
-        fi
-		with_ldap=no
-        ])
-fi
-
-if test x"$with_ldap" = x"yes"; then
-	AC_DEFINE(HAVE_LDAP,1,[Whether LDAP is available])
-fi
 
 dnl --------------------- check for ACL support
 AC_MSG_CHECKING(whether to support ACLs)
