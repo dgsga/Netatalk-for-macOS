@@ -6,7 +6,7 @@ SUBDIRS = uams_krb4
 # conditionally build some modules
 #
 
-UAMS_GENERIC = uams_guest.la uams_passwd.la
+UAMS_GENERIC = uams_guest.la
 uams_LINKS = uams_clrtxt.so
 dhx_exec_hook = echo
 dhx2_exec_hook = echo
@@ -50,14 +50,6 @@ if BUILD_PAM
 UAMS_PAM = uams_pam.la
 endif
 
-if USE_RANDNUM
-UAMS_RANDNUM = uams_randnum.la
-endif
-
-if USE_PGP
-UAMS_PGP = uams_pgp.la
-endif
-
 if USE_GSSAPI
 UAMS_GSSAPI = uams_gss.la
 endif
@@ -75,10 +67,7 @@ endif
 #
 
 uams_guest_la_SOURCES      = uams_guest.c
-uams_randnum_la_SOURCES    = uams_randnum.c
-uams_passwd_la_SOURCES     = uams_passwd.c
 uams_pam_la_SOURCES        = uams_pam.c
-uams_pgp_la_SOURCES        = uams_pgp.c
 uams_dhx_passwd_la_SOURCES = uams_dhx_passwd.c
 uams_dhx_pam_la_SOURCES    = uams_dhx_pam.c
 uams_dhx2_passwd_la_SOURCES	= uams_dhx2_passwd.c
@@ -98,10 +87,8 @@ uams_dhx2_pam_la_CFLAGS    = @LIBGCRYPT_CFLAGS@ @PAM_CFLAGS@
 uams_gss_la_CFLAGS   	   = @GSSAPI_CFLAGS@
 
 uams_guest_la_LDFLAGS      = -module -avoid-version
-uams_randnum_la_LDFLAGS    = -module -avoid-version @SSL_LIBS@
 uams_passwd_la_LDFLAGS     = -module -avoid-version @CRYPT_LIBS@
 uams_pam_la_LDFLAGS        = -module -avoid-version @PAM_LIBS@
-uams_pgp_la_LDFLAGS        = -module -avoid-version @SSL_LIBS@
 uams_dhx_passwd_la_LDFLAGS = -module -avoid-version @CRYPT_LIBS@ @SSL_LIBS@
 uams_dhx_pam_la_LDFLAGS		= -module -avoid-version @CRYPT_LIBS@ @SSL_LIBS@ @PAM_LIBS@
 uams_dhx2_passwd_la_LDFLAGS	= -module -avoid-version @CRYPT_LIBS@ @LIBGCRYPT_LIBS@
@@ -132,7 +119,6 @@ install-data-hook:
 	(if [ -d $(DESTDIR)$(uamsdir) ] ; then \
 		cd $(DESTDIR)$(uamsdir)					&& \
 		rm -f $(uams_LINKS)  					&& \
-		$(LN_S) $(UAMS_CLRTXT_LINK) uams_clrtxt.so		&& \
 		$(dhx_exec_hook)						&& \
 		$(dhx2_exec_hook) ; 					\
 	fi)
