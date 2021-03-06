@@ -18,7 +18,6 @@ AC_PROG_MAKE_SET
 AC_LIBTOOL_DLOPEN
 LT_INIT
 RANLIB='ranlib -no_warning_for_no_symbols'
-AC_PROG_PERL
 AC_PROG_GREP
 AC_PROG_PS
 
