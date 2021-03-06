@@ -821,7 +821,6 @@ AC_OUTPUT([Makefile
 	bin/Makefile
 	bin/ad/Makefile
 	bin/adv1tov2/Makefile
-	bin/afppasswd/Makefile
 	bin/cnid/Makefile
 	bin/cnid/cnid2_create
 	bin/megatron/Makefile
