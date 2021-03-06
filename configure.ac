@@ -884,7 +884,6 @@ AC_OUTPUT([Makefile
 	libatalk/cnid/last/Makefile
 	libatalk/cnid/dbd/Makefile
 	libatalk/cnid/tdb/Makefile
-	libatalk/compat/Makefile
 	libatalk/dsi/Makefile
 	libatalk/util/Makefile
 	libatalk/tdb/Makefile
