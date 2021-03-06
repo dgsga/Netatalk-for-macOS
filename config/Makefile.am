@@ -46,9 +46,6 @@ uninstall-local:
 		echo rm -f $(DESTDIR)$(pkgconfdir)/$$f; \
 		rm -f $(DESTDIR)$(pkgconfdir)/$$f; \
 	done
-if USE_DEBIAN
-	rm -f $(DESTDIR)/etc/default/netatalk
-endif
 
 install-config-files: $(CONFFILES) $(GENFILES)
 	$(mkinstalldirs) $(DESTDIR)$(pkgconfdir)
@@ -60,15 +57,6 @@ install-config-files: $(CONFFILES) $(GENFILES)
 			echo "not overwriting $$f"; \
 		fi; \
 	done
-if USE_DEBIAN
-	$(mkinstalldirs) $(DESTDIR)/etc/default
-	if test "x$(OVERWRITE_CONFIG)" = "xyes" -o ! -f /etc/default/netatalk; then \
-		echo "$(INSTALL_DATA) $(srcdir)/netatalk.conf $(DESTDIR)/etc/default/netatalk"; \
-		$(INSTALL_DATA) $(srcdir)/netatalk.conf $(DESTDIR)/etc/default/netatalk; \
-	else \
-		echo "not overwriting /etc/default/netatalk"; \
-	fi
-endif
 
 install-webmin:
 	if test "x$(webminpath)" != "x"; then \
@@ -106,10 +94,7 @@ install-webmin:
 		echo "applevolumesystem_c=$(sysconfdir)/netatalk/AppleVolumes.system" >> config; \
 		echo "afpd_c=$(sysconfdir)/netatalk/afpd.conf" >> config; \
 		echo "atalk_c=$(sysconfdir)/netatalk/atalk.conf" >> config; \
-		echo "papd_c=$(sysconfdir)/netatalk/papd.conf" >> config; \
 		echo "afpd_d=$(sbindir)/afpd" >> config; \
-		echo "atalkd_d=$(sbindir)/atalkd" >> config; \
-		echo "papd_d=$(sbindir)/papd" >> config; \
 		echo "netatalk_c=@PAMDIR@/etc/pam.d" >> config; \
 		echo "atalk_start=$(sysconfdir)/init.d/atalk" >> config; \
 		echo "select_minUsers=" >> config; \
