@@ -28,7 +28,6 @@
 #include <atalk/logger.h>
 #include <atalk/afp.h>
 #include <atalk/uuid.h>
-#include <atalk/ldapconfig.h>
 #include <atalk/util.h>
 
 #include "aclldap.h"
