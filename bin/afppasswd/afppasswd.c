@@ -42,10 +42,6 @@
 
 #include <openssl/des.h>
 
-#ifdef USE_CRACKLIB
-#include <crack.h>
-#endif /* USE_CRACKLIB */
-
 #define OPT_ISROOT  (1 << 0)
 #define OPT_CREATE  (1 << 1)
 #define OPT_FORCE   (1 << 2)
@@ -178,15 +174,6 @@ found_entry:
   passwd = getpass("Enter NEW AFP password: ");
   memcpy(password, passwd, sizeof(password));
   password[PASSWDLEN] = '\0';
-#ifdef USE_CRACKLIB
-  if (!(flags & OPT_NOCRACK)) {
-    if ((passwd = FascistCheck(password, _PATH_CRACKLIB))) { 
-        fprintf(stderr, "Error: %s\n", passwd);
-        err = -1;
-        goto update_done;
-    } 
-  }
-#endif /* USE_CRACKLIB */
 
   passwd = getpass("Enter NEW AFP password again: ");
   if (strcmp(passwd, password) == 0) {
@@ -273,9 +260,6 @@ int main(int argc, char **argv)
     fprintf(stderr, "  -a        add a new user\n");
     fprintf(stderr, "  -c        create and initialize password file or specific user\n");
     fprintf(stderr, "  -f        force an action\n");
-#ifdef USE_CRACKLIB
-    fprintf(stderr, "  -n        disable cracklib checking of passwords\n");
-#endif /* USE_CRACKLIB */
     fprintf(stderr, "  -u uid    minimum uid to use, defaults to 100\n");
     fprintf(stderr, "  -p path   path to afppasswd file\n");
     return -1;
@@ -295,11 +279,6 @@ int main(int argc, char **argv)
     case 'u':  /* minimum uid to use. default is 100 */
       uid_min = atoi(optarg);
       break;
-#ifdef USE_CRACKLIB
-    case 'n': /* disable CRACKLIB check */
-      flags |= OPT_NOCRACK;
-      break;
-#endif /* USE_CRACKLIB */
     case 'p': /* path to afppasswd file */
       path = optarg;
       break;
@@ -311,17 +290,10 @@ int main(int argc, char **argv)
   
   if (err || (optind + ((flags & OPT_CREATE) ? 0 : 
 			(flags & OPT_ISROOT)) != argc)) {
-#ifdef USE_CRACKLIB
-    fprintf(stderr, "Usage: afppasswd [-acfn] [-u minuid] [-p path] [username]\n");
-#else /* USE_CRACKLIB */
     fprintf(stderr, "Usage: afppasswd [-acf] [-u minuid] [-p path] [username]\n");
-#endif /* USE_CRACKLIB */
     fprintf(stderr, "  -a        add a new user\n");
     fprintf(stderr, "  -c        create and initialize password file or specific user\n");
     fprintf(stderr, "  -f        force an action\n");
-#ifdef USE_CRACKLIB
-    fprintf(stderr, "  -n        disable cracklib checking of passwords\n");
-#endif /* USE_CRACKLIB */
     fprintf(stderr, "  -u uid    minimum uid to use, defaults to 100\n");
     fprintf(stderr, "  -p path   path to afppasswd file\n");
     return -1;

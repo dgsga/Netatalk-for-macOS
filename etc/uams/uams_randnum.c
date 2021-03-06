@@ -49,11 +49,6 @@ char *strchr (), *strrchr ();
 
 #include <openssl/des.h>
 
-#ifdef USE_CRACKLIB
-//#include <crack.h>
-#include <packer.h>
-#endif /* USE_CRACKLIB */
-
 #define PASSWDLEN 8
 
 static C_Block		seskey;
@@ -471,10 +466,6 @@ static int randnum_changepw(void *obj, const char *username _U_,
 	err = AFPERR_NOTAUTH;
     else if (memcmp(seskey, ibuf + PASSWDLEN, sizeof(seskey)) == 0)
         err = AFPERR_PWDSAME;
-#ifdef USE_CRACKLIB
-    else if (FascistCheck(ibuf + PASSWDLEN, _PATH_CRACKLIB))
-        err = AFPERR_PWDPOLCY;
-#endif /* USE_CRACKLIB */
 
     if (!err) 
         err = randpass(pwd, passwdfile, (unsigned char *)ibuf + PASSWDLEN, sizeof(seskey), 1);

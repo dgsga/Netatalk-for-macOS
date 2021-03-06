@@ -625,13 +625,6 @@ static void show_version_extended(void )
 	puts( "No" );
 #endif
 
-	printf( "      cracklib support:\t" );
-#ifdef USE_CRACKLIB
-	puts( "Yes" );
-#else
-	puts( "No" );
-#endif
-
 	printf( "  Force volume uid/gid:\t" );
 #ifdef FORCE_UIDGID
 	puts( "Yes" );
