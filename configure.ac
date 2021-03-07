@@ -233,9 +233,6 @@ dnl Check for CNID database backends
 bdb_required=no
 AC_NETATALK_CNID([bdb_required=yes],[bdb_required=no])
 
-dnl Check for quota support
-AC_CHECK_QUOTA
-
 dnl Check for optional server location protocol support (used by MacOS X)
 NETATALK_SRVLOC
 

@@ -34,9 +34,7 @@ afpd_SOURCES = \
 	main.c \
 	mangle.c \
 	messages.c  \
-	nfsquota.c \
 	ofork.c \
-	quota.c \
 	status.c \
 	switch.c \
 	uam.c \
@@ -47,7 +45,7 @@ afpd_SOURCES = \
 afpd_LDADD =  \
 	$(top_builddir)/libatalk/cnid/libcnid.la \
 	$(top_builddir)/libatalk/libatalk.la \
-	@LIBGCRYPT_LIBS@ @ZEROCONF_LIBS@ @QUOTA_LIBS@ @SLP_LIBS@ @WRAP_LIBS@ @LIBADD_DL@ @ACL_LIBS@ @PTHREAD_LIBS@
+	@LIBGCRYPT_LIBS@ @ZEROCONF_LIBS@ @SLP_LIBS@ @WRAP_LIBS@ @LIBADD_DL@ @ACL_LIBS@ @PTHREAD_LIBS@
 
 afpd_LDFLAGS = -export-dynamic 
 
@@ -59,11 +57,9 @@ afpd_CFLAGS = \
 	-DSERVERTEXT=\"$(SERVERTEXT)/\" \
 	-D_PATH_AFPDDEFVOL=\"$(pkgconfdir)/AppleVolumes.default\" \
 	-D_PATH_AFPDSYSVOL=\"$(pkgconfdir)/AppleVolumes.system\" \
-	-D_PATH_AFPDPWFILE=\"$(pkgconfdir)/afppasswd\" \
 	-D_PATH_AFPDCONF=\"$(pkgconfdir)/afpd.conf\" \
 	-D_PATH_AFPDSIGCONF=\"$(pkgconfdir)/afp_signature.conf\" \
 	-D_PATH_AFPDUAMPATH=\"$(UAMS_PATH)/\" \
-	-D_PATH_ACL_LDAPCONF=\"$(pkgconfdir)/afp_ldap.conf\" \
 	-D_PATH_AFPDUUIDCONF=\"$(pkgconfdir)/afp_voluuid.conf\"
 
 noinst_HEADERS = auth.h afp_config.h desktop.h directory.h fce_api_internal.h file.h \

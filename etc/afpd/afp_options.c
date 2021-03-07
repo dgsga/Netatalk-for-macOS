@@ -165,7 +165,6 @@ void afp_options_init(struct afp_options *options) {
     options->guest = "nobody";
     options->loginmesg = "";
     options->transports = AFPTRANS_TCP; /*  TCP only */
-    options->passwdfile = _PATH_AFPDPWFILE;
     options->tickleval = 30;
     options->timeout = 4;       /* 4 tickles = 2 minutes */
     options->sleep = 10 * 60 * 2; /* 10 h in 30 seconds tick */
@@ -595,13 +594,6 @@ static void show_version_extended(void) {
 
     printf("  TCP wrappers support:\t");
 #ifdef TCPWRAP
-    puts( "Yes" );
-#else
-    puts("No");
-#endif
-
-    printf("         Quota support:\t");
-#ifndef NO_QUOTA_SUPPORT
     puts( "Yes" );
 #else
     puts("No");
