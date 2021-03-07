@@ -30,7 +30,6 @@
 #include <atalk/uuid.h>
 #include <atalk/util.h>
 
-#include "aclldap.h"
 #include "cache.h"
 
 char *uuidtype[] = {"", "USER", "GROUP", "LOCAL"};
