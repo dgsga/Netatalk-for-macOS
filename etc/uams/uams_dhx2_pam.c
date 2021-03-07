@@ -5,21 +5,30 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #if defined (USE_PAM) && defined (UAM_DHX2)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <atalk/logger.h>
 
 #ifdef HAVE_UNISTD_H
+
 #include <unistd.h>
+
 #endif /* HAVE_UNISTD_H */
+
 #include <errno.h>
+
 #ifdef HAVE_SECURITY_PAM_APPL_H
+
 #include <security/pam_appl.h>
+
 #endif
 #ifdef HAVE_PAM_PAM_APPL_H
 #include <pam/pam_appl.h>
@@ -27,7 +36,9 @@
 
 
 #ifdef HAVE_LIBGCRYPT
+
 #include <gcrypt.h>
+
 #endif /* HAVE_LIBGCRYPT */
 
 #include <atalk/afp.h>
@@ -49,8 +60,8 @@ static int K_hash_len;
 static u_int16_t ID;
 
 /* The initialization vectors for CAST128 are fixed by Apple. */
-static unsigned char dhx_c2siv[] = { 'L', 'W', 'a', 'l', 'l', 'a', 'c', 'e' };
-static unsigned char dhx_s2civ[] = { 'C', 'J', 'a', 'l', 'b', 'e', 'r', 't' };
+static unsigned char dhx_c2siv[] = {'L', 'W', 'a', 'l', 'l', 'a', 'c', 'e'};
+static unsigned char dhx_s2civ[] = {'C', 'J', 'a', 'l', 'b', 'e', 'r', 't'};
 
 /* Static variables used to communicate between the conversation function
  * and the server_login function */
@@ -70,7 +81,7 @@ static struct passwd *dhxpwd;
  * the Diffie-Hellman key exchange.
  * The bits value should be one of 768, 1024, 2048, 3072 or 4096.
  **/
-static int dh_params_generate (unsigned int bits) {
+static int dh_params_generate(unsigned int bits) {
 
     int result, times = 0, qbits;
     gcry_mpi_t *factors = NULL;
@@ -78,7 +89,7 @@ static int dh_params_generate (unsigned int bits) {
 
     /* Version check should be the very first call because it
        makes sure that important subsystems are intialized. */
-    if (!gcry_check_version (GCRYPT_VERSION)) {
+    if (!gcry_check_version(GCRYPT_VERSION)) {
         LOG(log_error, logtype_uams, "PAM DHX2: libgcrypt versions mismatch. Need: %s", GCRYPT_VERSION);
         result = AFPERR_MISC;
         goto error;
@@ -96,7 +107,7 @@ static int dh_params_generate (unsigned int bits) {
     do {
         if (times) {
             gcry_mpi_release(p);
-            gcry_prime_release_factors (factors);
+            gcry_prime_release_factors(factors);
         }
         err = gcry_prime_generate(&p, bits, qbits, &factors, NULL, NULL,
                                   GCRY_STRONG_RANDOM, GCRY_PRIME_FLAG_SPECIAL_FACTOR);
@@ -124,7 +135,7 @@ static int dh_params_generate (unsigned int bits) {
 
     return 0;
 
-error:
+    error:
     gcry_prime_release_factors(factors);
 
     return result;
@@ -135,10 +146,10 @@ error:
  * Here we assume (for now, at least) that echo on means login name, and
  * echo off means password.
  */
-static int PAM_conv (int num_msg,
-                     const struct pam_message **msg,
-                     struct pam_response **resp,
-                     void *appdata_ptr _U_) {
+static int PAM_conv(int num_msg,
+                    const struct pam_message **msg,
+                    struct pam_response **resp,
+                    void *appdata_ptr _U_) {
     int count = 0;
     struct pam_response *reply;
 
@@ -155,7 +166,7 @@ static int PAM_conv (int num_msg,
     }
 
     reply = (struct pam_response *)
-        calloc(num_msg, sizeof(struct pam_response));
+            calloc(num_msg, sizeof(struct pam_response));
 
     if (!reply) {
         /* Log Entry */
@@ -169,34 +180,34 @@ static int PAM_conv (int num_msg,
         char *string = NULL;
 
         switch (msg[count]->msg_style) {
-        case PAM_PROMPT_ECHO_ON:
-            if (!(string = COPY_STRING(PAM_username))) {
-                /* Log Entry */
-                LOG(log_info, logtype_uams, "PAM DHX2: username failure -- %s",
-                    strerror(errno));
-                /* Log Entry */
-                goto pam_fail_conv;
-            }
-            break;
-        case PAM_PROMPT_ECHO_OFF:
-            if (!(string = COPY_STRING(PAM_password))) {
-                /* Log Entry */
-                LOG(log_info, logtype_uams, "PAM DHX2: passwd failure: --: %s",
-                    strerror(errno));
-                /* Log Entry */
-                goto pam_fail_conv;
-            }
-            break;
-        case PAM_TEXT_INFO:
+            case PAM_PROMPT_ECHO_ON:
+                if (!(string = COPY_STRING(PAM_username))) {
+                    /* Log Entry */
+                    LOG(log_info, logtype_uams, "PAM DHX2: username failure -- %s",
+                        strerror(errno));
+                    /* Log Entry */
+                    goto pam_fail_conv;
+                }
+                break;
+            case PAM_PROMPT_ECHO_OFF:
+                if (!(string = COPY_STRING(PAM_password))) {
+                    /* Log Entry */
+                    LOG(log_info, logtype_uams, "PAM DHX2: passwd failure: --: %s",
+                        strerror(errno));
+                    /* Log Entry */
+                    goto pam_fail_conv;
+                }
+                break;
+            case PAM_TEXT_INFO:
 #ifdef PAM_BINARY_PROMPT
-        case PAM_BINARY_PROMPT:
+                case PAM_BINARY_PROMPT:
 #endif /* PAM_BINARY_PROMPT */
-            /* ignore it... */
-            break;
-        case PAM_ERROR_MSG:
-        default:
-            LOG(log_info, logtype_uams, "PAM DHX2: Binary_Prompt -- %s", strerror(errno));
-            goto pam_fail_conv;
+                /* ignore it... */
+                break;
+            case PAM_ERROR_MSG:
+            default:
+                LOG(log_info, logtype_uams, "PAM DHX2: Binary_Prompt -- %s", strerror(errno));
+                goto pam_fail_conv;
         }
 
         if (string) {
@@ -210,15 +221,15 @@ static int PAM_conv (int num_msg,
     LOG(log_info, logtype_uams, "PAM DHX2: PAM Success");
     return PAM_SUCCESS;
 
-pam_fail_conv:
+    pam_fail_conv:
     for (count = 0; count < num_msg; count++) {
         if (!reply[count].resp)
             continue;
         switch (msg[count]->msg_style) {
-        case PAM_PROMPT_ECHO_OFF:
-        case PAM_PROMPT_ECHO_ON:
-            free(reply[count].resp);
-            break;
+            case PAM_PROMPT_ECHO_OFF:
+            case PAM_PROMPT_ECHO_ON:
+                free(reply[count].resp);
+                break;
         }
     }
     free(reply);
@@ -230,14 +241,13 @@ pam_fail_conv:
 }
 
 static struct pam_conv PAM_conversation = {
-    &PAM_conv,
-    NULL
+        &PAM_conv,
+        NULL
 };
 
 
 static int dhx2_setup(void *obj, char *ibuf _U_, size_t ibuflen _U_,
-                      char *rbuf, size_t *rbuflen)
-{
+                      char *rbuf, size_t *rbuflen) {
     int ret;
     size_t nwritten;
     gcry_mpi_t Ma;
@@ -249,13 +259,13 @@ static int dhx2_setup(void *obj, char *ibuf _U_, size_t ibuflen _U_,
     Ma = gcry_mpi_new(0);
 
     /* Generate our random number Ra. */
-    Ra_binary = calloc(1, PRIMEBITS/8);
+    Ra_binary = calloc(1, PRIMEBITS / 8);
     if (Ra_binary == NULL) {
         ret = AFPERR_MISC;
         goto error;
     }
-    gcry_randomize(Ra_binary, PRIMEBITS/8, GCRY_STRONG_RANDOM);
-    gcry_mpi_scan(&Ra, GCRYMPI_FMT_USG, Ra_binary, PRIMEBITS/8, NULL);
+    gcry_randomize(Ra_binary, PRIMEBITS / 8, GCRY_STRONG_RANDOM);
+    gcry_mpi_scan(&Ra, GCRYMPI_FMT_USG, Ra_binary, PRIMEBITS / 8, NULL);
     free(Ra_binary);
     Ra_binary = NULL;
 
@@ -267,52 +277,51 @@ static int dhx2_setup(void *obj, char *ibuf _U_, size_t ibuflen _U_,
 
     /* Session ID first */
     ID = dhxhash(obj);
-    *(u_int16_t *)rbuf = htons(ID);
+    *(u_int16_t *) rbuf = htons(ID);
     rbuf += 2;
     *rbuflen += 2;
 
     /* g is next */
-    gcry_mpi_print( GCRYMPI_FMT_USG, (unsigned char *)rbuf, 4, &nwritten, g);
+    gcry_mpi_print(GCRYMPI_FMT_USG, (unsigned char *) rbuf, 4, &nwritten, g);
     if (nwritten < 4) {
-        memmove( rbuf+4-nwritten, rbuf, nwritten);
-        memset( rbuf, 0, 4-nwritten);
+        memmove(rbuf + 4 - nwritten, rbuf, nwritten);
+        memset(rbuf, 0, 4 - nwritten);
     }
     rbuf += 4;
     *rbuflen += 4;
 
     /* len = length of p = PRIMEBITS/8 */
-    *(u_int16_t *)rbuf = htons((u_int16_t) PRIMEBITS/8);
+    *(u_int16_t *) rbuf = htons((u_int16_t) PRIMEBITS / 8);
     rbuf += 2;
     *rbuflen += 2;
 
     /* p */
-    gcry_mpi_print( GCRYMPI_FMT_USG, (unsigned char *)rbuf, PRIMEBITS/8, NULL, p);
-    rbuf += PRIMEBITS/8;
-    *rbuflen += PRIMEBITS/8;
+    gcry_mpi_print(GCRYMPI_FMT_USG, (unsigned char *) rbuf, PRIMEBITS / 8, NULL, p);
+    rbuf += PRIMEBITS / 8;
+    *rbuflen += PRIMEBITS / 8;
 
     /* Ma */
-    gcry_mpi_print( GCRYMPI_FMT_USG, (unsigned char *)rbuf, PRIMEBITS/8, &nwritten, Ma);
-    if (nwritten < PRIMEBITS/8) {
-        memmove(rbuf + (PRIMEBITS/8) - nwritten, rbuf, nwritten);
-        memset(rbuf, 0, (PRIMEBITS/8) - nwritten);
+    gcry_mpi_print(GCRYMPI_FMT_USG, (unsigned char *) rbuf, PRIMEBITS / 8, &nwritten, Ma);
+    if (nwritten < PRIMEBITS / 8) {
+        memmove(rbuf + (PRIMEBITS / 8) - nwritten, rbuf, nwritten);
+        memset(rbuf, 0, (PRIMEBITS / 8) - nwritten);
     }
-    rbuf += PRIMEBITS/8;
-    *rbuflen += PRIMEBITS/8;
+    rbuf += PRIMEBITS / 8;
+    *rbuflen += PRIMEBITS / 8;
 
     ret = AFPERR_AUTHCONT;
 
-error:              /* We exit here anyway */
+    error:              /* We exit here anyway */
     /* We will need Ra later, but mustn't forget to release it ! */
     gcry_mpi_release(Ma);
     return ret;
 }
 
 /* -------------------------------- */
-static int login(void *obj, char *username, int ulen,  struct passwd **uam_pwd _U_,
+static int login(void *obj, char *username, int ulen, struct passwd **uam_pwd _U_,
                  char *ibuf, size_t ibuflen,
-                 char *rbuf, size_t *rbuflen)
-{
-    if (( dhxpwd = uam_getname(obj, username, ulen)) == NULL ) {
+                 char *rbuf, size_t *rbuflen) {
+    if ((dhxpwd = uam_getname(obj, username, ulen)) == NULL) {
         LOG(log_info, logtype_uams, "DHX2: unknown username");
         return AFPERR_NOTAUTH;
     }
@@ -327,8 +336,7 @@ static int login(void *obj, char *username, int ulen,  struct passwd **uam_pwd _
  * having to clean things up if there's an error. */
 static int pam_login(void *obj, struct passwd **uam_pwd,
                      char *ibuf, size_t ibuflen,
-                     char *rbuf, size_t *rbuflen)
-{
+                     char *rbuf, size_t *rbuflen) {
     char *username;
     size_t len, ulen;
 
@@ -342,15 +350,15 @@ static int pam_login(void *obj, struct passwd **uam_pwd,
     }
 
     len = (unsigned char) *ibuf++;
-    if ( len > ulen ) {
+    if (len > ulen) {
         LOG(log_info, logtype_uams, "DHX2: Signature Retieval Failure -- %s",
             strerror(errno));
         return AFPERR_PARAM;
     }
 
-    memcpy(username, ibuf, len );
+    memcpy(username, ibuf, len);
     ibuf += len;
-    username[ len ] = '\0';
+    username[len] = '\0';
 
     if ((unsigned long) ibuf & 1) /* pad to even boundary */
         ++ibuf;
@@ -361,11 +369,10 @@ static int pam_login(void *obj, struct passwd **uam_pwd,
 /* ----------------------------- */
 static int pam_login_ext(void *obj, char *uname, struct passwd **uam_pwd,
                          char *ibuf, size_t ibuflen,
-                         char *rbuf, size_t *rbuflen)
-{
+                         char *rbuf, size_t *rbuflen) {
     char *username;
     size_t len, ulen;
-    u_int16_t  temp16;
+    u_int16_t temp16;
 
     *rbuflen = 0;
 
@@ -382,20 +389,19 @@ static int pam_login_ext(void *obj, char *uname, struct passwd **uam_pwd,
     memcpy(&temp16, uname, sizeof(temp16));
     len = ntohs(temp16);
 
-    if ( !len || len > ulen ) {
+    if (!len || len > ulen) {
         LOG(log_info, logtype_uams, "DHX2: Signature Retrieval Failure -- %s",
             strerror(errno));
         return AFPERR_PARAM;
     }
-    memcpy(username, uname +2, len );
-    username[ len ] = '\0';
+    memcpy(username, uname + 2, len);
+    username[len] = '\0';
 
     return (login(obj, username, ulen, uam_pwd, ibuf, ibuflen, rbuf, rbuflen));
 }
 
 /* -------------------------------- */
-static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen)
-{
+static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen) {
     int ret;
     size_t nwritten;
     gcry_mpi_t Mb, K, clientNonce;
@@ -412,7 +418,7 @@ static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, siz
     serverNonce = gcry_mpi_new(0);
 
     /* Packet size should be: Session ID + Ma + Encrypted client nonce */
-    if (ibuflen != 2 + PRIMEBITS/8 + 16) {
+    if (ibuflen != 2 + PRIMEBITS / 8 + 16) {
         LOG(log_error, logtype_uams, "DHX2: Paket length not correct");
         ret = AFPERR_PARAM;
         goto error_noctx;
@@ -422,22 +428,22 @@ static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, siz
     ibuf += 2;
 
     /* Extract Mb, client's "public" key */
-    gcry_mpi_scan(&Mb, GCRYMPI_FMT_USG, ibuf, PRIMEBITS/8, NULL);
-    ibuf += PRIMEBITS/8;
+    gcry_mpi_scan(&Mb, GCRYMPI_FMT_USG, ibuf, PRIMEBITS / 8, NULL);
+    ibuf += PRIMEBITS / 8;
 
     /* Now finally generate the Key: K = Mb^Ra mod p */
     gcry_mpi_powm(K, Mb, Ra, p);
 
     /* We need K in binary form in order to ... */
-    K_bin = calloc(1, PRIMEBITS/8);
+    K_bin = calloc(1, PRIMEBITS / 8);
     if (K_bin == NULL) {
         ret = AFPERR_MISC;
         goto error_noctx;
     }
-    gcry_mpi_print(GCRYMPI_FMT_USG, K_bin, PRIMEBITS/8, &nwritten, K);
-    if (nwritten < PRIMEBITS/8) {
-        memmove(K_bin + PRIMEBITS/8 - nwritten, K_bin, nwritten);
-        memset(K_bin, 0, PRIMEBITS/8 - nwritten);
+    gcry_mpi_print(GCRYMPI_FMT_USG, K_bin, PRIMEBITS / 8, &nwritten, K);
+    if (nwritten < PRIMEBITS / 8) {
+        memmove(K_bin + PRIMEBITS / 8 - nwritten, K_bin, nwritten);
+        memset(K_bin, 0, PRIMEBITS / 8 - nwritten);
     }
 
     /* ... generate the MD5 hash of K. K_MD5hash is what we actually use ! */
@@ -446,14 +452,14 @@ static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, siz
         ret = AFPERR_MISC;
         goto error_noctx;
     }
-    gcry_md_hash_buffer(GCRY_MD_MD5, K_MD5hash, K_bin, PRIMEBITS/8);
+    gcry_md_hash_buffer(GCRY_MD_MD5, K_MD5hash, K_bin, PRIMEBITS / 8);
     free(K_bin);
     K_bin = NULL;
 
     /* FIXME: To support the Reconnect UAM, we need to store this key somewhere */
 
     /* Set up our encryption context. */
-    ctxerror = gcry_cipher_open( &ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
+    ctxerror = gcry_cipher_open(&ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
     if (gcry_err_code(ctxerror) != GPG_ERR_NO_ERROR) {
         ret = AFPERR_MISC;
         goto error_ctx;
@@ -488,14 +494,14 @@ static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, siz
     /* ---- Start building reply packet ---- */
 
     /* Session ID + 1 first */
-    *(u_int16_t *)rbuf = htons(ID+1);
+    *(u_int16_t *) rbuf = htons(ID + 1);
     rbuf += 2;
     *rbuflen += 2;
 
     /* Client nonce + 1 */
-    gcry_mpi_print(GCRYMPI_FMT_USG, (unsigned char *)rbuf, PRIMEBITS/8, NULL, clientNonce);
+    gcry_mpi_print(GCRYMPI_FMT_USG, (unsigned char *) rbuf, PRIMEBITS / 8, NULL, clientNonce);
     /* Server nonce */
-    memcpy(rbuf+16, serverNonce_bin, 16);
+    memcpy(rbuf + 16, serverNonce_bin, 16);
 
     /* Set the initialization vector for server->client transfer. */
     ctxerror = gcry_cipher_setiv(ctx, dhx_s2civ, sizeof(dhx_s2civ));
@@ -515,13 +521,13 @@ static int logincont1(void *obj _U_, char *ibuf, size_t ibuflen, char *rbuf, siz
     ret = AFPERR_AUTHCONT;
     goto exit;
 
-error_ctx:
+    error_ctx:
     gcry_cipher_close(ctx);
-error_noctx:
+    error_noctx:
     gcry_mpi_release(serverNonce);
     free(K_MD5hash);
-    K_MD5hash=NULL;
-exit:
+    K_MD5hash = NULL;
+    exit:
     gcry_mpi_release(K);
     gcry_mpi_release(Mb);
     gcry_mpi_release(Ra);
@@ -532,8 +538,7 @@ exit:
 /**
  * Try to authenticate via PAM as "adminauthuser"
  **/
-static int loginasroot(const char *adminauthuser, const char **hostname, int status)
-{
+static int loginasroot(const char *adminauthuser, const char **hostname, int status) {
     int PAM_error;
 
     if ((PAM_error = pam_end(pamh, status)) != PAM_SUCCESS)
@@ -541,7 +546,7 @@ static int loginasroot(const char *adminauthuser, const char **hostname, int sta
     pamh = NULL;
 
     if ((PAM_error = pam_start("netatalk", adminauthuser, &PAM_conversation, &pamh)) != PAM_SUCCESS) {
-        LOG(log_info, logtype_uams, "DHX2: PAM_Error: %s", pam_strerror(pamh,PAM_error));
+        LOG(log_info, logtype_uams, "DHX2: PAM_Error: %s", pam_strerror(pamh, PAM_error));
         goto exit;
     }
 
@@ -553,14 +558,13 @@ static int loginasroot(const char *adminauthuser, const char **hostname, int sta
 
     LOG(log_warning, logtype_uams, "DHX2: Authenticated as \"%s\"", adminauthuser);
 
-exit:
+    exit:
     return PAM_error;
 }
 
 static int logincont2(void *obj_in, struct passwd **uam_pwd,
                       char *ibuf, size_t ibuflen,
-                      char *rbuf _U_, size_t *rbuflen)
-{
+                      char *rbuf _U_, size_t *rbuflen) {
     AFPObj *obj = obj_in;
     int ret = AFPERR_MISC;
     int PAM_error;
@@ -585,7 +589,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     uam_afpserver_option(obj, UAM_OPTION_CLIENTNAME, (void *) &hostname, NULL);
 
     /* Set up our encryption context. */
-    ctxerror = gcry_cipher_open( &ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
+    ctxerror = gcry_cipher_open(&ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
     if (gcry_err_code(ctxerror) != GPG_ERR_NO_ERROR) {
         ret = AFPERR_MISC;
         goto error_ctx;
@@ -607,7 +611,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     ibuf += 2;
 
     /* Finally: decrypt client's md5_K(serverNonce+1, passwor, C2SIV) inplace */
-    ctxerror = gcry_cipher_decrypt(ctx, ibuf, 16+256, NULL, 0);
+    ctxerror = gcry_cipher_decrypt(ctx, ibuf, 16 + 256, NULL, 0);
     if (gcry_err_code(ctxerror) != GPG_ERR_NO_ERROR) {
         ret = AFPERR_MISC;
         goto error_ctx;
@@ -615,7 +619,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     /* Pull out nonce. Should be serverNonce+1 */
     gcry_mpi_scan(&retServerNonce, GCRYMPI_FMT_USG, ibuf, 16, NULL);
     gcry_mpi_sub_ui(retServerNonce, retServerNonce, 1);
-    if ( gcry_mpi_cmp( serverNonce, retServerNonce) != 0) {
+    if (gcry_mpi_cmp(serverNonce, retServerNonce) != 0) {
         /* We're hacked!  */
         ret = AFPERR_NOTAUTH;
         goto error_ctx;
@@ -625,7 +629,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     /* ---- Start authentication with PAM --- */
 
     /* The password is in legacy Mac encoding, convert it to host encoding */
-    if (convert_string_allocate(CH_MAC, CH_UNIX, ibuf, -1, &utfpass) == (size_t)-1) {
+    if (convert_string_allocate(CH_MAC, CH_UNIX, ibuf, -1, &utfpass) == (size_t) -1) {
         LOG(log_error, logtype_uams, "DHX2: conversion error");
         goto error_ctx;
     }
@@ -640,7 +644,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     ret = AFPERR_NOTAUTH;
     PAM_error = pam_start("netatalk", PAM_username, &PAM_conversation, &pamh);
     if (PAM_error != PAM_SUCCESS) {
-        LOG(log_info, logtype_uams, "DHX2: PAM_Error: %s", pam_strerror(pamh,PAM_error));
+        LOG(log_info, logtype_uams, "DHX2: PAM_Error: %s", pam_strerror(pamh, PAM_error));
         goto error_ctx;
     }
 
@@ -663,7 +667,7 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
     }
 
     PAM_error = pam_acct_mgmt(pamh, 0);
-    if (PAM_error != PAM_SUCCESS ) {
+    if (PAM_error != PAM_SUCCESS) {
         LOG(log_info, logtype_uams, "DHX2: PAM_Error: %s",
             pam_strerror(pamh, PAM_error));
         if (PAM_error == PAM_NEW_AUTHTOK_REQD)    /* password expired */
@@ -700,12 +704,12 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
 
     ret = AFP_OK;
 
-error_ctx:
+    error_ctx:
     gcry_cipher_close(ctx);
-error_noctx:
+    error_noctx:
     if (utfpass) free(utfpass);
     free(K_MD5hash);
-    K_MD5hash=NULL;
+    K_MD5hash = NULL;
     gcry_mpi_release(serverNonce);
     gcry_mpi_release(retServerNonce);
     return ret;
@@ -713,17 +717,16 @@ error_noctx:
 
 static int pam_logincont(void *obj, struct passwd **uam_pwd,
                          char *ibuf, size_t ibuflen,
-                         char *rbuf, size_t *rbuflen)
-{
+                         char *rbuf, size_t *rbuflen) {
     u_int16_t retID;
     int ret;
 
     /* check for session id */
-    retID = ntohs(*(u_int16_t *)ibuf);
+    retID = ntohs(*(u_int16_t *) ibuf);
     if (retID == ID)
         ret = logincont1(obj, ibuf, ibuflen, rbuf, rbuflen);
-    else if (retID == ID+1)
-        ret = logincont2(obj, uam_pwd, ibuf,ibuflen, rbuf, rbuflen);
+    else if (retID == ID + 1)
+        ret = logincont2(obj, uam_pwd, ibuf, ibuflen, rbuf, rbuflen);
     else {
         LOG(log_info, logtype_uams, "DHX2: Session ID Mismatch");
         ret = AFPERR_PARAM;
@@ -743,25 +746,22 @@ static void pam_logout(void) {
  * --- Change pwd stuff --- */
 
 static int changepw_1(void *obj, char *uname,
-                      char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen)
-{
+                      char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen) {
     *rbuflen = 0;
 
     /* Remember it now, use it in changepw_3 */
     PAM_username = uname;
-    return( dhx2_setup(obj, ibuf, ibuflen, rbuf, rbuflen) );
+    return (dhx2_setup(obj, ibuf, ibuflen, rbuf, rbuflen));
 }
 
 static int changepw_2(void *obj,
-                      char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen)
-{
-    return( logincont1(obj, ibuf, ibuflen, rbuf, rbuflen) );
+                      char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen) {
+    return (logincont1(obj, ibuf, ibuflen, rbuf, rbuflen));
 }
 
 static int changepw_3(void *obj _U_,
                       char *ibuf, size_t ibuflen _U_,
-                      char *rbuf _U_, size_t *rbuflen _U_)
-{
+                      char *rbuf _U_, size_t *rbuflen _U_) {
     int ret;
     int PAM_error;
     uid_t uid;
@@ -776,7 +776,7 @@ static int changepw_3(void *obj _U_,
     LOG(log_error, logtype_uams, "DHX2 ChangePW: packet 3 processing");
 
     /* Packet size should be: Session ID + ServerNonce + 2*Passwd buffer */
-    if (ibuflen != 2 + 16 + 2*256) {
+    if (ibuflen != 2 + 16 + 2 * 256) {
         LOG(log_error, logtype_uams, "DHX2: Paket length not correct");
         ret = AFPERR_PARAM;
         goto error_noctx;
@@ -788,7 +788,7 @@ static int changepw_3(void *obj _U_,
     uam_afpserver_option(obj, UAM_OPTION_CLIENTNAME, (void *) &hostname, NULL);
 
     /* Set up our encryption context. */
-    ctxerror = gcry_cipher_open( &ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
+    ctxerror = gcry_cipher_open(&ctx, GCRY_CIPHER_CAST5, GCRY_CIPHER_MODE_CBC, 0);
     if (gcry_err_code(ctxerror) != GPG_ERR_NO_ERROR) {
         ret = AFPERR_MISC;
         goto error_ctx;
@@ -811,7 +811,7 @@ static int changepw_3(void *obj _U_,
     ibuf += 2;
 
     /* Finally: decrypt client's md5_K(serverNonce+1, 2*password, C2SIV) inplace */
-    ctxerror = gcry_cipher_decrypt(ctx, ibuf, 16+2*256, NULL, 0);
+    ctxerror = gcry_cipher_decrypt(ctx, ibuf, 16 + 2 * 256, NULL, 0);
     if (gcry_err_code(ctxerror) != GPG_ERR_NO_ERROR) {
         ret = AFPERR_MISC;
         goto error_ctx;
@@ -819,7 +819,7 @@ static int changepw_3(void *obj _U_,
     /* Pull out nonce. Should be serverNonce+1 */
     gcry_mpi_scan(&retServerNonce, GCRYMPI_FMT_USG, ibuf, 16, NULL);
     gcry_mpi_sub_ui(retServerNonce, retServerNonce, 1);
-    if ( gcry_mpi_cmp( serverNonce, retServerNonce) != 0) {
+    if (gcry_mpi_cmp(serverNonce, retServerNonce) != 0) {
         /* We're hacked!  */
         ret = AFPERR_NOTAUTH;
         goto error_ctx;
@@ -850,7 +850,7 @@ static int changepw_3(void *obj _U_,
     pam_set_item(lpamh, PAM_RHOST, hostname);
     uid = geteuid();
     seteuid(0);
-    PAM_error = pam_authenticate(lpamh,0);
+    PAM_error = pam_authenticate(lpamh, 0);
     if (PAM_error != PAM_SUCCESS) {
         LOG(log_info, logtype_uams, "DHX2 Chgpwd: error authenticating with PAM");
         seteuid(uid);
@@ -871,11 +871,11 @@ static int changepw_3(void *obj _U_,
     pam_end(lpamh, 0);
     ret = AFP_OK;
 
-error_ctx:
+    error_ctx:
     gcry_cipher_close(ctx);
-error_noctx:
+    error_noctx:
     free(K_MD5hash);
-    K_MD5hash=NULL;
+    K_MD5hash = NULL;
     gcry_mpi_release(serverNonce);
     gcry_mpi_release(retServerNonce);
     return ret;
@@ -883,37 +883,35 @@ error_noctx:
 
 static int dhx2_changepw(void *obj _U_, char *uname,
                          struct passwd *pwd _U_, char *ibuf, size_t ibuflen _U_,
-                         char *rbuf _U_, size_t *rbuflen _U_)
-{
+                         char *rbuf _U_, size_t *rbuflen _U_) {
     /* We use this to serialize the three incoming FPChangePassword calls */
     static int dhx2_changepw_status = 1;
 
     int ret = AFPERR_NOTAUTH;  /* gcc can't figure out it's always initialized */
 
     switch (dhx2_changepw_status) {
-    case 1:
-        ret = changepw_1( obj, uname, ibuf, ibuflen, rbuf, rbuflen);
-        if ( ret == AFPERR_AUTHCONT)
-            dhx2_changepw_status = 2;
-        break;
-    case 2:
-        ret = changepw_2( obj, ibuf, ibuflen, rbuf, rbuflen);
-        if ( ret == AFPERR_AUTHCONT)
-            dhx2_changepw_status = 3;
-        else
-            dhx2_changepw_status = 1;
-        break;
-    case 3:
-        ret = changepw_3( obj, ibuf, ibuflen, rbuf, rbuflen);
-        dhx2_changepw_status = 1; /* Whether is was succesfull or not: we
+        case 1:
+            ret = changepw_1(obj, uname, ibuf, ibuflen, rbuf, rbuflen);
+            if (ret == AFPERR_AUTHCONT)
+                dhx2_changepw_status = 2;
+            break;
+        case 2:
+            ret = changepw_2(obj, ibuf, ibuflen, rbuf, rbuflen);
+            if (ret == AFPERR_AUTHCONT)
+                dhx2_changepw_status = 3;
+            else
+                dhx2_changepw_status = 1;
+            break;
+        case 3:
+            ret = changepw_3(obj, ibuf, ibuflen, rbuf, rbuflen);
+            dhx2_changepw_status = 1; /* Whether is was succesfull or not: we
                                      restart anyway !*/
-        break;
+            break;
     }
     return ret;
 }
 
-static int uam_setup(const char *path)
-{
+static int uam_setup(const char *path) {
     if (uam_register(UAM_SERVER_LOGIN_EXT, path, "DHX2", pam_login,
                      pam_logincont, pam_logout, pam_login_ext) < 0)
         return -1;
@@ -933,8 +931,7 @@ static int uam_setup(const char *path)
     return 0;
 }
 
-static void uam_cleanup(void)
-{
+static void uam_cleanup(void) {
     uam_unregister(UAM_SERVER_LOGIN, "DHX2");
     uam_unregister(UAM_SERVER_CHANGEPW, "DHX2");
 
@@ -944,16 +941,16 @@ static void uam_cleanup(void)
 
 
 UAM_MODULE_EXPORT struct uam_export uams_dhx2 = {
-    UAM_MODULE_SERVER,
-    UAM_MODULE_VERSION,
-    uam_setup, uam_cleanup
+        UAM_MODULE_SERVER,
+        UAM_MODULE_VERSION,
+        uam_setup, uam_cleanup
 };
 
 
 UAM_MODULE_EXPORT struct uam_export uams_dhx2_pam = {
-    UAM_MODULE_SERVER,
-    UAM_MODULE_VERSION,
-    uam_setup, uam_cleanup
+        UAM_MODULE_SERVER,
+        UAM_MODULE_VERSION,
+        uam_setup, uam_cleanup
 };
 
 #endif /* USE_PAM && UAM_DHX2 */

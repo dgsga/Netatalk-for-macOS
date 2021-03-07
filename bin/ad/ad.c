@@ -13,7 +13,9 @@
 */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <unistd.h>
@@ -33,19 +35,16 @@
 
 #include "ad.h"
 
-static void usage_main(void)
-{
+static void usage_main(void) {
     printf("Usage: ad ls|cp|rm|mv|find [file|dir, ...]\n");
     printf("       ad -v|--version\n");
 }
 
-static void show_version(void)
-{
+static void show_version(void) {
     printf("ad (Netatalk %s)\n", VERSION);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     setuplog("default log_note /dev/tty");
 
     if (argc < 2) {
@@ -66,12 +65,10 @@ int main(int argc, char **argv)
     else if (STRCMP(argv[1], ==, "-v")) {
         show_version();
         return 1;
-    }
-    else if  (STRCMP(argv[1], ==, "--version")) {
+    } else if (STRCMP(argv[1], ==, "--version")) {
         show_version();
         return 1;
-    }
-    else {
+    } else {
         usage_main();
         return 1;
     }

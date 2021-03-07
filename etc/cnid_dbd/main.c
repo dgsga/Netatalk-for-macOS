@@ -5,27 +5,42 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #ifdef HAVE_UNISTD_H
+
 #include <unistd.h>
+
 #endif /* HAVE_UNISTD_H */
 #ifdef HAVE_FCNTL_H
+
 #include <fcntl.h>
+
 #endif /* HAVE_FCNTL_H */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
+
 #ifdef HAVE_SYS_TYPES_H
+
 #include <sys/types.h>
+
 #endif /* HAVE_SYS_TYPES_H */
+
 #include <sys/param.h>
+
 #ifdef HAVE_SYS_STAT_H
+
 #include <sys/stat.h>
+
 #endif /* HAVE_SYS_STAT_H */
+
 #include <time.h>
 #include <sys/file.h>
 
@@ -52,14 +67,12 @@ static DBD *dbd;
 static int exit_sig = 0;
 static int db_locked;
 
-static void sig_exit(int signo)
-{
+static void sig_exit(int signo) {
     exit_sig = signo;
     return;
 }
 
-static void block_sigs_onoff(int block)
-{
+static void block_sigs_onoff(int block) {
     sigset_t set;
 
     sigemptyset(&set);
@@ -86,11 +99,10 @@ static void block_sigs_onoff(int block)
 
 */
 #ifndef min
-#define min(a,b)        ((a)<(b)?(a):(b))
+#define min(a, b)        ((a)<(b)?(a):(b))
 #endif
 
-static int loop(struct db_param *dbp)
-{
+static int loop(struct db_param *dbp) {
     struct cnid_dbd_rqst rqst;
     struct cnid_dbd_rply rply;
     time_t timeout;
@@ -113,12 +125,12 @@ static int loop(struct db_param *dbp)
 
     rqst.name = namebuf;
 
-    strftime(timebuf, 63, "%b %d %H:%M:%S.",localtime(&time_next_flush));
+    strftime(timebuf, 63, "%b %d %H:%M:%S.", localtime(&time_next_flush));
     LOG(log_debug, logtype_cnid, "Checkpoint interval: %d seconds. Next checkpoint: %s",
         dbp->flush_interval, timebuf);
 
     while (1) {
-        timeout = min(time_next_flush, time_last_rqst +dbp->idle_timeout);
+        timeout = min(time_next_flush, time_last_rqst + dbp->idle_timeout);
         if (timeout > now)
             timeout -= now;
         else
@@ -144,60 +156,60 @@ static int loop(struct db_param *dbp)
             time_last_rqst = now;
 
             memset(&rply, 0, sizeof(rply));
-            switch(rqst.op) {
+            switch (rqst.op) {
                 /* ret gets set here */
-            case CNID_DBD_OP_OPEN:
-            case CNID_DBD_OP_CLOSE:
-                /* open/close are noops for now. */
-                rply.namelen = 0;
-                ret = 1;
-                break;
-            case CNID_DBD_OP_ADD:
-                ret = dbd_add(dbd, &rqst, &rply, 0);
-                break;
-            case CNID_DBD_OP_GET:
-                ret = dbd_get(dbd, &rqst, &rply);
-                break;
-            case CNID_DBD_OP_RESOLVE:
-                ret = dbd_resolve(dbd, &rqst, &rply);
-                break;
-            case CNID_DBD_OP_LOOKUP:
-                ret = dbd_lookup(dbd, &rqst, &rply, 0);
-                break;
-            case CNID_DBD_OP_UPDATE:
-                ret = dbd_update(dbd, &rqst, &rply);
-                break;
-            case CNID_DBD_OP_DELETE:
-                ret = dbd_delete(dbd, &rqst, &rply, DBIF_CNID);
-                break;
-            case CNID_DBD_OP_GETSTAMP:
-                ret = dbd_getstamp(dbd, &rqst, &rply);
-                break;
-            case CNID_DBD_OP_REBUILD_ADD:
-                ret = dbd_rebuild_add(dbd, &rqst, &rply);
-                break;
-            case CNID_DBD_OP_SEARCH:
-                ret = dbd_search(dbd, &rqst, &rply);
-                break;
-            default:
-                LOG(log_error, logtype_cnid, "loop: unknown op %d", rqst.op);
-                ret = -1;
-                break;
+                case CNID_DBD_OP_OPEN:
+                case CNID_DBD_OP_CLOSE:
+                    /* open/close are noops for now. */
+                    rply.namelen = 0;
+                    ret = 1;
+                    break;
+                case CNID_DBD_OP_ADD:
+                    ret = dbd_add(dbd, &rqst, &rply, 0);
+                    break;
+                case CNID_DBD_OP_GET:
+                    ret = dbd_get(dbd, &rqst, &rply);
+                    break;
+                case CNID_DBD_OP_RESOLVE:
+                    ret = dbd_resolve(dbd, &rqst, &rply);
+                    break;
+                case CNID_DBD_OP_LOOKUP:
+                    ret = dbd_lookup(dbd, &rqst, &rply, 0);
+                    break;
+                case CNID_DBD_OP_UPDATE:
+                    ret = dbd_update(dbd, &rqst, &rply);
+                    break;
+                case CNID_DBD_OP_DELETE:
+                    ret = dbd_delete(dbd, &rqst, &rply, DBIF_CNID);
+                    break;
+                case CNID_DBD_OP_GETSTAMP:
+                    ret = dbd_getstamp(dbd, &rqst, &rply);
+                    break;
+                case CNID_DBD_OP_REBUILD_ADD:
+                    ret = dbd_rebuild_add(dbd, &rqst, &rply);
+                    break;
+                case CNID_DBD_OP_SEARCH:
+                    ret = dbd_search(dbd, &rqst, &rply);
+                    break;
+                default:
+                    LOG(log_error, logtype_cnid, "loop: unknown op %d", rqst.op);
+                    ret = -1;
+                    break;
             }
 
             if ((cret = comm_snd(&rply)) < 0 || ret < 0) {
                 dbif_txn_abort(dbd);
                 return -1;
             }
-            
+
             if (ret == 0 || cret == 0) {
                 if (dbif_txn_abort(dbd) < 0)
                     return -1;
             } else {
                 ret = dbif_txn_commit(dbd);
-                if (  ret < 0)
+                if (ret < 0)
                     return -1;
-                else if ( ret > 0 )
+                else if (ret > 0)
                     /* We had a designated txn because we wrote to the db */
                     count++;
             }
@@ -214,7 +226,7 @@ static int loop(struct db_param *dbp)
             count = 0;
             time_next_flush = now + dbp->flush_interval;
 
-            strftime(timebuf, 63, "%b %d %H:%M:%S.",localtime(&time_next_flush));
+            strftime(timebuf, 63, "%b %d %H:%M:%S.", localtime(&time_next_flush));
             LOG(log_debug, logtype_cnid, "Checkpoint interval: %d seconds. Next checkpoint: %s",
                 dbp->flush_interval, timebuf);
         }
@@ -233,8 +245,7 @@ static int loop(struct db_param *dbp)
 }
 
 /* ------------------------ */
-static void switch_to_user(char *dir)
-{
+static void switch_to_user(char *dir) {
     struct stat st;
 
     if (chdir(dir) < 0) {
@@ -257,8 +268,7 @@ static void switch_to_user(char *dir)
 
 
 /* ----------------------- */
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_exit;
@@ -279,8 +289,7 @@ static void set_signal(void)
 }
 
 /* ------------------------ */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     struct db_param *dbp;
     int err = 0, ret, delete_bdb = 0;
     int ctrlfd, clntfd;
@@ -288,15 +297,15 @@ int main(int argc, char *argv[])
 
     set_processname("cnid_dbd");
 
-    while (( ret = getopt( argc, argv, "vVd")) != -1 ) {
+    while ((ret = getopt(argc, argv, "vVd")) != -1) {
         switch (ret) {
-        case 'v':
-        case 'V':
-            printf("cnid_dbd (Netatalk %s)\n", VERSION);
-            return -1;
-        case 'd':
-            delete_bdb = 1;
-            break;
+            case 'v':
+            case 'V':
+                printf("cnid_dbd (Netatalk %s)\n", VERSION);
+                return -1;
+            case 'd':
+                delete_bdb = 1;
+                break;
         }
     }
 
@@ -311,8 +320,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     /* Put "/.AppleDB" at end of volpath, get path from volinfo file */
-    char dbpath[MAXPATHLEN+1];
-    if ((strlen(volinfo.v_dbpath) + strlen("/.AppleDB")) > MAXPATHLEN ) {
+    char dbpath[MAXPATHLEN + 1];
+    if ((strlen(volinfo.v_dbpath) + strlen("/.AppleDB")) > MAXPATHLEN) {
         LOG(log_error, logtype_cnid, "CNID db pathname too long: \"%s\"", volinfo.v_dbpath);
         exit(EXIT_FAILURE);
     }

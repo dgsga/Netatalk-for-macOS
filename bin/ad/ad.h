@@ -35,7 +35,9 @@
     }
 #endif
 
-enum logtype {STD, DBG};
+enum logtype {
+    STD, DBG
+};
 
 #define SLOG(...)                             \
     _log(STD, __VA_ARGS__)
@@ -48,25 +50,34 @@ enum logtype {STD, DBG};
 
 typedef struct {
     struct volinfo volinfo;
-    struct vol     volume;
-    char           db_stamp[ADEDLEN_PRIVSYN];
+    struct vol volume;
+    char db_stamp[ADEDLEN_PRIVSYN];
 } afpvol_t;
 
 extern int log_verbose;             /* Logging flag */
 extern void _log(enum logtype lt, char *fmt, ...);
 
 extern int ad_ls(int argc, char **argv);
+
 extern int ad_cp(int argc, char **argv);
+
 extern int ad_rm(int argc, char **argv);
+
 extern int ad_mv(int argc, char **argv);
+
 extern int ad_find(int argc, char **argv);
 
 /* ad_util.c */
 extern int openvol(const char *path, afpvol_t *vol);
+
 extern void closevol(afpvol_t *vol);
+
 extern cnid_t cnid_for_path(const afpvol_t *vol, const char *path, cnid_t *did);
+
 extern cnid_t cnid_for_paths_parent(const afpvol_t *vol, const char *path, cnid_t *did);
+
 extern char *utompath(const struct volinfo *volinfo, const char *upath);
+
 extern int convert_dots_encoding(const afpvol_t *svol, const afpvol_t *dvol, char *path, size_t buflen);
 
 typedef struct {

@@ -9,9 +9,13 @@
 struct FHeader;
 
 int single_open(char *singlefile, int flags, struct FHeader *fh, int options);
+
 int single_close(int readflag);
+
 int single_header_read(struct FHeader *fh, int version);
+
 int single_header_test(void);
+
 ssize_t single_read(int fork, char *buffer, size_t length);
 
 #endif /* _ASINGLE_H */

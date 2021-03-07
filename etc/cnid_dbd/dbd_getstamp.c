@@ -7,7 +7,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <string.h>
@@ -22,8 +24,7 @@
 
 /* Return the unique stamp associated with this database */
 
-int dbd_getstamp(DBD *dbd, struct cnid_dbd_rqst *rqst _U_, struct cnid_dbd_rply *rply)
-{
+int dbd_getstamp(DBD *dbd, struct cnid_dbd_rqst *rqst _U_, struct cnid_dbd_rply *rply) {
     DBT key, data;
     int rc;
 
@@ -41,18 +42,18 @@ int dbd_getstamp(DBD *dbd, struct cnid_dbd_rqst *rqst _U_, struct cnid_dbd_rply 
         rply->result = CNID_DBD_RES_ERR_DB;
         return -1;
     }
-     
+
     if (rc == 0) {
-	LOG(log_error, logtype_cnid, "dbd_getstamp: No rootinfo record found");
+        LOG(log_error, logtype_cnid, "dbd_getstamp: No rootinfo record found");
         rply->result = CNID_DBD_RES_NOTFOUND;
         return 1;
     }
-    
-    rply->namelen = CNID_DEV_LEN;
-    rply->name = (char *)data.data + CNID_DEV_OFS;
-    
 
-    LOG(log_debug, logtype_cnid, "cnid_getstamp: Returning stamp '%08x'", *(uint32_t *)rply->name);
+    rply->namelen = CNID_DEV_LEN;
+    rply->name = (char *) data.data + CNID_DEV_OFS;
+
+
+    LOG(log_debug, logtype_cnid, "cnid_getstamp: Returning stamp '%08x'", *(uint32_t *) rply->name);
 
     rply->result = CNID_DBD_RES_OK;
     return 1;

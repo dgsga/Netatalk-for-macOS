@@ -41,17 +41,20 @@
 #define PASSWD_NOSAVE  (1 << 1)
 #define PASSWD_ALL     (PASSWD_SET | PASSWD_NOSAVE)
 
-extern void status_versions (char * /*status*/,
+extern void status_versions(char * /*status*/,
 #ifndef NO_DDP
-                             const ASP,
+        const ASP,
 #endif
-                             const DSI *);
-extern void status_uams (char * /*status*/, const char * /*authlist*/);
-extern void status_init (AFPConfig *, AFPConfig *,
-                                 const struct afp_options *);
+                            const DSI *);
+
+extern void status_uams(char * /*status*/, const char * /*authlist*/);
+
+extern void status_init(AFPConfig *, AFPConfig *,
+                        const struct afp_options *);
+
 extern void set_signature(struct afp_options *);
 
 /* FP functions */
-int afp_getsrvrinfo (AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,  size_t *rbuflen);
+int afp_getsrvrinfo(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
 
 #endif

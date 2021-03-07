@@ -15,7 +15,7 @@
 
 #ifndef lint
 static char rcsid_send_to_kdc_c[] =
-"$Id: send_to_kdc.c,v 1.4 2001-06-25 20:13:45 rufustfirefly Exp $";
+        "$Id: send_to_kdc.c,v 1.4 2001-06-25 20:13:45 rufustfirefly Exp $";
 #endif /* lint */
 
 #ifdef HAVE_CONFIG_H
@@ -110,13 +110,13 @@ send_to_kdc(pkt,rpkt,realm)
      * local realm.
      */
     if (realm)
-	(void) strcpy(lrealm, realm);
+    (void) strcpy(lrealm, realm);
     else
-	if (krb_get_lrealm(lrealm,1)) {
-	    if (krb_debug)
-		fprintf(stderr, "%s: can't get local realm\n", prog);
-	    return(SKDC_CANT);
-	}
+    if (krb_get_lrealm(lrealm,1)) {
+        if (krb_debug)
+        fprintf(stderr, "%s: can't get local realm\n", prog);
+        return(SKDC_CANT);
+    }
     if (krb_debug)
         printf("lrealm is %s\n", lrealm);
     if (krb_udp_port == 0) {
@@ -202,9 +202,9 @@ send_to_kdc(pkt,rpkt,realm)
         }
     }
     if (no_host) {
-	if (krb_debug)
-	    fprintf(stderr, "%s: can't find any Kerberos host.\n",
-		    prog);
+    if (krb_debug)
+        fprintf(stderr, "%s: can't find any Kerberos host.\n",
+            prog);
         retval = SKDC_CANT;
         goto rtn;
     }
@@ -265,8 +265,8 @@ static send_recv(pkt,rpkt,f,_to,addrs)
             printf("Sending message...");
         (void) fflush(stdout);
     }
-    if ((numsent = sendto(f,(char *)(pkt->dat), pkt->length, 0, 
-			  (struct sockaddr *)_to,
+    if ((numsent = sendto(f,(char *)(pkt->dat), pkt->length, 0,
+              (struct sockaddr *)_to,
                           S_AD_SZ)) != pkt->length) {
         if (krb_debug)
             printf("sent only %d/%d\n",numsent, pkt->length);
@@ -292,7 +292,7 @@ static send_recv(pkt,rpkt,f,_to,addrs)
     }
     sin_size = sizeof(from);
     if (( rc = recvfrom(f, (char *)(rpkt->dat), sizeof(rpkt->dat), 0,
-		 (struct sockaddr *)&from, &sin_size)) < 0) {
+         (struct sockaddr *)&from, &sin_size)) < 0) {
         if (krb_debug)
             perror("recvfrom");
         return 0;

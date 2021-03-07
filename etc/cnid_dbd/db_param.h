@@ -28,13 +28,13 @@ struct db_param {
     int maxlockobjs;
     int flush_interval;
     int flush_frequency;
-    char usock_file[MAXPATHLEN + 1];    
+    char usock_file[MAXPATHLEN + 1];
     int fd_table_size;
     int idle_timeout;
     int max_vols;
 };
 
-extern struct db_param *db_param_read  (char *);
+extern struct db_param *db_param_read(char *);
 
 #endif /* CNID_DBD_DB_PARAM_H */
 

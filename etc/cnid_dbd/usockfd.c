@@ -4,16 +4,22 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
 #ifdef HAVE_UNISTD_H
+
 #include <unistd.h>
+
 #endif /* HAVE_UNISTD_H */
+
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,10 +27,14 @@
 #include <netdb.h>
 
 #ifdef HAVE_SYS_TYPES_H
+
 #include <sys/types.h>
+
 #endif /* HAVE_SYS_TYPES_H */
 #ifdef HAVE_SYS_TIME_H
+
 #include <sys/time.h>
+
 #endif /* HAVE_SYS_TIME_H */
 
 
@@ -34,8 +44,7 @@
 
 #include <sys/select.h>
 
-int usockfd_create(char *usock_fn, mode_t mode, int backlog)
-{
+int usockfd_create(char *usock_fn, mode_t mode, int backlog) {
     int sockfd;
     struct sockaddr_un addr;
 
@@ -45,7 +54,7 @@ int usockfd_create(char *usock_fn, mode_t mode, int backlog)
             strerror(errno));
         return -1;
     }
-     
+
     if (unlink(usock_fn) < 0 && errno != ENOENT) {
         LOG(log_error, logtype_cnid, "error unlinking unix socket file %s: %s",
             usock_fn, strerror(errno));
@@ -82,8 +91,7 @@ int usockfd_create(char *usock_fn, mode_t mode, int backlog)
 /* ---------------
  * create a tcp socket
  */
-int tsockfd_create(char *host, char *port, int backlog)
-{
+int tsockfd_create(char *host, char *port, int backlog) {
     int sockfd, flag, ret;
     struct addrinfo hints, *servinfo, *p;
 
@@ -122,7 +130,7 @@ int tsockfd_create(char *host, char *port, int backlog)
         flag = 1;
         setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &flag, sizeof(flag));
 #endif /* USE_TCP_NODELAY */
-            
+
         if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
             close(sockfd);
             LOG(log_info, logtype_default, "tsockfd_create: bind: %s\n", strerror(errno));
@@ -139,7 +147,7 @@ int tsockfd_create(char *host, char *port, int backlog)
         break;
     }
 
-    if (p == NULL)  {
+    if (p == NULL) {
         LOG(log_error, logtype_default, "tsockfd_create: no suitable network config %s:%s", host, port);
         freeaddrinfo(servinfo);
         return -1;
@@ -150,13 +158,12 @@ int tsockfd_create(char *host, char *port, int backlog)
 }
 
 /* --------------------- */
-int usockfd_check(int sockfd, const sigset_t *sigset)
-{
+int usockfd_check(int sockfd, const sigset_t *sigset) {
     int fd;
     socklen_t size;
     fd_set readfds;
     int ret;
-     
+
     FD_ZERO(&readfds);
     FD_SET(sockfd, &readfds);
 
@@ -173,7 +180,7 @@ int usockfd_check(int sockfd, const sigset_t *sigset)
         if ((fd = accept(sockfd, NULL, &size)) < 0) {
             if (errno == EINTR)
                 return 0;
-            LOG(log_error, logtype_cnid, "error in accept: %s", 
+            LOG(log_error, logtype_cnid, "error in accept: %s",
                 strerror(errno));
             return -1;
         }

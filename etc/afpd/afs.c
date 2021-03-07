@@ -5,7 +5,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #ifdef AFS
@@ -123,7 +125,7 @@ int afp_getdiracl(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *r
  * estimate permission, a la mdw.
  */
 #ifdef accessmode
-    #undef accessmode
+#undef accessmode
 #endif
 
 void afsmode(const struct volume *vol, char *path, struct maccess *ma, struct dir *dir, struct stat *st)

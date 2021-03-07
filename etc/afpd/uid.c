@@ -8,7 +8,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 /* don't compile this file at all unless FORCE_UIDGID is set */
@@ -51,7 +53,7 @@ uidgidset *pair;
 
     if (seteuid(0) < 0) {
         LOG(log_error, logtype_afpd, "set_uidgid: Could not switch back to root: %s",
-				strerror(errno));
+                strerror(errno));
     }
 
     if ( setegid ( pair->gid ) < 0 )
@@ -62,7 +64,7 @@ uidgidset *pair;
         LOG(log_error, logtype_afpd, "restore_uidgid: unable to seteuid '%s': %s",
             pair->uid, strerror(errno) );
     else
-    	uuid = pair->uid;	/* ugly hack for utommode */
+        uuid = pair->uid;	/* ugly hack for utommode */
 }
 
 void set_uidgid ( this_volume )
@@ -79,8 +81,8 @@ const struct vol	*this_volume;
 
     if ( seteuid(0) < 0) {
         LOG(log_error, logtype_afpd, "set_uidgid: Could not switch back to root: %s",
-				strerror(errno));
-	return;
+                strerror(errno));
+    return;
     }
 
     /* check to see if we have to switch groups */
@@ -94,8 +96,8 @@ const struct vol	*this_volume;
         if ( seteuid ( uid ) < 0 )
             LOG(log_error, logtype_afpd, "set_uidgid: unable to seteuid '%s': %s",
                 (this_volume)->v_forceuid, strerror(errno) );
-    	else
-    	    uuid = uid;	/* ugly hack for utommode */
+        else
+            uuid = uid;	/* ugly hack for utommode */
 
     } /* end of checking for (this_volume)->v_forceuid */
 

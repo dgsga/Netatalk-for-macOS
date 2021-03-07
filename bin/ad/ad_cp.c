@@ -47,7 +47,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
@@ -81,8 +83,10 @@
 
 static char emptystring[] = "";
 
-PATH_T to = { to.p_path, emptystring, "" };
-enum op { FILE_TO_FILE, FILE_TO_DIR, DIR_TO_DNE };
+PATH_T to = {to.p_path, emptystring, ""};
+enum op {
+    FILE_TO_FILE, FILE_TO_DIR, DIR_TO_DNE
+};
 
 int fflag, iflag, nflag, pflag, vflag;
 mode_t mask;
@@ -96,38 +100,41 @@ static volatile sig_atomic_t alarmed;
 static int badcp, rval;
 static int ftw_options = FTW_MOUNT | FTW_PHYS | FTW_ACTIONRETVAL;
 
-static char           *netatalk_dirs[] = {
-    ".AppleDouble",
-    ".AppleDB",
-    ".AppleDesktop",
-    NULL
+static char *netatalk_dirs[] = {
+        ".AppleDouble",
+        ".AppleDB",
+        ".AppleDesktop",
+        NULL
 };
 
 /* Forward declarations */
 static int copy(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf);
+
 static int ftw_copy_file(const struct FTW *, const char *, const struct stat *, int);
+
 static int ftw_copy_link(const struct FTW *, const char *, const struct stat *, int);
+
 static int setfile(const struct stat *, int);
+
 static int preserve_dir_acls(const struct stat *, char *, char *);
+
 static int preserve_fd_acls(int, int);
 
 /*
   Check for netatalk special folders e.g. ".AppleDB" or ".AppleDesktop"
   Returns pointer to name or NULL.
 */
-static const char *check_netatalk_dirs(const char *name)
-{
+static const char *check_netatalk_dirs(const char *name) {
     int c;
 
-    for (c=0; netatalk_dirs[c]; c++) {
+    for (c = 0; netatalk_dirs[c]; c++) {
         if ((strcmp(name, netatalk_dirs[c])) == 0)
             return netatalk_dirs[c];
     }
     return NULL;
 }
 
-static void upfunc(void)
-{
+static void upfunc(void) {
     did = pdid;
     pdid = ppdid;
 }
@@ -137,14 +144,12 @@ static void upfunc(void)
   catch SIGINT and SIGTERM which cause clean exit. Ignore anything else.
 */
 
-static void sig_handler(int signo)
-{
+static void sig_handler(int signo) {
     alarmed = 1;
     return;
 }
 
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_handler;
@@ -170,50 +175,48 @@ static void set_signal(void)
         ERROR("error in sigaction(SIGQUIT): %s", strerror(errno));
 }
 
-static void usage_cp(void)
-{
+static void usage_cp(void) {
     printf(
-        "Usage: ad cp [-R] [-aipvf] <source_file> <target_file>\n"
-        "       ad cp [-R] [-aipvfx] <source_file [source_file ...]> <target_directory>\n\n"
-        "In the first synopsis form, the cp utility copies the contents of the source_file to the\n"
-        "target_file.  In the second synopsis form, the contents of each named source_file is copied to the\n"
-        "destination target_directory.  The names of the files themselves are not changed.  If cp detects an\n"
-        "attempt to copy a file to itself, the copy will fail.\n\n"
-        "Netatalk AFP volumes are detected by means of their \".AppleDesktop\" directory\n"
-        "which is located in their volume root. When a copy targetting an AFP volume\n"
-        "is detected, its CNID database daemon is connected and all copies will also\n"
-        "go through the CNID database.\n"
-        "AppleDouble files are also copied and created as needed when the target is\n"
-        "an AFP volume.\n\n"
-        "The following options are available:\n\n"
-        "     -a    Archive mode.  Same as -Rp.\n\n"
-        "     -f    For each existing destination pathname, remove it and create a new\n"
-        "           file, without prompting for confirmation regardless of its permis-\n"
-        "           sions.  (The -f option overrides any previous -i or -n options.)\n\n"
-        "     -i    Cause cp to write a prompt to the standard error output before\n"
-        "           copying a file that would overwrite an existing file.  If the\n"
-        "           response from the standard input begins with the character 'y' or\n"
-        "           'Y', the file copy is attempted.  (The -i option overrides any pre-\n"
-        "           vious -f or -n options.)\n\n"
-        "     -n    Do not overwrite an existing file.  (The -n option overrides any\n"
-        "           previous -f or -i options.)\n\n"
-        "     -p    Cause cp to preserve the following attributes of each source file\n"
-        "           in the copy: modification time, access time, file flags, file mode,\n"
-        "           user ID, and group ID, as allowed by permissions.\n"
-        "           If the user ID and group ID cannot be preserved, no error message\n"
-        "           is displayed and the exit value is not altered.\n\n"
-        "     -R    If source_file designates a directory, cp copies the directory and\n"
-        "           the entire subtree connected at that point.If the source_file\n"
-        "           ends in a /, the contents of the directory are copied rather than\n"
-        "           the directory itself.\n\n"
-        "     -v    Cause cp to be verbose, showing files as they are copied.\n\n"
-        "     -x    File system mount points are not traversed.\n\n"
-        );
+            "Usage: ad cp [-R] [-aipvf] <source_file> <target_file>\n"
+            "       ad cp [-R] [-aipvfx] <source_file [source_file ...]> <target_directory>\n\n"
+            "In the first synopsis form, the cp utility copies the contents of the source_file to the\n"
+            "target_file.  In the second synopsis form, the contents of each named source_file is copied to the\n"
+            "destination target_directory.  The names of the files themselves are not changed.  If cp detects an\n"
+            "attempt to copy a file to itself, the copy will fail.\n\n"
+            "Netatalk AFP volumes are detected by means of their \".AppleDesktop\" directory\n"
+            "which is located in their volume root. When a copy targetting an AFP volume\n"
+            "is detected, its CNID database daemon is connected and all copies will also\n"
+            "go through the CNID database.\n"
+            "AppleDouble files are also copied and created as needed when the target is\n"
+            "an AFP volume.\n\n"
+            "The following options are available:\n\n"
+            "     -a    Archive mode.  Same as -Rp.\n\n"
+            "     -f    For each existing destination pathname, remove it and create a new\n"
+            "           file, without prompting for confirmation regardless of its permis-\n"
+            "           sions.  (The -f option overrides any previous -i or -n options.)\n\n"
+            "     -i    Cause cp to write a prompt to the standard error output before\n"
+            "           copying a file that would overwrite an existing file.  If the\n"
+            "           response from the standard input begins with the character 'y' or\n"
+            "           'Y', the file copy is attempted.  (The -i option overrides any pre-\n"
+            "           vious -f or -n options.)\n\n"
+            "     -n    Do not overwrite an existing file.  (The -n option overrides any\n"
+            "           previous -f or -i options.)\n\n"
+            "     -p    Cause cp to preserve the following attributes of each source file\n"
+            "           in the copy: modification time, access time, file flags, file mode,\n"
+            "           user ID, and group ID, as allowed by permissions.\n"
+            "           If the user ID and group ID cannot be preserved, no error message\n"
+            "           is displayed and the exit value is not altered.\n\n"
+            "     -R    If source_file designates a directory, cp copies the directory and\n"
+            "           the entire subtree connected at that point.If the source_file\n"
+            "           ends in a /, the contents of the directory are copied rather than\n"
+            "           the directory itself.\n\n"
+            "     -v    Cause cp to be verbose, showing files as they are copied.\n\n"
+            "     -x    File system mount points are not traversed.\n\n"
+    );
     exit(EXIT_FAILURE);
 }
 
-int ad_cp(int argc, char *argv[])
-{
+int ad_cp(int argc, char *argv[]) {
     struct stat to_stat, tmp_stat;
     int r, ch, have_trailing_slash;
     char *target;
@@ -227,37 +230,37 @@ int ad_cp(int argc, char *argv[])
 
     while ((ch = getopt(argc, argv, "afinpRvx")) != -1)
         switch (ch) {
-        case 'a':
-            pflag = 1;
-            Rflag = 1;
-            break;
-        case 'f':
-            fflag = 1;
-            iflag = nflag = 0;
-            break;
-        case 'i':
-            iflag = 1;
-            fflag = nflag = 0;
-            break;
-        case 'n':
-            nflag = 1;
-            fflag = iflag = 0;
-            break;
-        case 'p':
-            pflag = 1;
-            break;
-        case 'R':
-            Rflag = 1;
-            break;
-        case 'v':
-            vflag = 1;
-            break;
-        case 'x':
-            ftw_options |= FTW_MOUNT;
-            break;
-        default:
-            usage_cp();
-            break;
+            case 'a':
+                pflag = 1;
+                Rflag = 1;
+                break;
+            case 'f':
+                fflag = 1;
+                iflag = nflag = 0;
+                break;
+            case 'i':
+                iflag = 1;
+                fflag = nflag = 0;
+                break;
+            case 'n':
+                nflag = 1;
+                fflag = iflag = 0;
+                break;
+            case 'p':
+                pflag = 1;
+                break;
+            case 'R':
+                Rflag = 1;
+                break;
+            case 'v':
+                vflag = 1;
+                break;
+            case 'x':
+                ftw_options |= FTW_MOUNT;
+                break;
+            default:
+                usage_cp();
+                break;
         }
     argc -= optind;
     argv += optind;
@@ -279,8 +282,7 @@ int ad_cp(int argc, char *argv[])
         *to.p_end = 0;
     }
     have_trailing_slash = (to.p_end[-1] == '/');
-    if (have_trailing_slash)
-        STRIP_TRAILING_SLASH(to);
+    if (have_trailing_slash) STRIP_TRAILING_SLASH(to);
     to.target_end = to.p_end;
 
     /* Set end of argument list */
@@ -374,8 +376,7 @@ int ad_cp(int argc, char *argv[])
 static int copy(const char *path,
                 const struct stat *statp,
                 int tflag,
-                struct FTW *ftw)
-{
+                struct FTW *ftw) {
     static int base = 0;
 
     struct stat to_stat;
@@ -444,7 +445,7 @@ static int copy(const char *path,
             badcp = rval = 1;
             return 0;
         }
-        (void)strncat(target_mid, p, nlen);
+        (void) strncat(target_mid, p, nlen);
         to.p_end = target_mid + nlen;
         *to.p_end = 0;
         STRIP_TRAILING_SLASH(to);
@@ -484,150 +485,150 @@ static int copy(const char *path,
     }
 
     switch (statp->st_mode & S_IFMT) {
-    case S_IFLNK:
-        if (ftw_copy_link(ftw, path, statp, !dne))
-            badcp = rval = 1;
-        break;
-    case S_IFDIR:
-        if (!Rflag) {
-            SLOG("%s is a directory", path);
-            badcp = rval = 1;
-            return -1;
-        }
-        /*
-         * If the directory doesn't exist, create the new
-         * one with the from file mode plus owner RWX bits,
-         * modified by the umask.  Trade-off between being
-         * able to write the directory (if from directory is
-         * 555) and not causing a permissions race.  If the
-         * umask blocks owner writes, we fail..
-         */
-        if (dne) {
-            if (mkdir(to.p_path, statp->st_mode | S_IRWXU) < 0)
-                ERROR("mkdir: %s: %s", to.p_path, strerror(errno));
-        } else if (!S_ISDIR(to_stat.st_mode)) {
-            errno = ENOTDIR;
-            ERROR("%s", to.p_path);
-        }
-
-        /* Create ad dir and copy ".Parent" */
-        if (dvolume.volinfo.v_path && dvolume.volinfo.v_adouble == AD_VERSION2) {
-
-            /* Create ".AppleDouble" dir */
-            mode_t omask = umask(0);
-            bstring addir = bfromcstr(to.p_path);
-            bcatcstr(addir, "/.AppleDouble");
-            mkdir(cfrombstr(addir), 02777);
-            bdestroy(addir);
-
-            if (svolume.volinfo.v_path && svolume.volinfo.v_adouble == AD_VERSION2) {
-                /* copy ".Parent" file */
-                if (dvolume.volume.vfs->vfs_copyfile(&dvolume.volume, -1, path, to.p_path)) {
-                    SLOG("Error copying adouble for %s -> %s", path, to.p_path);
-                    badcp = rval = 1;
-                    break;
-                }
-            }
-
-            /* Get CNID of Parent and add new childir to CNID database */
-            ppdid = pdid;
-            if ((did = cnid_for_path(&dvolume, to.p_path, &pdid)) == CNID_INVALID) {
-                SLOG("Error resolving CNID for %s", to.p_path);
+        case S_IFLNK:
+            if (ftw_copy_link(ftw, path, statp, !dne))
+                badcp = rval = 1;
+            break;
+        case S_IFDIR:
+            if (!Rflag) {
+                SLOG("%s is a directory", path);
                 badcp = rval = 1;
                 return -1;
             }
-
-            struct adouble ad;
-            struct stat st;
-            if (lstat(to.p_path, &st) != 0) {
-                badcp = rval = 1;
-                break;
+            /*
+             * If the directory doesn't exist, create the new
+             * one with the from file mode plus owner RWX bits,
+             * modified by the umask.  Trade-off between being
+             * able to write the directory (if from directory is
+             * 555) and not causing a permissions race.  If the
+             * umask blocks owner writes, we fail..
+             */
+            if (dne) {
+                if (mkdir(to.p_path, statp->st_mode | S_IRWXU) < 0)
+                    ERROR("mkdir: %s: %s", to.p_path, strerror(errno));
+            } else if (!S_ISDIR(to_stat.st_mode)) {
+                errno = ENOTDIR;
+                ERROR("%s", to.p_path);
             }
-            ad_init(&ad, dvolume.volinfo.v_adouble, dvolume.volinfo.v_ad_options);
-            if (ad_open_metadata(to.p_path, ADFLAGS_DIR, O_RDWR | O_CREAT, &ad) != 0) {
-                ERROR("Error opening adouble for: %s", to.p_path);
+
+            /* Create ad dir and copy ".Parent" */
+            if (dvolume.volinfo.v_path && dvolume.volinfo.v_adouble == AD_VERSION2) {
+
+                /* Create ".AppleDouble" dir */
+                mode_t omask = umask(0);
+                bstring addir = bfromcstr(to.p_path);
+                bcatcstr(addir, "/.AppleDouble");
+                mkdir(cfrombstr(addir), 02777);
+                bdestroy(addir);
+
+                if (svolume.volinfo.v_path && svolume.volinfo.v_adouble == AD_VERSION2) {
+                    /* copy ".Parent" file */
+                    if (dvolume.volume.vfs->vfs_copyfile(&dvolume.volume, -1, path, to.p_path)) {
+                        SLOG("Error copying adouble for %s -> %s", path, to.p_path);
+                        badcp = rval = 1;
+                        break;
+                    }
+                }
+
+                /* Get CNID of Parent and add new childir to CNID database */
+                ppdid = pdid;
+                if ((did = cnid_for_path(&dvolume, to.p_path, &pdid)) == CNID_INVALID) {
+                    SLOG("Error resolving CNID for %s", to.p_path);
+                    badcp = rval = 1;
+                    return -1;
+                }
+
+                struct adouble ad;
+                struct stat st;
+                if (lstat(to.p_path, &st) != 0) {
+                    badcp = rval = 1;
+                    break;
+                }
+                ad_init(&ad, dvolume.volinfo.v_adouble, dvolume.volinfo.v_ad_options);
+                if (ad_open_metadata(to.p_path, ADFLAGS_DIR, O_RDWR | O_CREAT, &ad) != 0) {
+                    ERROR("Error opening adouble for: %s", to.p_path);
+                }
+                ad_setid(&ad, st.st_dev, st.st_ino, did, pdid, dvolume.db_stamp);
+                ad_setname(&ad, utompath(&dvolume.volinfo, basename(to.p_path)));
+                ad_setdate(&ad, AD_DATE_CREATE | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_MODIFY | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_ACCESS | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_BACKUP, AD_DATE_START);
+                ad_flush(&ad);
+                ad_close_metadata(&ad);
+
+                umask(omask);
             }
-            ad_setid( &ad, st.st_dev, st.st_ino, did, pdid, dvolume.db_stamp);
-            ad_setname(&ad, utompath(&dvolume.volinfo, basename(to.p_path)));
-            ad_setdate(&ad, AD_DATE_CREATE | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_MODIFY | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_ACCESS | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_BACKUP, AD_DATE_START);
-            ad_flush(&ad);
-            ad_close_metadata(&ad);
 
-            umask(omask);
-        }
-
-        if (pflag) {
-            if (setfile(statp, -1))
-                rval = 1;
+            if (pflag) {
+                if (setfile(statp, -1))
+                    rval = 1;
 #if 0
-            if (preserve_dir_acls(statp, curr->fts_accpath, to.p_path) != 0)
-                rval = 1;
+                if (preserve_dir_acls(statp, curr->fts_accpath, to.p_path) != 0)
+                    rval = 1;
 #endif
-        }
-        break;
+            }
+            break;
 
-    case S_IFBLK:
-    case S_IFCHR:
-        SLOG("%s is a device file (not copied).", path);
-        break;
-    case S_IFSOCK:
-        SLOG("%s is a socket (not copied).", path);
-        break;
-    case S_IFIFO:
-        SLOG("%s is a FIFO (not copied).", path);
-        break;
-    default:
-        if (ftw_copy_file(ftw, path, statp, dne))
-            badcp = rval = 1;
+        case S_IFBLK:
+        case S_IFCHR:
+            SLOG("%s is a device file (not copied).", path);
+            break;
+        case S_IFSOCK:
+            SLOG("%s is a socket (not copied).", path);
+            break;
+        case S_IFIFO:
+            SLOG("%s is a FIFO (not copied).", path);
+            break;
+        default:
+            if (ftw_copy_file(ftw, path, statp, dne))
+                badcp = rval = 1;
 
-        if (dvolume.volinfo.v_path && dvolume.volinfo.v_adouble == AD_VERSION2) {
+            if (dvolume.volinfo.v_path && dvolume.volinfo.v_adouble == AD_VERSION2) {
 
-            mode_t omask = umask(0);
-            if (svolume.volinfo.v_path && svolume.volinfo.v_adouble == AD_VERSION2) {
-                /* copy ad-file */
-                if (dvolume.volume.vfs->vfs_copyfile(&dvolume.volume, -1, path, to.p_path)) {
-                    SLOG("Error copying adouble for %s -> %s", path, to.p_path);
+                mode_t omask = umask(0);
+                if (svolume.volinfo.v_path && svolume.volinfo.v_adouble == AD_VERSION2) {
+                    /* copy ad-file */
+                    if (dvolume.volume.vfs->vfs_copyfile(&dvolume.volume, -1, path, to.p_path)) {
+                        SLOG("Error copying adouble for %s -> %s", path, to.p_path);
+                        badcp = rval = 1;
+                        break;
+                    }
+                }
+
+                /* Get CNID of Parent and add new childir to CNID database */
+                pdid = did;
+                cnid_t cnid;
+                if ((cnid = cnid_for_path(&dvolume, to.p_path, &did)) == CNID_INVALID) {
+                    SLOG("Error resolving CNID for %s", to.p_path);
+                    badcp = rval = 1;
+                    return -1;
+                }
+
+                struct adouble ad;
+                struct stat st;
+                if (lstat(to.p_path, &st) != 0) {
                     badcp = rval = 1;
                     break;
                 }
+                ad_init(&ad, dvolume.volinfo.v_adouble, dvolume.volinfo.v_ad_options);
+                if (ad_open_metadata(to.p_path, 0, O_RDWR | O_CREAT, &ad) != 0) {
+                    ERROR("Error opening adouble for: %s", to.p_path);
+                }
+                ad_setid(&ad, st.st_dev, st.st_ino, cnid, did, dvolume.db_stamp);
+                ad_setname(&ad, utompath(&dvolume.volinfo, basename(to.p_path)));
+                ad_setdate(&ad, AD_DATE_CREATE | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_MODIFY | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_ACCESS | AD_DATE_UNIX, st.st_mtime);
+                ad_setdate(&ad, AD_DATE_BACKUP, AD_DATE_START);
+                ad_flush(&ad);
+                ad_close_metadata(&ad);
+                umask(omask);
             }
-
-            /* Get CNID of Parent and add new childir to CNID database */
-            pdid = did;
-            cnid_t cnid;
-            if ((cnid = cnid_for_path(&dvolume, to.p_path, &did)) == CNID_INVALID) {
-                SLOG("Error resolving CNID for %s", to.p_path);
-                badcp = rval = 1;
-                return -1;
-            }
-
-            struct adouble ad;
-            struct stat st;
-            if (lstat(to.p_path, &st) != 0) {
-                badcp = rval = 1;
-                break;
-            }
-            ad_init(&ad, dvolume.volinfo.v_adouble, dvolume.volinfo.v_ad_options);
-            if (ad_open_metadata(to.p_path, 0, O_RDWR | O_CREAT, &ad) != 0) {
-                ERROR("Error opening adouble for: %s", to.p_path);
-            }
-            ad_setid( &ad, st.st_dev, st.st_ino, cnid, did, dvolume.db_stamp);
-            ad_setname(&ad, utompath(&dvolume.volinfo, basename(to.p_path)));
-            ad_setdate(&ad, AD_DATE_CREATE | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_MODIFY | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_ACCESS | AD_DATE_UNIX, st.st_mtime);
-            ad_setdate(&ad, AD_DATE_BACKUP, AD_DATE_START);
-            ad_flush(&ad);
-            ad_close_metadata(&ad);
-            umask(omask);
-        }
-        break;
+            break;
     }
     if (vflag && !badcp)
-        (void)printf("%s -> %s\n", path, to.p_path);
+        (void) printf("%s -> %s\n", path, to.p_path);
 
     return 0;
 }
@@ -644,8 +645,7 @@ static int copy(const char *path,
 static int ftw_copy_file(const struct FTW *entp,
                          const char *spath,
                          const struct stat *sp,
-                         int dne)
-{
+                         int dne) {
     static char *buf = NULL;
     static size_t bufsize;
     ssize_t wcount;
@@ -673,17 +673,17 @@ static int ftw_copy_file(const struct FTW *entp,
         if (nflag) {
             if (vflag)
                 printf("%s not overwritten\n", to.p_path);
-            (void)close(from_fd);
+            (void) close(from_fd);
             return (0);
         } else if (iflag) {
-            (void)fprintf(stderr, "overwrite %s? %s",
-                          to.p_path, YESNO);
+            (void) fprintf(stderr, "overwrite %s? %s",
+                           to.p_path, YESNO);
             checkch = ch = getchar();
             while (ch != '\n' && ch != EOF)
                 ch = getchar();
             if (checkch != 'y' && checkch != 'Y') {
-                (void)close(from_fd);
-                (void)fprintf(stderr, "not overwritten\n");
+                (void) close(from_fd);
+                (void) fprintf(stderr, "not overwritten\n");
                 return (1);
             }
         }
@@ -691,8 +691,8 @@ static int ftw_copy_file(const struct FTW *entp,
         if (fflag) {
             /* remove existing destination file name,
              * create a new file  */
-            (void)unlink(to.p_path);
-            (void)dvolume.volume.vfs->vfs_deletefile(&dvolume.volume, -1, to.p_path);
+            (void) unlink(to.p_path);
+            (void) dvolume.volume.vfs->vfs_deletefile(&dvolume.volume, -1, to.p_path);
             to_fd = open(to.p_path, O_WRONLY | O_TRUNC | O_CREAT,
                          sp->st_mode & ~(S_ISUID | S_ISGID));
         } else {
@@ -706,7 +706,7 @@ static int ftw_copy_file(const struct FTW *entp,
 
     if (to_fd == -1) {
         SLOG("%s: %s", to.p_path, strerror(errno));
-        (void)close(from_fd);
+        (void) close(from_fd);
         return (1);
     }
 
@@ -722,19 +722,19 @@ static int ftw_copy_file(const struct FTW *entp,
 
     if (S_ISREG(sp->st_mode) && sp->st_size > 0 &&
         sp->st_size <= 8 * 1024 * 1024 &&
-        (p = mmap(NULL, (size_t)sp->st_size, PROT_READ,
-                  MAP_SHARED, from_fd, (off_t)0)) != MAP_FAILED) {
+        (p = mmap(NULL, (size_t) sp->st_size, PROT_READ,
+                  MAP_SHARED, from_fd, (off_t) 0)) != MAP_FAILED) {
         wtotal = 0;
-        for (bufp = p, wresid = sp->st_size; ;
-             bufp += wcount, wresid -= (size_t)wcount) {
+        for (bufp = p, wresid = sp->st_size;;
+             bufp += wcount, wresid -= (size_t) wcount) {
             wcount = write(to_fd, bufp, wresid);
             if (wcount <= 0)
                 break;
             wtotal += wcount;
-            if (wcount >= (ssize_t)wresid)
+            if (wcount >= (ssize_t) wresid)
                 break;
         }
-        if (wcount != (ssize_t)wresid) {
+        if (wcount != (ssize_t) wresid) {
             SLOG("%s: %s", to.p_path, strerror(errno));
             rval = 1;
         }
@@ -762,16 +762,16 @@ static int ftw_copy_file(const struct FTW *entp,
         }
         wtotal = 0;
         while ((rcount = read(from_fd, buf, bufsize)) > 0) {
-            for (bufp = buf, wresid = rcount; ;
+            for (bufp = buf, wresid = rcount;;
                  bufp += wcount, wresid -= wcount) {
                 wcount = write(to_fd, bufp, wresid);
                 if (wcount <= 0)
                     break;
                 wtotal += wcount;
-                if (wcount >= (ssize_t)wresid)
+                if (wcount >= (ssize_t) wresid)
                     break;
             }
-            if (wcount != (ssize_t)wresid) {
+            if (wcount != (ssize_t) wresid) {
                 SLOG("%s: %s", to.p_path, strerror(errno));
                 rval = 1;
                 break;
@@ -799,7 +799,7 @@ static int ftw_copy_file(const struct FTW *entp,
         rval = 1;
     }
 
-    (void)close(from_fd);
+    (void) close(from_fd);
 
     return (rval);
 }
@@ -807,8 +807,7 @@ static int ftw_copy_file(const struct FTW *entp,
 static int ftw_copy_link(const struct FTW *p,
                          const char *spath,
                          const struct stat *sstp,
-                         int exists)
-{
+                         int exists) {
     int len;
     char llink[PATH_MAX];
 
@@ -828,8 +827,7 @@ static int ftw_copy_link(const struct FTW *p,
     return (pflag ? setfile(sstp, -1) : 0);
 }
 
-static int setfile(const struct stat *fs, int fd)
-{
+static int setfile(const struct stat *fs, int fd) {
     static struct timeval tv[2];
     struct stat ts;
     int rval, gotstat, islink, fdval;
@@ -858,7 +856,7 @@ static int setfile(const struct stat *fs, int fd)
     else {
         gotstat = 1;
         ts.st_mode &= S_ISUID | S_ISGID | S_ISVTX |
-            S_IRWXU | S_IRWXG | S_IRWXO;
+                      S_IRWXU | S_IRWXG | S_IRWXO;
     }
     /*
      * Changing the ownership probably won't succeed, unless we're root
@@ -897,8 +895,7 @@ static int setfile(const struct stat *fs, int fd)
     return (rval);
 }
 
-static int preserve_fd_acls(int source_fd, int dest_fd)
-{
+static int preserve_fd_acls(int source_fd, int dest_fd) {
 #if 0
     acl_t acl;
     acl_type_t acl_type;
@@ -950,8 +947,7 @@ static int preserve_fd_acls(int source_fd, int dest_fd)
     return (0);
 }
 
-static int preserve_dir_acls(const struct stat *fs, char *source_dir, char *dest_dir)
-{
+static int preserve_dir_acls(const struct stat *fs, char *source_dir, char *dest_dir) {
 #if 0
     acl_t (*aclgetf)(const char *, acl_type_t);
     int (*aclsetf)(const char *, acl_type_t, acl_t);

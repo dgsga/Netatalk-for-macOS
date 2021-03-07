@@ -13,7 +13,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
@@ -51,10 +53,10 @@ static int Rflag;
 static volatile sig_atomic_t alarmed;
 static int badrm, rval;
 
-static char           *netatalk_dirs[] = {
-    ".AppleDB",
-    ".AppleDesktop",
-    NULL
+static char *netatalk_dirs[] = {
+        ".AppleDB",
+        ".AppleDesktop",
+        NULL
 };
 
 /* Forward declarations */
@@ -64,19 +66,17 @@ static int rm(const char *fpath, const struct stat *sb, int tflag, struct FTW *f
   Check for netatalk special folders e.g. ".AppleDB" or ".AppleDesktop"
   Returns pointer to name or NULL.
 */
-static const char *check_netatalk_dirs(const char *name)
-{
+static const char *check_netatalk_dirs(const char *name) {
     int c;
 
-    for (c=0; netatalk_dirs[c]; c++) {
+    for (c = 0; netatalk_dirs[c]; c++) {
         if ((strcmp(name, netatalk_dirs[c])) == 0)
             return netatalk_dirs[c];
     }
     return NULL;
 }
 
-static void upfunc(void)
-{
+static void upfunc(void) {
     did = pdid;
 }
 
@@ -85,14 +85,12 @@ static void upfunc(void)
   catch SIGINT and SIGTERM which cause clean exit. Ignore anything else.
 */
 
-static void sig_handler(int signo)
-{
+static void sig_handler(int signo) {
     alarmed = 1;
     return;
 }
 
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_handler;
@@ -118,23 +116,21 @@ static void set_signal(void)
         ERROR("error in sigaction(SIGQUIT): %s", strerror(errno));
 }
 
-static void usage_rm(void)
-{
+static void usage_rm(void) {
     printf(
-        "Usage: ad rm [-vR] <file|dir> [<file|dir> ...]\n\n"
-        "The rm utility attempts to remove the non-directory type files specified\n"
-        "on the command line.\n"
-        "If the files and directories reside on an AFP volume, the corresponding\n"
-        "CNIDs are deleted from the volumes database.\n\n"
-        "The options are as follows:\n\n"
-        "   -R   Attempt to remove the file hierarchy rooted in each file argument.\n"
-        "   -v   Be verbose when deleting files, showing them as they are removed.\n"
-        );
+            "Usage: ad rm [-vR] <file|dir> [<file|dir> ...]\n\n"
+            "The rm utility attempts to remove the non-directory type files specified\n"
+            "on the command line.\n"
+            "If the files and directories reside on an AFP volume, the corresponding\n"
+            "CNIDs are deleted from the volumes database.\n\n"
+            "The options are as follows:\n\n"
+            "   -R   Attempt to remove the file hierarchy rooted in each file argument.\n"
+            "   -v   Be verbose when deleting files, showing them as they are removed.\n"
+    );
     exit(EXIT_FAILURE);
 }
 
-int ad_rm(int argc, char *argv[])
-{
+int ad_rm(int argc, char *argv[]) {
     int ch;
 
     pdid = htonl(1);
@@ -142,15 +138,15 @@ int ad_rm(int argc, char *argv[])
 
     while ((ch = getopt(argc, argv, "vR")) != -1)
         switch (ch) {
-        case 'R':
-            Rflag = 1;
-            break;
-        case 'v':
-            vflag = 1;
-            break;
-        default:
-            usage_rm();
-            break;
+            case 'R':
+                Rflag = 1;
+                break;
+            case 'v':
+                vflag = 1;
+                break;
+            default:
+                usage_rm();
+                break;
         }
     argc -= optind;
     argv += optind;
@@ -183,8 +179,7 @@ int ad_rm(int argc, char *argv[])
 static int rm(const char *path,
               const struct stat *statp,
               int tflag,
-              struct FTW *ftw)
-{
+              struct FTW *ftw) {
     cnid_t cnid;
 
     if (alarmed)
@@ -200,123 +195,123 @@ static int rm(const char *path,
 
     switch (statp->st_mode & S_IFMT) {
 
-    case S_IFLNK:
-        if (volume.volinfo.v_path) {
-            if ((volume.volinfo.v_adouble == AD_VERSION2)
-                && (strstr(path, ".AppleDouble") != NULL)) {
-                /* symlink inside adouble dir */
-                if (unlink(path) != 0)
-                    badrm = rval = 1;
-                break;
-            }
+        case S_IFLNK:
+            if (volume.volinfo.v_path) {
+                if ((volume.volinfo.v_adouble == AD_VERSION2)
+                    && (strstr(path, ".AppleDouble") != NULL)) {
+                    /* symlink inside adouble dir */
+                    if (unlink(path) != 0)
+                        badrm = rval = 1;
+                    break;
+                }
 
-            /* Get CNID of Parent and add new childir to CNID database */
-            pdid = did;
-            if ((cnid = cnid_for_path(&volume, path, &did)) == CNID_INVALID) {
-                SLOG("Error resolving CNID for %s", path);
-                return -1;
-            }
-            if (cnid_delete(volume.volume.v_cdb, cnid) != 0) {
-                SLOG("Error removing CNID %u for %s", ntohl(cnid), path);
-                return -1;
-            }
-        }
-
-        if (unlink(path) != 0) {
-            badrm = rval = 1;
-            break;
-        }
-
-        break;
-
-    case S_IFDIR:
-        if (!Rflag) {
-            SLOG("%s is a directory", path);
-            return FTW_SKIP_SUBTREE;
-        }
-
-        if (volume.volinfo.v_path) {
-            if ((volume.volinfo.v_adouble == AD_VERSION2)
-                && (strstr(path, ".AppleDouble") != NULL)) {
-                /* should be adouble dir itself */
-                if (rmdir(path) != 0) {
-                    SLOG("Error removing dir \"%s\": %s", path, strerror(errno));
-                    badrm = rval = 1;
+                /* Get CNID of Parent and add new childir to CNID database */
+                pdid = did;
+                if ((cnid = cnid_for_path(&volume, path, &did)) == CNID_INVALID) {
+                    SLOG("Error resolving CNID for %s", path);
                     return -1;
                 }
+                if (cnid_delete(volume.volume.v_cdb, cnid) != 0) {
+                    SLOG("Error removing CNID %u for %s", ntohl(cnid), path);
+                    return -1;
+                }
+            }
+
+            if (unlink(path) != 0) {
+                badrm = rval = 1;
                 break;
             }
 
-            /* Get CNID of Parent and add new childir to CNID database */
-            if ((did = cnid_for_path(&volume, path, &pdid)) == CNID_INVALID) {
-                SLOG("Error resolving CNID for %s", path);
-                return -1;
-            }
-            if (cnid_delete(volume.volume.v_cdb, did) != 0) {
-                SLOG("Error removing CNID %u for %s", ntohl(did), path);
-                return -1;
-            }
-        }
+            break;
 
-        if (rmdir(path) != 0) {
-            SLOG("Error removing dir \"%s\": %s", path, strerror(errno));
-            badrm = rval = 1;
-            return -1;
-        }
-
-        break;
-
-    case S_IFBLK:
-    case S_IFCHR:
-        SLOG("%s is a device file.", path);
-        badrm = rval = 1;
-        break;
-
-    case S_IFSOCK:
-        SLOG("%s is a socket.", path);
-        badrm = rval = 1;
-        break;
-
-    case S_IFIFO:
-        SLOG("%s is a FIFO.", path);
-        badrm = rval = 1;
-        break;
-
-    default:
-        if (volume.volinfo.v_path) {
-            if ((volume.volinfo.v_adouble == AD_VERSION2)
-                && (strstr(path, ".AppleDouble") != NULL)) {
-                /* file in adouble dir */
-                if (unlink(path) != 0)
-                    badrm = rval = 1;
-                break;
+        case S_IFDIR:
+            if (!Rflag) {
+                SLOG("%s is a directory", path);
+                return FTW_SKIP_SUBTREE;
             }
 
-            /* Get CNID of Parent and add new childir to CNID database */
-            pdid = did;
-            if ((cnid = cnid_for_path(&volume, path, &did)) == CNID_INVALID) {
-                SLOG("Error resolving CNID for %s", path);
-                return -1;
+            if (volume.volinfo.v_path) {
+                if ((volume.volinfo.v_adouble == AD_VERSION2)
+                    && (strstr(path, ".AppleDouble") != NULL)) {
+                    /* should be adouble dir itself */
+                    if (rmdir(path) != 0) {
+                        SLOG("Error removing dir \"%s\": %s", path, strerror(errno));
+                        badrm = rval = 1;
+                        return -1;
+                    }
+                    break;
+                }
+
+                /* Get CNID of Parent and add new childir to CNID database */
+                if ((did = cnid_for_path(&volume, path, &pdid)) == CNID_INVALID) {
+                    SLOG("Error resolving CNID for %s", path);
+                    return -1;
+                }
+                if (cnid_delete(volume.volume.v_cdb, did) != 0) {
+                    SLOG("Error removing CNID %u for %s", ntohl(did), path);
+                    return -1;
+                }
             }
-            if (cnid_delete(volume.volume.v_cdb, cnid) != 0) {
-                SLOG("Error removing CNID %u for %s", ntohl(cnid), path);
+
+            if (rmdir(path) != 0) {
+                SLOG("Error removing dir \"%s\": %s", path, strerror(errno));
+                badrm = rval = 1;
                 return -1;
             }
 
-            /* Ignore errors, because with -R adouble stuff is always alread gone */
-            volume.volume.vfs->vfs_deletefile(&volume.volume, -1, path);
-        }
+            break;
 
-        if (unlink(path) != 0) {
+        case S_IFBLK:
+        case S_IFCHR:
+            SLOG("%s is a device file.", path);
             badrm = rval = 1;
             break;
-        }
 
-        break;
+        case S_IFSOCK:
+            SLOG("%s is a socket.", path);
+            badrm = rval = 1;
+            break;
+
+        case S_IFIFO:
+            SLOG("%s is a FIFO.", path);
+            badrm = rval = 1;
+            break;
+
+        default:
+            if (volume.volinfo.v_path) {
+                if ((volume.volinfo.v_adouble == AD_VERSION2)
+                    && (strstr(path, ".AppleDouble") != NULL)) {
+                    /* file in adouble dir */
+                    if (unlink(path) != 0)
+                        badrm = rval = 1;
+                    break;
+                }
+
+                /* Get CNID of Parent and add new childir to CNID database */
+                pdid = did;
+                if ((cnid = cnid_for_path(&volume, path, &did)) == CNID_INVALID) {
+                    SLOG("Error resolving CNID for %s", path);
+                    return -1;
+                }
+                if (cnid_delete(volume.volume.v_cdb, cnid) != 0) {
+                    SLOG("Error removing CNID %u for %s", ntohl(cnid), path);
+                    return -1;
+                }
+
+                /* Ignore errors, because with -R adouble stuff is always alread gone */
+                volume.volume.vfs->vfs_deletefile(&volume.volume, -1, path);
+            }
+
+            if (unlink(path) != 0) {
+                badrm = rval = 1;
+                break;
+            }
+
+            break;
     }
 
     if (vflag && !badrm)
-        (void)printf("%s\n", path);
+        (void) printf("%s\n", path);
 
     return 0;
 }

@@ -27,10 +27,13 @@
 
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <unistd.h>
+
 #undef __USE_GNU
 
 #include <stdlib.h>
@@ -44,7 +47,9 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <sys/un.h>
+
 #define _XPG4_2 1
+
 #include <sys/socket.h>
 #include <stdio.h>
 #include <time.h>
@@ -121,27 +126,24 @@ static struct server srv[MAXVOLS];
 /* Default logging config: log to syslog with level log_note */
 static char logconfig[MAXPATHLEN + 21 + 1] = "default log_note";
 
-static void daemon_exit(int i)
-{
+static void daemon_exit(int i) {
     server_unlock(_PATH_CNID_METAD_LOCK);
     exit(i);
 }
 
 /* ------------------ */
-static void sigterm_handler(int sig)
-{
-    switch( sig ) {
-    case SIGTERM :
-        LOG(log_info, logtype_afpd, "shutting down on signal %d", sig );
-        break;
-    default :
-        LOG(log_error, logtype_afpd, "unexpected signal: %d", sig);
+static void sigterm_handler(int sig) {
+    switch (sig) {
+        case SIGTERM :
+            LOG(log_info, logtype_afpd, "shutting down on signal %d", sig);
+            break;
+        default :
+            LOG(log_error, logtype_afpd, "unexpected signal: %d", sig);
     }
     daemon_exit(0);
 }
 
-static struct server *test_usockfn(struct volinfo *volinfo)
-{
+static struct server *test_usockfn(struct volinfo *volinfo) {
     int i;
     for (i = 0; i < maxvol; i++) {
         if ((srv[i].volinfo) && (strcmp(srv[i].volinfo->v_path, volinfo->v_path) == 0)) {
@@ -152,8 +154,7 @@ static struct server *test_usockfn(struct volinfo *volinfo)
 }
 
 /* -------------------- */
-static int maybe_start_dbd(char *dbdpn, struct volinfo *volinfo)
-{
+static int maybe_start_dbd(char *dbdpn, struct volinfo *volinfo) {
     pid_t pid;
     struct server *up;
     int sv[2];
@@ -193,7 +194,8 @@ static int maybe_start_dbd(char *dbdpn, struct volinfo *volinfo)
             }
         }
         if (!up) {
-            LOG(log_error, logtype_cnid, "no free slot for cnid_dbd child. Configured maximum: %d. Do you have so many volumes?", MAXVOLS);
+            LOG(log_error, logtype_cnid,
+                "no free slot for cnid_dbd child. Configured maximum: %d. Do you have so many volumes?", MAXVOLS);
             return -1;
         }
     } else {
@@ -220,7 +222,7 @@ static int maybe_start_dbd(char *dbdpn, struct volinfo *volinfo)
             /* We spawned too fast. From now until the first time we tried + TESTTIME seconds
                we will just return -1 above */
             LOG(log_info, logtype_cnid, "maybe_start_dbd: reached MAXSPAWN threshhold");
-       }
+        }
     }
 
     /* 
@@ -280,8 +282,7 @@ static int maybe_start_dbd(char *dbdpn, struct volinfo *volinfo)
 }
 
 /* ------------------ */
-static int set_dbdir(char *dbdir)
-{
+static int set_dbdir(char *dbdir) {
     int len;
     struct stat st;
 
@@ -297,7 +298,7 @@ static int set_dbdir(char *dbdir)
         len++;
     }
     strcpy(dbdir + len, DBHOME);
-    if (stat(dbdir, &st) < 0 && mkdir(dbdir, 0755 ) < 0) {
+    if (stat(dbdir, &st) < 0 && mkdir(dbdir, 0755) < 0) {
         LOG(log_error, logtype_cnid, "set_dbdir: mkdir failed for %s", dbdir);
         return -1;
     }
@@ -305,15 +306,14 @@ static int set_dbdir(char *dbdir)
 }
 
 /* ------------------ */
-static uid_t user_to_uid (char *username)
-{
+static uid_t user_to_uid(char *username) {
     struct passwd *this_passwd;
 
     /* check for anything */
-    if ( !username || strlen ( username ) < 1 ) return 0;
+    if (!username || strlen(username) < 1) return 0;
 
     /* grab the /etc/passwd record relating to username */
-    this_passwd = getpwnam ( username );
+    this_passwd = getpwnam(username);
 
     /* return false if there is no structure returned */
     if (this_passwd == NULL) return 0;
@@ -324,15 +324,14 @@ static uid_t user_to_uid (char *username)
 }
 
 /* ------------------ */
-static gid_t group_to_gid ( char *group)
-{
+static gid_t group_to_gid(char *group) {
     struct group *this_group;
 
     /* check for anything */
-    if ( !group || strlen ( group ) < 1 ) return 0;
+    if (!group || strlen(group) < 1) return 0;
 
     /* grab the /etc/groups record relating to group */
-    this_group = getgrnam ( group );
+    this_group = getgrnam(group);
 
     /* return false if there is no structure returned */
     if (this_group == NULL) return 0;
@@ -343,14 +342,12 @@ static gid_t group_to_gid ( char *group)
 }
 
 /* ------------------ */
-static void catch_child(int sig _U_) 
-{
+static void catch_child(int sig _U_) {
     sigchild = 1;
 }
 
 /* ----------------------- */
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
     sigset_t set;
 
@@ -367,41 +364,41 @@ static void set_signal(void)
 
     /* Catch SIGTERM */
     sv.sa_handler = sigterm_handler;
-    sigfillset(&sv.sa_mask );
-    if (sigaction(SIGTERM, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigfillset(&sv.sa_mask);
+    if (sigaction(SIGTERM, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
 
     /* Ignore the rest */
     sv.sa_handler = SIG_IGN;
-    sigemptyset(&sv.sa_mask );
-    if (sigaction(SIGALRM, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigemptyset(&sv.sa_mask);
+    if (sigaction(SIGALRM, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
     sv.sa_handler = SIG_IGN;
-    sigemptyset(&sv.sa_mask );
-    if (sigaction(SIGHUP, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigemptyset(&sv.sa_mask);
+    if (sigaction(SIGHUP, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
     sv.sa_handler = SIG_IGN;
-    sigemptyset(&sv.sa_mask );
-    if (sigaction(SIGUSR1, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigemptyset(&sv.sa_mask);
+    if (sigaction(SIGUSR1, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
     sv.sa_handler = SIG_IGN;
-    sigemptyset(&sv.sa_mask );
-    if (sigaction(SIGUSR2, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigemptyset(&sv.sa_mask);
+    if (sigaction(SIGUSR2, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
     sv.sa_handler = SIG_IGN;
-    sigemptyset(&sv.sa_mask );
-    if (sigaction(SIGPIPE, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno) );
+    sigemptyset(&sv.sa_mask);
+    if (sigaction(SIGPIPE, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "sigaction: %s", strerror(errno));
         daemon_exit(EXITERR_SYS);
     }
 
@@ -411,8 +408,7 @@ static void set_signal(void)
     sigprocmask(SIG_BLOCK, &set, NULL);
 }
 
-static int setlimits(void)
-{
+static int setlimits(void) {
     struct rlimit rlim;
 
     if (getrlimit(RLIMIT_NOFILE, &rlim) != 0) {
@@ -432,70 +428,69 @@ static int setlimits(void)
 }
 
 /* ------------------ */
-int main(int argc, char *argv[])
-{
-    char  volpath[MAXPATHLEN + 1];
-    int   len, actual_len;
+int main(int argc, char *argv[]) {
+    char volpath[MAXPATHLEN + 1];
+    int len, actual_len;
     pid_t pid;
-    int   status;
-    char  *dbdpn = _PATH_CNID_DBD;
-    char  *host = DEFAULTHOST;
-    char  *port = DEFAULTPORT;
-    int    i;
-    int    cc;
-    uid_t  uid = 0;
-    gid_t  gid = 0;
-    int    err = 0;
-    int    debug = 0;
-    int    ret;
-    char   *loglevel = NULL;
-    char   *logfile  = NULL;
+    int status;
+    char *dbdpn = _PATH_CNID_DBD;
+    char *host = DEFAULTHOST;
+    char *port = DEFAULTPORT;
+    int i;
+    int cc;
+    uid_t uid = 0;
+    gid_t gid = 0;
+    int err = 0;
+    int debug = 0;
+    int ret;
+    char *loglevel = NULL;
+    char *logfile = NULL;
     sigset_t set;
     struct volinfo *volinfo;
 
     set_processname("cnid_metad");
 
-    while (( cc = getopt( argc, argv, "vVds:p:h:u:g:l:f:")) != -1 ) {
+    while ((cc = getopt(argc, argv, "vVds:p:h:u:g:l:f:")) != -1) {
         switch (cc) {
-        case 'v':
-        case 'V':
-            printf("cnid_metad (Netatalk %s)\n", VERSION);
-            return -1;
-        case 'd':
-            debug = 1;
-            break;
-        case 'h':
-            host = strdup(optarg);
-            break;
-        case 'u':
-            uid = user_to_uid (optarg);
-            if (!uid) {
-                LOG(log_error, logtype_cnid, "main: bad user %s", optarg);
+            case 'v':
+            case 'V':
+                printf("cnid_metad (Netatalk %s)\n", VERSION);
+                return -1;
+            case 'd':
+                debug = 1;
+                break;
+            case 'h':
+                host = strdup(optarg);
+                break;
+            case 'u':
+                uid = user_to_uid(optarg);
+                if (!uid) {
+                    LOG(log_error, logtype_cnid, "main: bad user %s", optarg);
+                    err++;
+                }
+                break;
+            case 'g':
+                gid = group_to_gid(optarg);
+                if (!gid) {
+                    LOG(log_error, logtype_cnid, "main: bad group %s", optarg);
+                    err++;
+                }
+                break;
+            case 'p':
+                port = strdup(optarg);
+                break;
+            case 's':
+                dbdpn = strdup(optarg);
+                break;
+            case 'l':
+                loglevel = strdup(optarg);
+                break;
+            case 'f':
+                logfile = strdup(optarg);
+                break;
+            default:
                 err++;
-            }
-            break;
-        case 'g':
-            gid =group_to_gid (optarg);
-            if (!gid) {
-                LOG(log_error, logtype_cnid, "main: bad group %s", optarg);
-                err++;
-            }
-            break;
-        case 'p':
-            port = strdup(optarg);
-            break;
-        case 's':
-            dbdpn = strdup(optarg);
-            break;
-        case 'l':
-            loglevel = strdup(optarg);
-            break;
-        case 'f':
-            logfile = strdup(optarg);
-            break;
-        default:
-            err++;
-            break;
+                break;
         }
     }
 
@@ -526,7 +521,7 @@ int main(int argc, char *argv[])
         daemon_exit(1);
     }
 
-    (void)setlimits();
+    (void) setlimits();
 
     if ((srvfd = tsockfd_create(host, port, 10)) < 0)
         daemon_exit(1);
@@ -587,12 +582,10 @@ int main(int argc, char *argv[])
         if (!ret) {
             /* already close */
             goto loop_end;
-        }
-        else if (ret < 0) {
+        } else if (ret < 0) {
             LOG(log_severe, logtype_cnid, "error read: %s", strerror(errno));
             goto loop_end;
-        }
-        else if (ret != sizeof(int)) {
+        } else if (ret != sizeof(int)) {
             LOG(log_error, logtype_cnid, "short read: got %d", ret);
             goto loop_end;
         }
@@ -600,7 +593,7 @@ int main(int argc, char *argv[])
          *  checks for buffer overruns. The client libatalk side does it too
          *  before handing the dir path over but who trusts clients?
          */
-        if (!len || len +DBHOMELEN +2 > MAXPATHLEN) {
+        if (!len || len + DBHOMELEN + 2 > MAXPATHLEN) {
             LOG(log_error, logtype_cnid, "wrong len parameter: %d", len);
             goto loop_end;
         }
@@ -629,9 +622,9 @@ int main(int argc, char *argv[])
 
         maybe_start_dbd(dbdpn, volinfo);
 
-        (void)closevolinfo(volinfo);
+        (void) closevolinfo(volinfo);
 
-    loop_end:
+        loop_end:
         close(rqstfd);
     }
 }

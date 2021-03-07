@@ -8,7 +8,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -21,29 +23,27 @@
 #include "desktop.h"
 
 
-#define hextoint( c )   ( isdigit( c ) ? c - '0' : c + 10 - 'A' )
+#define hextoint(c)   ( isdigit( c ) ? c - '0' : c + 10 - 'A' )
 #define isuxdigit(x)    (isdigit(x) || (isupper(x) && isxdigit(x)))
 
-static size_t mangle_extension(const struct vol *vol, const char* uname,
-			       char* extension, charset_t charset)
-{
-  char *p = strrchr(uname, '.');
+static size_t mangle_extension(const struct vol *vol, const char *uname,
+                               char *extension, charset_t charset) {
+    char *p = strrchr(uname, '.');
 
-  if (p && p != uname) {
-    u_int16_t flags = CONV_FORCE | CONV_UNESCAPEHEX;
-    size_t len = convert_charset(vol->v_volcharset, charset,
-				 vol->v_maccharset, p, strlen(p),
-				 extension, MAX_EXT_LENGTH, &flags);
+    if (p && p != uname) {
+        u_int16_t flags = CONV_FORCE | CONV_UNESCAPEHEX;
+        size_t len = convert_charset(vol->v_volcharset, charset,
+                                     vol->v_maccharset, p, strlen(p),
+                                     extension, MAX_EXT_LENGTH, &flags);
 
-    if (len != (size_t)-1) return len;
-  }
-  return 0;
+        if (len != (size_t) -1) return len;
+    }
+    return 0;
 }
 
-static char *demangle_checks(const struct vol *vol, char* uname, char * mfilename, size_t prefix, char * ext)
-{
+static char *demangle_checks(const struct vol *vol, char *uname, char *mfilename, size_t prefix, char *ext) {
     u_int16_t flags;
-    static char buffer[MAXPATHLEN +2];  /* for convert_charset dest_len parameter +2 */
+    static char buffer[MAXPATHLEN + 2];  /* for convert_charset dest_len parameter +2 */
     size_t len;
     size_t mfilenamelen;
 
@@ -72,56 +72,55 @@ static char *demangle_checks(const struct vol *vol, char* uname, char * mfilenam
     /* the mangled name we got ..					*/
 
     flags = CONV_IGNORE | CONV_UNESCAPEHEX;
-    if ( (size_t) -1 == (len = convert_charset(vol->v_volcharset, vol->v_maccharset, 0, 
-				      uname, strlen(uname), buffer, MAXPATHLEN, &flags)) ) {
-	return mfilename;
+    if ((size_t) -1 == (len = convert_charset(vol->v_volcharset, vol->v_maccharset, 0,
+                                              uname, strlen(uname), buffer, MAXPATHLEN, &flags))) {
+        return mfilename;
     }
     /* If the filename is too long we also needed to mangle */
     mfilenamelen = strlen(mfilename);
-    if ( len >= vol->max_filename || mfilenamelen == MACFILELEN ) {
+    if (len >= vol->max_filename || mfilenamelen == MACFILELEN) {
         flags |= CONV_REQMANGLE;
         len = prefix;
     }
-    
+
     /* Ok, mangling was needed, now we do some further checks    */
     /* this is still necessary, as we might have a file abcde:xx */
     /* with id 12, mangled to abcde#12, and a passed filename    */
-    /* abcd#12 						     */ 
+    /* abcd#12 						     */
     /* if we only checked if "prefix" number of characters match */
     /* we get a false postive in above case			     */
 
-    if ( (flags & CONV_REQMANGLE) ) {
-        if (len) { 
+    if ((flags & CONV_REQMANGLE)) {
+        if (len) {
             /* convert the buffer to UTF8_MAC ... */
-            if ((size_t) -1 == (len = convert_charset(vol->v_maccharset, CH_UTF8_MAC, 0, 
-            			buffer, len, buffer, MAXPATHLEN, &flags)) ) {
+            if ((size_t) -1 == (len = convert_charset(vol->v_maccharset, CH_UTF8_MAC, 0,
+                                                      buffer, len, buffer, MAXPATHLEN, &flags))) {
                 return mfilename;
             }
             /* Now compare the two names, they have to match the number of characters in buffer */
             /* prefix can be longer than len, OSX might send us the first character(s) of a     */
             /* decomposed char as the *last* character(s) before the #, so our match below will */
             /* still work, but leaves room for a race ... FIXME				    */
-            if ( (prefix >= len || mfilenamelen == MACFILELEN) 
-                 && !strncmp (mfilename, buffer, len)) {
-                 return uname;
+            if ((prefix >= len || mfilenamelen == MACFILELEN)
+                && !strncmp(mfilename, buffer, len)) {
+                return uname;
             }
-        }
-        else {
+        } else {
             /* We couldn't convert the name to maccharset at all, so we'd expect a name */
             /* in the "???#ID" form ... */
-            if ( !strncmp("???", mfilename, prefix)) {
+            if (!strncmp("???", mfilename, prefix)) {
                 return uname;
             }
             /* ..but OSX might send us only the first characters of a decomposed character. */
             /*  So convert to UTF8_MAC again, now at least the prefix number of 	  */
             /* characters have to match ... again a possible race FIXME			  */
-            
-            if ( (size_t) -1 == (len = convert_charset(vol->v_volcharset, CH_UTF8_MAC, 0, 
-	                          uname, strlen(uname), buffer, MAXPATHLEN, &flags)) ) {
-	        return mfilename;
-	    }
 
-            if ( !strncmp (mfilename, buffer, prefix) ) {
+            if ((size_t) -1 == (len = convert_charset(vol->v_volcharset, CH_UTF8_MAC, 0,
+                                                      uname, strlen(uname), buffer, MAXPATHLEN, &flags))) {
+                return mfilename;
+            }
+
+            if (!strncmp(mfilename, buffer, prefix)) {
                 return uname;
             }
         }
@@ -132,14 +131,13 @@ static char *demangle_checks(const struct vol *vol, char* uname, char * mfilenam
 /* -------------------------------------------------------
 */
 static char *
-private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx) 
-{
+private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx) {
     char *t;
     char *u_name;
     u_int32_t id, file_id;
     static char buffer[12 + MAXPATHLEN + 1];
     int len = 12 + MAXPATHLEN + 1;
-    struct dir	*dir;
+    struct dir *dir;
     size_t prefix;
 
     id = file_id = 0;
@@ -157,8 +155,8 @@ private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx
     if (*t == '0') { /* can't start with a 0 */
         return mfilename;
     }
-    while(isuxdigit(*t)) {
-        id = (id *16) + hextoint(*t);
+    while (isuxdigit(*t)) {
+        id = (id * 16) + hextoint(*t);
         t++;
     }
     if ((*t != 0 && *t != '.') || strlen(t) > MAX_EXT_LENGTH || id < 17) {
@@ -186,8 +184,7 @@ private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx
         } else {
             return demangle_checks(vol, cfrombstr(dir->d_u_name), mfilename, prefix, t);
         }
-    }
-    else if (NULL != (u_name = cnid_resolve(vol->v_cdb, &id, buffer, len)) ) {
+    } else if (NULL != (u_name = cnid_resolve(vol->v_cdb, &id, buffer, len))) {
         if (id != did) {
             return mfilename;
         }
@@ -197,9 +194,8 @@ private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx
             if (!strcmp(t, mfilename)) {
                 return u_name;
             }
-        }
-        else {
-            return demangle_checks (vol, u_name, mfilename, prefix, t);
+        } else {
+            return demangle_checks(vol, u_name, mfilename, prefix, t);
         }
     }
 
@@ -209,8 +205,7 @@ private_demangle(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *osx
 /* -------------------------------------------------------
 */
 char *
-demangle(const struct vol *vol, char *mfilename, cnid_t did)
-{
+demangle(const struct vol *vol, char *mfilename, cnid_t did) {
     return private_demangle(vol, mfilename, did, NULL);
 }
 
@@ -218,8 +213,7 @@ demangle(const struct vol *vol, char *mfilename, cnid_t did)
  * OS X  
 */
 char *
-demangle_osx(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *fileid) 
-{
+demangle_osx(const struct vol *vol, char *mfilename, cnid_t did, cnid_t *fileid) {
     return private_demangle(vol, mfilename, did, fileid);
 }
 
@@ -245,15 +239,15 @@ mangle(const struct vol *vol, char *filename, size_t filenamelen, char *uname, c
     char *m = NULL;
     static char mfilename[MAXPATHLEN]; /* way > maxlen */
     char mangle_suffix[MANGLE_LENGTH + 1];
-    char ext[MAX_EXT_LENGTH +2];  /* for convert_charset dest_len parameter +2 */
+    char ext[MAX_EXT_LENGTH + 2];  /* for convert_charset dest_len parameter +2 */
     size_t ext_len;
     size_t maxlen;
     int k;
-    
-    maxlen = (flags & 2)?UTF8FILELEN_EARLY:MACFILELEN; /* was vol->max_filename */
+
+    maxlen = (flags & 2) ? UTF8FILELEN_EARLY : MACFILELEN; /* was vol->max_filename */
     /* Do we really need to mangle this filename? */
     if (!(flags & 1) && filenamelen <= maxlen) {
-	return filename;
+        return filename;
     }
 
     if (!id) {
@@ -266,21 +260,21 @@ mangle(const struct vol *vol, char *filename, size_t filenamelen, char *uname, c
     k = sprintf(mangle_suffix, "%c%X", MANGLE_CHAR, ntohl(id));
 
     if (filenamelen + k + ext_len > maxlen) {
-      u_int16_t opt = CONV_FORCE | CONV_UNESCAPEHEX;
-      size_t n = convert_charset(vol->v_volcharset,
-				 (flags & 2) ? CH_UTF8_MAC : vol->v_maccharset,
-				 vol->v_maccharset, uname, strlen(uname),
-				 m, maxlen - k - ext_len, &opt);
-      m[n != (size_t)-1 ? n : 0] = 0;
+        u_int16_t opt = CONV_FORCE | CONV_UNESCAPEHEX;
+        size_t n = convert_charset(vol->v_volcharset,
+                                   (flags & 2) ? CH_UTF8_MAC : vol->v_maccharset,
+                                   vol->v_maccharset, uname, strlen(uname),
+                                   m, maxlen - k - ext_len, &opt);
+        m[n != (size_t) -1 ? n : 0] = 0;
     } else {
-      strlcpy(m, filename, filenamelen + 1);
+        strlcpy(m, filename, filenamelen + 1);
     }
     if (*m == 0) {
         strcat(m, "???");
     }
     strcat(m, mangle_suffix);
     if (ext_len) {
-	strncat(m, ext, ext_len);
+        strncat(m, ext, ext_len);
     }
 
     return m;

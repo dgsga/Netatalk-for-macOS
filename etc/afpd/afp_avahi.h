@@ -25,17 +25,18 @@
 #include "afp_config.h"
 
 struct context {
-	/* Avahi stuff */
-  int               thread_running;
-  AvahiThreadedPoll *threaded_poll;
-  AvahiClient       *client;
-  AvahiEntryGroup   *group;
-	/* Netatalk stuff */
-	const AFPConfig   *configs;
+    /* Avahi stuff */
+    int thread_running;
+    AvahiThreadedPoll *threaded_poll;
+    AvahiClient *client;
+    AvahiEntryGroup *group;
+    /* Netatalk stuff */
+    const AFPConfig *configs;
 };
 
 /* prototype definitions */
 void av_zeroconf_register(const AFPConfig *configs);
+
 int av_zeroconf_unregister(void);
 
 #endif   /* AFPD_AVAHI_H */

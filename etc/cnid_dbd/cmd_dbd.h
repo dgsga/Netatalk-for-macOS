@@ -7,7 +7,9 @@
 #include <atalk/volinfo.h>
 #include "dbif.h"
 
-enum logtype {LOGSTD, LOGDEBUG};
+enum logtype {
+    LOGSTD, LOGDEBUG
+};
 typedef unsigned int dbd_flags_t;
 
 #define DBD_FLAGS_SCAN     (1 << 0)
@@ -21,7 +23,7 @@ typedef unsigned int dbd_flags_t;
 #define DIR_DOT_OR_DOTDOT(a) \
         ((strcmp(a, ".") == 0) || (strcmp(a, "..") == 0))
 
-#define STRCMP(a,b,c) \
+#define STRCMP(a, b, c) \
         (strcmp(a,c) b 0)
 
 extern int nocniddb; /* Dont open CNID database, only scan filesystem */
@@ -29,6 +31,7 @@ extern int db_locked; /* have we got the fcntl lock on lockfd ? */
 extern volatile sig_atomic_t alarmed;
 
 extern void dbd_log(enum logtype lt, char *fmt, ...);
+
 extern int cmd_dbd_scanvol(DBD *dbd, struct volinfo *volinfo, dbd_flags_t flags);
 
 /*
@@ -36,4 +39,5 @@ extern int cmd_dbd_scanvol(DBD *dbd, struct volinfo *volinfo, dbd_flags_t flags)
   funcs pool of dbd_* for one reason or another
 */
 extern int cmd_dbd_add(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply);
+
 #endif /* CMD_DBD_H */

@@ -19,6 +19,7 @@
 
 /* prototype definitions */
 void md_zeroconf_register(const AFPConfig *configs);
+
 int md_zeroconf_unregister(void);
 
 #endif   /* AFPD_MDNS_H */

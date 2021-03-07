@@ -6,7 +6,7 @@
  */
 
 #ifndef _FCE_API_INTERNAL_H
-#define	_FCE_API_INTERNAL_H
+#define    _FCE_API_INTERNAL_H
 
 #include <stdbool.h>
 
@@ -20,8 +20,7 @@
 #define FCE_COALESCE_DELETE (1 << 1)
 #define FCE_COALESCE_ALL    (FCE_COALESCE_CREATE | FCE_COALESCE_DELETE)
 
-struct udp_entry
-{
+struct udp_entry {
     int sock;
     char *addr;
     char *port;
@@ -30,24 +29,24 @@ struct udp_entry
     time_t next_try_on_error;      /* In case of error set next timestamp to retry */
 };
 
-struct fce_history
-{
+struct fce_history {
     unsigned char mode;
-	int is_dir;
-	char path[MAXPATHLEN + 1];
-	struct timeval tv;
+    int is_dir;
+    char path[MAXPATHLEN + 1];
+    struct timeval tv;
 };
 
 struct fce_close_event {
     time_t time;
-	char path[MAXPATHLEN + 1];
+    char path[MAXPATHLEN + 1];
 };
 
 #define PACKET_HDR_LEN (sizeof(struct fce_packet) - FCE_MAX_PATH_LEN)
 
-bool fce_handle_coalescation( char *path, int is_dir, int mode );
+bool fce_handle_coalescation(char *path, int is_dir, int mode);
+
 void fce_initialize_history();
 
 
-#endif	/* _FCE_API_INTERNAL_H */
+#endif    /* _FCE_API_INTERNAL_H */
 

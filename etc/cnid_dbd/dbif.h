@@ -59,7 +59,7 @@
 #include "db_param.h"
 
 #define DBIF_DB_CNT 4
- 
+
 #define DBIF_CNID          0
 #define DBIF_IDX_DEVINO    1
 #define DBIF_IDX_DIDNAME   2
@@ -74,21 +74,21 @@
 
 /* Structures */
 typedef struct {
-    char     *name;
-    DB       *db;
+    char *name;
+    DB *db;
     uint32_t flags;
     uint32_t openflags;
-    DBTYPE   type;
+    DBTYPE type;
 } db_table;
 
 typedef struct {
-    DB_ENV   *db_env;
+    DB_ENV *db_env;
     struct db_param db_param;
-    DB_TXN   *db_txn;
-    DBC      *db_cur;              /* for dbif_walk */
-    char     *db_envhome;
-    char     *db_filename;
-    FILE     *db_errlog;
+    DB_TXN *db_txn;
+    DBC *db_cur;              /* for dbif_walk */
+    char *db_envhome;
+    char *db_filename;
+    FILE *db_errlog;
     db_table db_table[DBIF_DB_CNT];
 } DBD;
 
@@ -96,24 +96,40 @@ typedef struct {
 extern int get_lock(int cmd, const char *dbpath);
 
 extern DBD *dbif_init(const char *envhome, const char *dbname);
+
 extern int dbif_env_open(DBD *dbd, struct db_param *dbp, uint32_t dbenv_oflags);
+
 extern int dbif_open(DBD *dbd, struct db_param *dbp, int reindex);
+
 extern int dbif_close(DBD *dbd);
+
 extern int dbif_env_remove(const char *path);
 
 extern int dbif_get(DBD *, const int, DBT *, DBT *, u_int32_t);
+
 extern int dbif_pget(DBD *, const int, DBT *, DBT *, DBT *, u_int32_t);
+
 extern int dbif_put(DBD *, const int, DBT *, DBT *, u_int32_t);
+
 extern int dbif_del(DBD *, const int, DBT *, u_int32_t);
+
 extern int dbif_count(DBD *, const int, u_int32_t *);
+
 extern int dbif_search(DBD *dbd, DBT *key, char *resbuf);
+
 extern int dbif_copy_rootinfokey(DBD *srcdbd, DBD *destdbd);
+
 extern int dbif_txn_begin(DBD *);
+
 extern int dbif_txn_commit(DBD *);
+
 extern int dbif_txn_abort(DBD *);
+
 extern int dbif_txn_close(DBD *dbd, int ret); /* Switch between commit+abort */
 extern int dbif_txn_checkpoint(DBD *, u_int32_t, u_int32_t, u_int32_t);
 
 extern int dbif_dump(DBD *dbd, int dumpindexes);
+
 extern int dbif_idwalk(DBD *dbd, cnid_t *cnid, int close);
+
 #endif

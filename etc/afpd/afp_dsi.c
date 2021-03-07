@@ -7,7 +7,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -15,14 +17,22 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
+
 #ifdef HAVE_UNISTD_H
+
 #include <unistd.h>
+
 #endif /* HAVE_UNISTD_H */
+
 #include <sys/socket.h>
 #include <sys/time.h>
+
 #ifdef HAVE_SYS_STAT_H
+
 #include <sys/stat.h>
+
 #endif /* HAVE_SYS_STAT_H */
+
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
@@ -65,7 +75,7 @@ AFPObj *AFPobj = NULL;
 
 typedef struct {
     uint16_t DSIreqID;
-    uint8_t  AFPcommand;
+    uint8_t AFPcommand;
     uint32_t result;
 } rc_elem_t;
 
@@ -77,11 +87,11 @@ typedef struct {
 static rc_elem_t replaycache[REPLAYCACHE_SIZE];
 
 static sigjmp_buf recon_jmp;
-static void afp_dsi_close(AFPObj *obj)
-{
+
+static void afp_dsi_close(AFPObj *obj) {
     DSI *dsi = obj->handle;
     sigset_t sigs;
-    
+
     close(obj->ipc_fd);
     obj->ipc_fd = -1;
 
@@ -90,8 +100,8 @@ static void afp_dsi_close(AFPObj *obj)
      * restore our login user
      */
     if (geteuid() != obj->uid) {
-        if (seteuid( obj->uid ) < 0) {
-            LOG(log_error, logtype_afpd, "can't seteuid(%u) back %s: uid: %u, euid: %u", 
+        if (seteuid(obj->uid) < 0) {
+            LOG(log_error, logtype_afpd, "can't seteuid(%u) back %s: uid: %u, euid: %u",
                 obj->uid, strerror(errno), getuid(), geteuid());
             exit(EXITERR_SYS);
         }
@@ -107,7 +117,7 @@ static void afp_dsi_close(AFPObj *obj)
     }
 
     LOG(log_note, logtype_afpd, "AFP statistics: %.2f KB read, %.2f KB written",
-        dsi->read_count/1024.0, dsi->write_count/1024.0);
+        dsi->read_count / 1024.0, dsi->write_count / 1024.0);
     log_dircache_stat();
 
     dsi_close(dsi);
@@ -117,9 +127,8 @@ static void afp_dsi_close(AFPObj *obj)
  * SIGTERM
  * a little bit of code duplication. 
  */
-static void afp_dsi_die(int sig)
-{
-    DSI *dsi = (DSI *)AFPobj->handle;
+static void afp_dsi_die(int sig) {
+    DSI *dsi = (DSI *) AFPobj->handle;
 
     if (dsi->flags & DSI_RECONINPROG) {
         /* Primary reconnect succeeded, got SIGTERM from afpd parent */
@@ -134,42 +143,39 @@ static void afp_dsi_die(int sig)
 
     dsi_attention(AFPobj->handle, AFPATTN_SHUTDOWN);
     afp_dsi_close(AFPobj);
-   if (sig) /* if no signal, assume dieing because logins are disabled &
+    if (sig) /* if no signal, assume dieing because logins are disabled &
                 don't log it (maintenance mode)*/
         LOG(log_info, logtype_afpd, "Connection terminated");
     if (sig == SIGTERM || sig == SIGALRM) {
-        exit( 0 );
-    }
-    else {
+        exit(0);
+    } else {
         exit(sig);
     }
 }
 
 /* SIGQUIT handler */
-static void ipc_reconnect_handler(int sig _U_)
-{
-    DSI *dsi = (DSI *)AFPobj->handle;
+static void ipc_reconnect_handler(int sig _U_) {
+    DSI *dsi = (DSI *) AFPobj->handle;
 
     if (reconnect_ipc(AFPobj) != 0) {
         LOG(log_error, logtype_afpd, "ipc_reconnect_handler: failed IPC reconnect");
         afp_dsi_close(AFPobj);
-        exit(EXITERR_SYS);        
+        exit(EXITERR_SYS);
     }
 
     if (ipc_child_write(AFPobj->ipc_fd, IPC_GETSESSION, AFPobj->sinfo.clientid_len, AFPobj->sinfo.clientid) != 0) {
         LOG(log_error, logtype_afpd, "ipc_reconnect_handler: failed IPC ID resend");
         afp_dsi_close(AFPobj);
-        exit(EXITERR_SYS);        
+        exit(EXITERR_SYS);
     }
     LOG(log_note, logtype_afpd, "ipc_reconnect_handler: IPC reconnect done");
 }
 
 /* SIGURG handler (primary reconnect) */
-static void afp_dsi_transfer_session(int sig _U_)
-{
+static void afp_dsi_transfer_session(int sig _U_) {
     uint16_t dsiID;
     int socket;
-    DSI *dsi = (DSI *)AFPobj->handle;
+    DSI *dsi = (DSI *) AFPobj->handle;
 
     LOG(log_debug, logtype_afpd, "afp_dsi_transfer_session: got SIGURG, trying to receive session");
 
@@ -201,7 +207,7 @@ static void afp_dsi_transfer_session(int sig _U_)
      * have to send the reply now.
      */
     if (!dsi_cmdreply(dsi, AFP_OK)) {
-        LOG(log_error, logtype_afpd, "dsi_cmdreply: %s", strerror(errno) );
+        LOG(log_error, logtype_afpd, "dsi_cmdreply: %s", strerror(errno));
         afp_dsi_close(AFPobj);
         exit(EXITERR_CLNT);
     }
@@ -216,46 +222,45 @@ static void afp_dsi_transfer_session(int sig _U_)
 }
 
 /* ------------------- */
-static void afp_dsi_timedown(int sig _U_)
-{
-    struct sigaction	sv;
-    struct itimerval	it;
-    DSI                 *dsi = (DSI *)AFPobj->handle;
+static void afp_dsi_timedown(int sig _U_) {
+    struct sigaction sv;
+    struct itimerval it;
+    DSI *dsi = (DSI *) AFPobj->handle;
     dsi->flags |= DSI_DIE;
     /* shutdown and don't reconnect. server going down in 5 minutes. */
     setmessage("The server is going down for maintenance.");
     if (dsi_attention(AFPobj->handle, AFPATTN_SHUTDOWN | AFPATTN_NORECONNECT |
-                  AFPATTN_MESG | AFPATTN_TIME(5)) < 0) {
-        DSI *dsi = (DSI *)AFPobj->handle;
+                                      AFPATTN_MESG | AFPATTN_TIME(5)) < 0) {
+        DSI *dsi = (DSI *) AFPobj->handle;
         dsi->down_request = 1;
-    }                  
+    }
 
     it.it_interval.tv_sec = 0;
     it.it_interval.tv_usec = 0;
     it.it_value.tv_sec = 300;
     it.it_value.tv_usec = 0;
 
-    if ( setitimer( ITIMER_REAL, &it, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_timedown: setitimer: %s", strerror(errno) );
+    if (setitimer(ITIMER_REAL, &it, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_timedown: setitimer: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
     memset(&sv, 0, sizeof(sv));
     sv.sa_handler = afp_dsi_die;
-    sigemptyset( &sv.sa_mask );
+    sigemptyset(&sv.sa_mask);
     sigaddset(&sv.sa_mask, SIGHUP);
     sigaddset(&sv.sa_mask, SIGTERM);
     sv.sa_flags = SA_RESTART;
-    if ( sigaction( SIGALRM, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_timedown: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGALRM, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_timedown: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /* ignore myself */
     sv.sa_handler = SIG_IGN;
-    sigemptyset( &sv.sa_mask );
+    sigemptyset(&sv.sa_mask);
     sv.sa_flags = SA_RESTART;
-    if ( sigaction( SIGUSR1, &sv, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_timedown: sigaction SIGHUP: %s", strerror(errno) );
+    if (sigaction(SIGUSR1, &sv, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_timedown: sigaction SIGHUP: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 }
@@ -265,8 +270,7 @@ static void afp_dsi_timedown(int sig _U_)
  */
 volatile int reload_request = 0;
 
-static void afp_dsi_reload(int sig _U_)
-{
+static void afp_dsi_reload(int sig _U_) {
     reload_request = 1;
 }
 
@@ -275,25 +279,22 @@ static void afp_dsi_reload(int sig _U_)
  */
 static volatile sig_atomic_t debug_request = 0;
 
-static void afp_dsi_debug(int sig _U_)
-{
+static void afp_dsi_debug(int sig _U_) {
     debug_request = 1;
 }
 
 /* ---------------------- */
-static void afp_dsi_getmesg (int sig _U_)
-{
-    DSI *dsi = (DSI *)AFPobj->handle;
+static void afp_dsi_getmesg(int sig _U_) {
+    DSI *dsi = (DSI *) AFPobj->handle;
 
     dsi->msg_request = 1;
     if (dsi_attention(AFPobj->handle, AFPATTN_MESG | AFPATTN_TIME(5)) < 0)
         dsi->msg_request = 2;
 }
 
-static void alarm_handler(int sig _U_)
-{
+static void alarm_handler(int sig _U_) {
     int err;
-    DSI *dsi = (DSI *)AFPobj->handle;
+    DSI *dsi = (DSI *) AFPobj->handle;
 
     /* we have to restart the timer because some libraries may use alarm() */
     setitimer(ITIMER_REAL, &dsi->timer, NULL);
@@ -307,15 +308,15 @@ static void alarm_handler(int sig _U_)
     dsi->tickle++;
     LOG(log_maxdebug, logtype_afpd, "alarm: tickles: %u, flags: %s|%s|%s|%s|%s|%s|%s|%s|%s",
         dsi->tickle,
-        (dsi->flags & DSI_DATA) ?         "DSI_DATA" : "-",
-        (dsi->flags & DSI_RUNNING) ?      "DSI_RUNNING" : "-",
-        (dsi->flags & DSI_SLEEPING) ?     "DSI_SLEEPING" : "-",
-        (dsi->flags & DSI_EXTSLEEP) ?     "DSI_EXTSLEEP" : "-",
+        (dsi->flags & DSI_DATA) ? "DSI_DATA" : "-",
+        (dsi->flags & DSI_RUNNING) ? "DSI_RUNNING" : "-",
+        (dsi->flags & DSI_SLEEPING) ? "DSI_SLEEPING" : "-",
+        (dsi->flags & DSI_EXTSLEEP) ? "DSI_EXTSLEEP" : "-",
         (dsi->flags & DSI_DISCONNECTED) ? "DSI_DISCONNECTED" : "-",
-        (dsi->flags & DSI_DIE) ?          "DSI_DIE" : "-",
-        (dsi->flags & DSI_NOREPLY) ?      "DSI_NOREPLY" : "-",
-        (dsi->flags & DSI_RECONSOCKET) ?  "DSI_RECONSOCKET" : "-",
-        (dsi->flags & DSI_RECONINPROG) ?  "DSI_RECONINPROG" : "-");
+        (dsi->flags & DSI_DIE) ? "DSI_DIE" : "-",
+        (dsi->flags & DSI_NOREPLY) ? "DSI_NOREPLY" : "-",
+        (dsi->flags & DSI_RECONSOCKET) ? "DSI_RECONSOCKET" : "-",
+        (dsi->flags & DSI_RECONINPROG) ? "DSI_RECONINPROG" : "-");
 
     if (dsi->flags & DSI_SLEEPING) {
         if (dsi->tickle > AFPobj->options.sleep) {
@@ -323,7 +324,7 @@ static void alarm_handler(int sig _U_)
             afp_dsi_die(EXITERR_CLNT);
         }
         return;
-    } 
+    }
 
     if (dsi->flags & DSI_DISCONNECTED) {
         if (geteuid() == 0) {
@@ -337,7 +338,7 @@ static void alarm_handler(int sig _U_)
         return;
     }
 
-    /* if we're in the midst of processing something, don't die. */        
+    /* if we're in the midst of processing something, don't die. */
     if (dsi->tickle >= AFPobj->options.timeout) {
         LOG(log_error, logtype_afpd, "afp_alarm: child timed out, entering disconnected state");
         if (dsi_disconnect(dsi) != 0)
@@ -347,7 +348,7 @@ static void alarm_handler(int sig _U_)
 
     if ((err = pollvoltime(AFPobj)) == 0)
         LOG(log_debug, logtype_afpd, "afp_alarm: sending DSI tickle");
-        err = dsi_tickle(AFPobj->handle);
+    err = dsi_tickle(AFPobj->handle);
     if (err <= 0) {
         if (geteuid() == 0) {
             LOG(log_note, logtype_afpd, "afp_alarm: unauthenticated user, connection problem");
@@ -363,8 +364,7 @@ static void alarm_handler(int sig _U_)
    if dsi->in_write is set attention, tickle (and close?) msg
    aren't sent. We don't care about tickle 
 */
-static void pending_request(DSI *dsi)
-{
+static void pending_request(DSI *dsi) {
     /* send pending attention */
 
     /* read msg if any, it could be done in afp_getsrvrmesg */
@@ -379,12 +379,11 @@ static void pending_request(DSI *dsi)
     if (dsi->down_request) {
         dsi->down_request = 0;
         dsi_attention(AFPobj->handle, AFPATTN_SHUTDOWN | AFPATTN_NORECONNECT |
-                  AFPATTN_MESG | AFPATTN_TIME(5));
+                                      AFPATTN_MESG | AFPATTN_TIME(5));
     }
 }
 
-void afp_over_dsi_sighandlers(AFPObj *obj)
-{
+void afp_over_dsi_sighandlers(AFPObj *obj) {
     DSI *dsi = (DSI *) obj->handle;
     struct sigaction action;
 
@@ -394,51 +393,51 @@ void afp_over_dsi_sighandlers(AFPObj *obj)
 
     /* install SIGHUP */
     action.sa_handler = afp_dsi_reload;
-    if ( sigaction( SIGHUP, &action, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGHUP, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /* install SIGURG */
     action.sa_handler = afp_dsi_transfer_session;
-    if ( sigaction( SIGURG, &action, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGURG, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /* install SIGTERM */
     action.sa_handler = afp_dsi_die;
-    if ( sigaction( SIGTERM, &action, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGTERM, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /* install SIGQUIT */
     action.sa_handler = ipc_reconnect_handler;
-    if ( sigaction(SIGQUIT, &action, NULL ) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGQUIT, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /* SIGUSR2 - server message support */
     action.sa_handler = afp_dsi_getmesg;
-    if ( sigaction( SIGUSR2, &action, NULL) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGUSR2, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /*  SIGUSR1 - set down in 5 minutes  */
     action.sa_handler = afp_dsi_timedown;
     action.sa_flags = SA_RESTART;
-    if ( sigaction( SIGUSR1, &action, NULL) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGUSR1, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
     /*  SIGINT - enable max_debug LOGging to /tmp/afpd.PID.XXXXXX */
     action.sa_handler = afp_dsi_debug;
-    if ( sigaction( SIGINT, &action, NULL) < 0 ) {
-        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno) );
+    if (sigaction(SIGINT, &action, NULL) < 0) {
+        LOG(log_error, logtype_afpd, "afp_over_dsi: sigaction: %s", strerror(errno));
         afp_dsi_die(EXITERR_SYS);
     }
 
@@ -446,7 +445,7 @@ void afp_over_dsi_sighandlers(AFPObj *obj)
     /* SIGALRM - tickle handler */
     action.sa_handler = alarm_handler;
     if ((sigaction(SIGALRM, &action, NULL) < 0) ||
-            (setitimer(ITIMER_REAL, &dsi->timer, NULL) < 0)) {
+        (setitimer(ITIMER_REAL, &dsi->timer, NULL) < 0)) {
         afp_dsi_die(EXITERR_SYS);
     }
 #endif /* DEBUGGING */
@@ -455,8 +454,7 @@ void afp_over_dsi_sighandlers(AFPObj *obj)
 /* -------------------------------------------
  afp over dsi. this never returns. 
 */
-void afp_over_dsi(AFPObj *obj)
-{
+void afp_over_dsi(AFPObj *obj) {
     DSI *dsi = (DSI *) obj->handle;
     int rc_idx;
     u_int32_t err, cmd;
@@ -583,136 +581,136 @@ void afp_over_dsi(AFPObj *obj)
         dsi->flags |= DSI_DATA;
         dsi->tickle = 0;
 
-        switch(cmd) {
+        switch (cmd) {
 
-        case DSIFUNC_CLOSE:
-            LOG(log_debug, logtype_afpd, "DSI: close session request");
-            afp_dsi_close(obj);
-            LOG(log_note, logtype_afpd, "done");
-            exit(0);
+            case DSIFUNC_CLOSE:
+                LOG(log_debug, logtype_afpd, "DSI: close session request");
+                afp_dsi_close(obj);
+                LOG(log_note, logtype_afpd, "done");
+                exit(0);
 
-        case DSIFUNC_TICKLE:
-            dsi->flags &= ~DSI_DATA; /* thats no data in the sense we use it in alarm_handler */
-            LOG(log_debug, logtype_afpd, "DSI: client tickle");
-            /* timer is not every 30 seconds anymore, so we don't get killed on the client side. */
-            if ((dsi->flags & DSI_DIE))
-                dsi_tickle(dsi);
-            break;
+            case DSIFUNC_TICKLE:
+                dsi->flags &= ~DSI_DATA; /* thats no data in the sense we use it in alarm_handler */
+                LOG(log_debug, logtype_afpd, "DSI: client tickle");
+                /* timer is not every 30 seconds anymore, so we don't get killed on the client side. */
+                if ((dsi->flags & DSI_DIE))
+                    dsi_tickle(dsi);
+                break;
 
-        case DSIFUNC_CMD:
+            case DSIFUNC_CMD:
 #ifdef AFS
-            if ( writtenfork ) {
-                if ( flushfork( writtenfork ) < 0 ) {
-                    LOG(log_error, logtype_afpd, "main flushfork: %s", strerror(errno) );
+                if ( writtenfork ) {
+                    if ( flushfork( writtenfork ) < 0 ) {
+                        LOG(log_error, logtype_afpd, "main flushfork: %s", strerror(errno) );
+                    }
+                    writtenfork = NULL;
                 }
-                writtenfork = NULL;
-            }
 #endif /* AFS */
 
-            function = (u_char) dsi->commands[0];
+                function = (u_char) dsi->commands[0];
 
-            /* AFP replay cache */
-            rc_idx = dsi->clientID % REPLAYCACHE_SIZE;
-            LOG(log_debug, logtype_dsi, "DSI request ID: %u", dsi->clientID);
+                /* AFP replay cache */
+                rc_idx = dsi->clientID % REPLAYCACHE_SIZE;
+                LOG(log_debug, logtype_dsi, "DSI request ID: %u", dsi->clientID);
 
-            if (replaycache[rc_idx].DSIreqID == dsi->clientID
-                && replaycache[rc_idx].AFPcommand == function) {
-                LOG(log_note, logtype_afpd, "AFP Replay Cache match: id: %u / cmd: %s",
-                    dsi->clientID, AfpNum2name(function));
-                err = replaycache[rc_idx].result;
-            /* AFP replay cache end */
-            } else {
-                /* send off an afp command. in a couple cases, we take advantage
-                 * of the fact that we're a stream-based protocol. */
-                if (afp_switch[function]) {
+                if (replaycache[rc_idx].DSIreqID == dsi->clientID
+                    && replaycache[rc_idx].AFPcommand == function) {
+                    LOG(log_note, logtype_afpd, "AFP Replay Cache match: id: %u / cmd: %s",
+                        dsi->clientID, AfpNum2name(function));
+                    err = replaycache[rc_idx].result;
+                    /* AFP replay cache end */
+                } else {
+                    /* send off an afp command. in a couple cases, we take advantage
+                     * of the fact that we're a stream-based protocol. */
+                    if (afp_switch[function]) {
+                        dsi->datalen = DSI_DATASIZ;
+                        dsi->flags |= DSI_RUNNING;
+
+                        LOG(log_debug, logtype_afpd, "<== Start AFP command: %s", AfpNum2name(function));
+
+                        err = (*afp_switch[function])(obj,
+                                                      (char *) &dsi->commands, dsi->cmdlen,
+                                                      (char *) &dsi->data, &dsi->datalen);
+
+                        LOG(log_debug, logtype_afpd, "==> Finished AFP command: %s -> %s",
+                            AfpNum2name(function), AfpErr2name(err));
+
+                        dir_free_invalid_q();
+
+#ifdef FORCE_UIDGID
+                        /* bring everything back to old euid, egid */
+                        if (obj->force_uid)
+                            restore_uidgid ( &obj->uidgid );
+#endif /* FORCE_UIDGID */
+                        dsi->flags &= ~DSI_RUNNING;
+
+                        /* Add result to the AFP replay cache */
+                        replaycache[rc_idx].DSIreqID = dsi->clientID;
+                        replaycache[rc_idx].AFPcommand = function;
+                        replaycache[rc_idx].result = err;
+                    } else {
+                        LOG(log_error, logtype_afpd, "bad function %X", function);
+                        dsi->datalen = 0;
+                        err = AFPERR_NOOP;
+                    }
+                }
+
+                /* single shot toggle that gets set by dsi_readinit. */
+                if (dsi->flags & DSI_NOREPLY) {
+                    dsi->flags &= ~DSI_NOREPLY;
+                    break;
+                } else if (!dsi_cmdreply(dsi, err)) {
+                    LOG(log_error, logtype_afpd, "dsi_cmdreply(%d): %s", dsi->socket, strerror(errno));
+                    if (dsi_disconnect(dsi) != 0)
+                        afp_dsi_die(EXITERR_CLNT);
+                }
+                break;
+
+            case DSIFUNC_WRITE: /* FPWrite and FPAddIcon */
+                function = (u_char) dsi->commands[0];
+                if (afp_switch[function] != NULL) {
                     dsi->datalen = DSI_DATASIZ;
                     dsi->flags |= DSI_RUNNING;
 
                     LOG(log_debug, logtype_afpd, "<== Start AFP command: %s", AfpNum2name(function));
 
                     err = (*afp_switch[function])(obj,
-                                                  (char *)&dsi->commands, dsi->cmdlen,
-                                                  (char *)&dsi->data, &dsi->datalen);
+                                                  (char *) &dsi->commands, dsi->cmdlen,
+                                                  (char *) &dsi->data, &dsi->datalen);
 
                     LOG(log_debug, logtype_afpd, "==> Finished AFP command: %s -> %s",
                         AfpNum2name(function), AfpErr2name(err));
 
-                    dir_free_invalid_q();
-
+                    dsi->flags &= ~DSI_RUNNING;
 #ifdef FORCE_UIDGID
                     /* bring everything back to old euid, egid */
-                    if (obj->force_uid)
+            if (obj->force_uid)
                         restore_uidgid ( &obj->uidgid );
 #endif /* FORCE_UIDGID */
-                    dsi->flags &= ~DSI_RUNNING;
-
-                    /* Add result to the AFP replay cache */
-                    replaycache[rc_idx].DSIreqID = dsi->clientID;
-                    replaycache[rc_idx].AFPcommand = function;
-                    replaycache[rc_idx].result = err;
                 } else {
-                    LOG(log_error, logtype_afpd, "bad function %X", function);
+                    LOG(log_error, logtype_afpd, "(write) bad function %x", function);
                     dsi->datalen = 0;
                     err = AFPERR_NOOP;
                 }
-            }
 
-            /* single shot toggle that gets set by dsi_readinit. */
-            if (dsi->flags & DSI_NOREPLY) {
-                dsi->flags &= ~DSI_NOREPLY;
+                if (!dsi_wrtreply(dsi, err)) {
+                    LOG(log_error, logtype_afpd, "dsi_wrtreply: %s", strerror(errno));
+                    if (dsi_disconnect(dsi) != 0)
+                        afp_dsi_die(EXITERR_CLNT);
+                }
                 break;
-            } else if (!dsi_cmdreply(dsi, err)) {
-                LOG(log_error, logtype_afpd, "dsi_cmdreply(%d): %s", dsi->socket, strerror(errno) );
-                if (dsi_disconnect(dsi) != 0)
-                    afp_dsi_die(EXITERR_CLNT);
-            }
-            break;
 
-        case DSIFUNC_WRITE: /* FPWrite and FPAddIcon */
-            function = (u_char) dsi->commands[0];
-            if ( afp_switch[ function ] != NULL ) {
-                dsi->datalen = DSI_DATASIZ;
-                dsi->flags |= DSI_RUNNING;
+            case DSIFUNC_ATTN: /* attention replies */
+                break;
 
-                LOG(log_debug, logtype_afpd, "<== Start AFP command: %s", AfpNum2name(function));
-
-                err = (*afp_switch[function])(obj,
-                                              (char *)&dsi->commands, dsi->cmdlen,
-                                              (char *)&dsi->data, &dsi->datalen);
-
-                LOG(log_debug, logtype_afpd, "==> Finished AFP command: %s -> %s",
-                    AfpNum2name(function), AfpErr2name(err));
-
-                dsi->flags &= ~DSI_RUNNING;
-#ifdef FORCE_UIDGID
-            	/* bring everything back to old euid, egid */
-		if (obj->force_uid)
-            	    restore_uidgid ( &obj->uidgid );
-#endif /* FORCE_UIDGID */
-            } else {
-                LOG(log_error, logtype_afpd, "(write) bad function %x", function);
-                dsi->datalen = 0;
-                err = AFPERR_NOOP;
-            }
-
-            if (!dsi_wrtreply(dsi, err)) {
-                LOG(log_error, logtype_afpd, "dsi_wrtreply: %s", strerror(errno) );
-                if (dsi_disconnect(dsi) != 0)
-                    afp_dsi_die(EXITERR_CLNT);
-            }
-            break;
-
-        case DSIFUNC_ATTN: /* attention replies */
-            break;
-
-            /* error. this usually implies a mismatch of some kind
-             * between server and client. if things are correct,
-             * we need to flush the rest of the packet if necessary. */
-        default:
-            LOG(log_info, logtype_afpd,"afp_dsi: spurious command %d", cmd);
-            dsi_writeinit(dsi, dsi->data, DSI_DATASIZ);
-            dsi_writeflush(dsi);
-            break;
+                /* error. this usually implies a mismatch of some kind
+                 * between server and client. if things are correct,
+                 * we need to flush the rest of the packet if necessary. */
+            default:
+                LOG(log_info, logtype_afpd, "afp_dsi: spurious command %d", cmd);
+                dsi_writeinit(dsi, dsi->data, DSI_DATASIZ);
+                dsi_writeflush(dsi);
+                break;
         }
         pending_request(dsi);
 

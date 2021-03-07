@@ -6,7 +6,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif
 
 #include <atalk/standards.h>
@@ -42,18 +44,17 @@
 
 struct connection {
     time_t tm;                    /* When respawned last */
-    int    fd;
+    int fd;
 };
 
-static int   control_fd;
-static int   cur_fd;
+static int control_fd;
+static int cur_fd;
 static struct connection *fd_table;
-static int  fd_table_size;
-static int  fds_in_use = 0;
+static int fd_table_size;
+static int fds_in_use = 0;
 
 
-static void invalidate_fd(int fd)
-{
+static void invalidate_fd(int fd) {
     int i;
 
     if (fd == control_fd)
@@ -81,8 +82,7 @@ static void invalidate_fd(int fd)
  *  things and clean up fd_table. The same happens for any read/write errors.
  */
 
-static int check_fd(time_t timeout, const sigset_t *sigmask, time_t *now)
-{
+static int check_fd(time_t timeout, const sigset_t *sigmask, time_t *now) {
     int fd;
     fd_set readfds;
     struct timespec tv;
@@ -101,11 +101,11 @@ static int check_fd(time_t timeout, const sigset_t *sigmask, time_t *now)
     }
 
     tv.tv_nsec = 0;
-    tv.tv_sec  = timeout;
+    tv.tv_sec = timeout;
     if ((ret = pselect(maxfd + 1, &readfds, NULL, NULL, &tv, sigmask)) < 0) {
         if (errno == EINTR)
             return 0;
-        LOG(log_error, logtype_cnid, "error in select: %s",strerror(errno));
+        LOG(log_error, logtype_cnid, "error in select: %s", strerror(errno));
         return -1;
     }
 
@@ -118,7 +118,7 @@ static int check_fd(time_t timeout, const sigset_t *sigmask, time_t *now)
 
 
     if (FD_ISSET(control_fd, &readfds)) {
-        int    l = 0;
+        int l = 0;
 
         fd = recv_fd(control_fd, 0);
         if (fd < 0) {
@@ -154,8 +154,7 @@ static int check_fd(time_t timeout, const sigset_t *sigmask, time_t *now)
     return 0;
 }
 
-int comm_init(struct db_param *dbp, int ctrlfd, int clntfd)
-{
+int comm_init(struct db_param *dbp, int ctrlfd, int clntfd) {
     int i;
 
     fds_in_use = 0;
@@ -187,14 +186,12 @@ int comm_init(struct db_param *dbp, int ctrlfd, int clntfd)
 /* ------------
    nbe of clients
 */
-int comm_nbe(void)
-{
+int comm_nbe(void) {
     return fds_in_use;
 }
 
 /* ------------ */
-int comm_rcv(struct cnid_dbd_rqst *rqst, time_t timeout, const sigset_t *sigmask, time_t *now)
-{
+int comm_rcv(struct cnid_dbd_rqst *rqst, time_t timeout, const sigset_t *sigmask, time_t *now) {
     char *nametmp;
     int b;
 
@@ -222,7 +219,7 @@ int comm_rcv(struct cnid_dbd_rqst *rqst, time_t timeout, const sigset_t *sigmask
     }
     rqst->name = nametmp;
     if (rqst->namelen && readt(cur_fd, rqst->name, rqst->namelen, 1, CNID_DBD_TIMEOUT)
-        != rqst->namelen) {
+                         != rqst->namelen) {
         LOG(log_error, logtype_cnid, "error reading message name: %s", strerror(errno));
         invalidate_fd(cur_fd);
         return 0;
@@ -238,8 +235,8 @@ int comm_rcv(struct cnid_dbd_rqst *rqst, time_t timeout, const sigset_t *sigmask
 
 /* ------------ */
 #define USE_WRITEV
-int comm_snd(struct cnid_dbd_rply *rply)
-{
+
+int comm_snd(struct cnid_dbd_rply *rply) {
 #ifdef USE_WRITEV
     struct iovec iov[2];
     size_t towrite;
@@ -259,7 +256,7 @@ int comm_snd(struct cnid_dbd_rply *rply)
     iov[0].iov_len = sizeof(struct cnid_dbd_rply);
     iov[1].iov_base = rply->name;
     iov[1].iov_len = rply->namelen;
-    towrite = sizeof(struct cnid_dbd_rply) +rply->namelen;
+    towrite = sizeof(struct cnid_dbd_rply) + rply->namelen;
 
     if (writev(cur_fd, iov, 2) != towrite) {
         LOG(log_error, logtype_cnid, "error writing message : %s", strerror(errno));

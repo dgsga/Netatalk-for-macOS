@@ -13,7 +13,9 @@
 */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <string.h>
@@ -111,7 +113,7 @@
 /*****************************
  *       the dircache        */
 
-static hash_t       *dircache;        /* The actual cache */
+static hash_t *dircache;        /* The actual cache */
 static unsigned int dircache_maxsize; /* cache maximum size */
 
 static struct dircache_stat {
@@ -125,9 +127,8 @@ static struct dircache_stat {
 } dircache_stat;
 
 /* FNV 1a */
-static hash_val_t hash_vid_did(const void *key)
-{
-    const struct dir *k = (const struct dir *)key;
+static hash_val_t hash_vid_did(const void *key) {
+    const struct dir *k = (const struct dir *) key;
     hash_val_t hash = 2166136261;
 
     hash ^= k->d_vid >> 8;
@@ -147,8 +148,7 @@ static hash_val_t hash_vid_did(const void *key)
     return hash;
 }
 
-static int hash_comp_vid_did(const void *key1, const void *key2)
-{
+static int hash_comp_vid_did(const void *key1, const void *key2) {
     const struct dir *k1 = key1;
     const struct dir *k2 = key2;
 
@@ -162,7 +162,7 @@ static hash_t *index_didname;
 
 #undef get16bits
 #if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__)    \
-    || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
+ || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
 #define get16bits(d) (*((const uint16_t *) (d)))
 #endif
 
@@ -171,9 +171,8 @@ static hash_t *index_didname;
                       +(uint32_t)(((const uint8_t *)(d))[0]) )
 #endif
 
-static hash_val_t hash_didname(const void *p)
-{
-    const struct dir *key = (const struct dir *)p;
+static hash_val_t hash_didname(const void *p) {
+    const struct dir *key = (const struct dir *) p;
     const unsigned char *data = key->d_u_name->data;
     int len = key->d_u_name->slen;
     hash_val_t hash = key->d_pdid + key->d_vid;
@@ -183,28 +182,31 @@ static hash_val_t hash_didname(const void *p)
     len >>= 2;
 
     /* Main loop */
-    for (;len > 0; len--) {
-        hash  += get16bits (data);
-        tmp    = (get16bits (data+2) << 11) ^ hash;
-        hash   = (hash << 16) ^ tmp;
-        data  += 2*sizeof (uint16_t);
-        hash  += hash >> 11;
+    for (; len > 0; len--) {
+        hash += get16bits (data);
+        tmp = (get16bits (data + 2) << 11) ^ hash;
+        hash = (hash << 16) ^ tmp;
+        data += 2 * sizeof(uint16_t);
+        hash += hash >> 11;
     }
 
     /* Handle end cases */
     switch (rem) {
-    case 3: hash += get16bits (data);
-        hash ^= hash << 16;
-        hash ^= data[sizeof (uint16_t)] << 18;
-        hash += hash >> 11;
-        break;
-    case 2: hash += get16bits (data);
-        hash ^= hash << 11;
-        hash += hash >> 17;
-        break;
-    case 1: hash += *data;
-        hash ^= hash << 10;
-        hash += hash >> 1;
+        case 3:
+            hash += get16bits (data);
+            hash ^= hash << 16;
+            hash ^= data[sizeof(uint16_t)] << 18;
+            hash += hash >> 11;
+            break;
+        case 2:
+            hash += get16bits (data);
+            hash ^= hash << 11;
+            hash += hash >> 17;
+            break;
+        case 1:
+            hash += *data;
+            hash ^= hash << 10;
+            hash += hash >> 1;
     }
 
     /* Force "avalanching" of final 127 bits */
@@ -218,14 +220,13 @@ static hash_val_t hash_didname(const void *p)
     return hash;
 }
 
-static int hash_comp_didname(const void *k1, const void *k2)
-{
-    const struct dir *key1 = (const struct dir *)k1;
-    const struct dir *key2 = (const struct dir *)k2;
+static int hash_comp_didname(const void *k1, const void *k2) {
+    const struct dir *key1 = (const struct dir *) k1;
+    const struct dir *key2 = (const struct dir *) k2;
 
-    return ! (key1->d_vid == key2->d_vid
-              && key1->d_pdid == key2->d_pdid
-              && (bstrcmp(key1->d_u_name, key2->d_u_name) == 0) );
+    return !(key1->d_vid == key2->d_vid
+             && key1->d_pdid == key2->d_pdid
+             && (bstrcmp(key1->d_u_name, key2->d_u_name) == 0));
 }
 
 /***************************
@@ -244,15 +245,14 @@ static unsigned long queue_count;
  * 3. Remove the dir from the main cache and the didname index
  * 4. Free the struct dir structure and all its members
  */
-static void dircache_evict(void)
-{
+static void dircache_evict(void) {
     int i = DIRCACHE_FREE_QUANTUM;
     struct dir *dir;
 
     LOG(log_debug, logtype_afpd, "dircache: {starting cache eviction}");
 
     while (i--) {
-        if ((dir = (struct dir *)dequeue(index_queue)) == NULL) { /* 1 */
+        if ((dir = (struct dir *) dequeue(index_queue)) == NULL) { /* 1 */
             dircache_dump();
             AFP_PANIC("dircache_evict");
         }
@@ -299,8 +299,7 @@ static void dircache_evict(void)
  *
  * @returns            Pointer to struct dir if found, else NULL
  */
-struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid)
-{
+struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid) {
     struct dir *cdir = NULL;
     struct dir key;
     struct stat st;
@@ -319,7 +318,7 @@ struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid)
         if (cdir->d_flags & DIRF_ISFILE) { /* (1) */
             LOG(log_debug, logtype_afpd, "dircache(cnid:%u): {not a directory:\"%s\"}",
                 ntohl(cnid), cfrombstr(cdir->d_u_name));
-            (void)dir_remove(vol, cdir); /* (1a) */
+            (void) dir_remove(vol, cdir); /* (1a) */
             dircache_stat.expunged++;
             return NULL;        /* (1b) */
 
@@ -327,14 +326,14 @@ struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid)
         if (ostat(cfrombstr(cdir->d_fullpath), &st, vol_syml_opt(vol)) != 0) {
             LOG(log_debug, logtype_afpd, "dircache(cnid:%u): {missing:\"%s\"}",
                 ntohl(cnid), cfrombstr(cdir->d_fullpath));
-            (void)dir_remove(vol, cdir);
+            (void) dir_remove(vol, cdir);
             dircache_stat.expunged++;
             return NULL;
         }
         if ((cdir->dcache_ctime != st.st_ctime) || (cdir->dcache_ino != st.st_ino)) {
             LOG(log_debug, logtype_afpd, "dircache(cnid:%u): {modified:\"%s\"}",
                 ntohl(cnid), cfrombstr(cdir->d_u_name));
-            (void)dir_remove(vol, cdir);
+            (void) dir_remove(vol, cdir);
             dircache_stat.expunged++;
             return NULL;
         }
@@ -345,7 +344,7 @@ struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid)
         LOG(log_debug, logtype_afpd, "dircache(cnid:%u): {not in cache}", ntohl(cnid));
         dircache_stat.misses++;
     }
-    
+
     return cdir;
 }
 
@@ -365,14 +364,13 @@ struct dir *dircache_search_by_did(const struct vol *vol, cnid_t cnid)
 struct dir *dircache_search_by_name(const struct vol *vol,
                                     const struct dir *dir,
                                     char *name,
-                                    int len)
-{
+                                    int len) {
     struct dir *cdir = NULL;
     struct dir key;
     struct stat st;
 
     hnode_t *hn;
-    static_bstring uname = {-1, len, (unsigned char *)name};
+    static_bstring uname = {-1, len, (unsigned char *) name};
 
     AFP_ASSERT(vol);
     AFP_ASSERT(dir);
@@ -397,7 +395,7 @@ struct dir *dircache_search_by_name(const struct vol *vol,
         if (ostat(cfrombstr(cdir->d_fullpath), &st, vol_syml_opt(vol)) != 0) {
             LOG(log_debug, logtype_afpd, "dircache(did:%u,\"%s\"): {missing:\"%s\"}",
                 ntohl(dir->d_did), name, cfrombstr(cdir->d_fullpath));
-            (void)dir_remove(vol, cdir);
+            (void) dir_remove(vol, cdir);
             dircache_stat.expunged++;
             return NULL;
         }
@@ -406,7 +404,7 @@ struct dir *dircache_search_by_name(const struct vol *vol,
         if ((cdir->dcache_ctime != st.st_ctime) || (cdir->dcache_ino != st.st_ino)) {
             LOG(log_debug, logtype_afpd, "dircache(did:%u,\"%s\"): {modified}",
                 ntohl(dir->d_did), name);
-            (void)dir_remove(vol, cdir);
+            (void) dir_remove(vol, cdir);
             dircache_stat.expunged++;
             return NULL;
         }
@@ -432,8 +430,7 @@ struct dir *dircache_search_by_name(const struct vol *vol,
  * @returns 0 on success, -1 on error which should result in an abort
  */
 int dircache_add(const struct vol *vol,
-                 struct dir *dir)
-{
+                 struct dir *dir) {
     struct dir *cdir = NULL;
     struct dir key;
     hnode_t *hn;
@@ -494,8 +491,8 @@ int dircache_add(const struct vol *vol,
     LOG(log_debug, logtype_afpd, "dircache(did:%u,'%s'): {added}",
         ntohl(dir->d_did), cfrombstr(dir->d_u_name));
 
-   AFP_ASSERT(queue_count == index_didname->hash_nodecount 
-           && queue_count == dircache->hash_nodecount);
+    AFP_ASSERT(queue_count == index_didname->hash_nodecount
+               && queue_count == dircache->hash_nodecount);
 
     return 0;
 }
@@ -506,8 +503,7 @@ int dircache_add(const struct vol *vol,
   * Callers outside of dircache.c should call this with
   * flags = QUEUE_INDEX | DIDNAME_INDEX | DIRCACHE.
   */
-void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags)
-{
+void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags) {
     hnode_t *hn;
 
     AFP_ASSERT(dir);
@@ -521,7 +517,7 @@ void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags)
 
     if (flags & DIDNAME_INDEX) {
         if ((hn = hash_lookup(index_didname, dir)) == NULL) {
-            LOG(log_error, logtype_afpd, "dircache_remove(%u,\"%s\"): not in didname index", 
+            LOG(log_error, logtype_afpd, "dircache_remove(%u,\"%s\"): not in didname index",
                 ntohl(dir->d_did), cfrombstr(dir->d_u_name));
             dircache_dump();
             AFP_PANIC("dircache_remove");
@@ -531,7 +527,7 @@ void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags)
 
     if (flags & DIRCACHE) {
         if ((hn = hash_lookup(dircache, dir)) == NULL) {
-            LOG(log_error, logtype_afpd, "dircache_remove(%u,\"%s\"): not in dircache", 
+            LOG(log_error, logtype_afpd, "dircache_remove(%u,\"%s\"): not in dircache",
                 ntohl(dir->d_did), cfrombstr(dir->d_u_name));
             dircache_dump();
             AFP_PANIC("dircache_remove");
@@ -543,7 +539,7 @@ void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags)
         ntohl(dir->d_did), cfrombstr(dir->d_u_name));
 
     dircache_stat.removed++;
-    AFP_ASSERT(queue_count == index_didname->hash_nodecount 
+    AFP_ASSERT(queue_count == index_didname->hash_nodecount
                && queue_count == dircache->hash_nodecount);
 }
 
@@ -561,18 +557,17 @@ void dircache_remove(const struct vol *vol _U_, struct dir *dir, int flags)
  *
  * @return 0 on success, -1 on error
  */
-int dircache_init(int reqsize)
-{
+int dircache_init(int reqsize) {
     dircache_maxsize = DEFAULT_MAX_DIRCACHE_SIZE;
 
     /* Initialize the main dircache */
     if (reqsize > DEFAULT_MAX_DIRCACHE_SIZE && reqsize < MAX_POSSIBLE_DIRCACHE_SIZE) {
         while ((dircache_maxsize < MAX_POSSIBLE_DIRCACHE_SIZE) && (dircache_maxsize < reqsize))
-               dircache_maxsize *= 2;
+            dircache_maxsize *= 2;
     }
     if ((dircache = hash_create(dircache_maxsize, hash_comp_vid_did, hash_vid_did)) == NULL)
         return -1;
-    
+
     LOG(log_debug, logtype_afpd, "dircache_init: done. max dircache size: %u", dircache_maxsize);
 
     /* Initialize did/name index hashtable */
@@ -602,10 +597,9 @@ int dircache_init(int reqsize)
 /*!
  * Log dircache statistics
  */
-void log_dircache_stat(void)
-{
+void log_dircache_stat(void) {
     LOG(log_info, logtype_afpd, "dircache statistics: "
-        "entries: %lu, lookups: %llu, hits: %llu, misses: %llu, added: %llu, removed: %llu, expunged: %llu, evicted: %llu",
+                                "entries: %lu, lookups: %llu, hits: %llu, misses: %llu, added: %llu, removed: %llu, expunged: %llu, evicted: %llu",
         queue_count,
         dircache_stat.lookups,
         dircache_stat.hits,
@@ -619,8 +613,7 @@ void log_dircache_stat(void)
 /*!
  * @brief Dump dircache to /tmp/dircache.PID
  */
-void dircache_dump(void)
-{
+void dircache_dump(void) {
     char tmpnam[64];
     FILE *dump;
     qnode_t *n = index_queue->next;
@@ -680,7 +673,7 @@ void dircache_dump(void)
     for (i = 1; i <= queue_count; i++) {
         if (n == index_queue)
             break;
-        dir = (struct dir *)n->data;
+        dir = (struct dir *) n->data;
         fprintf(dump, "%05u: %3u  %6u  %6u %s    %s\n",
                 i,
                 ntohs(dir->d_vid),

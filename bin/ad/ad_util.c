@@ -29,7 +29,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
@@ -70,13 +72,12 @@
 
 int log_verbose;             /* Logging flag */
 
-void _log(enum logtype lt, char *fmt, ...)
-{
+void _log(enum logtype lt, char *fmt, ...) {
     int len;
     static char logbuffer[1024];
     va_list args;
 
-    if ( (lt == STD) || (log_verbose == 1)) {
+    if ((lt == STD) || (log_verbose == 1)) {
         va_start(args, fmt);
         len = vsnprintf(logbuffer, 1023, fmt, args);
         va_end(args);
@@ -96,17 +97,16 @@ void _log(enum logtype lt, char *fmt, ...)
  *
  * @returns 0 on success, exits on error
  */
-int openvol(const char *path, afpvol_t *vol)
-{
+int openvol(const char *path, afpvol_t *vol) {
     int flags = 0;
 
     memset(vol, 0, sizeof(afpvol_t));
 
     /* try to find a .AppleDesktop/.volinfo */
-    if (loadvolinfo((char *)path, &vol->volinfo) != 0)
+    if (loadvolinfo((char *) path, &vol->volinfo) != 0)
         return -1;
 
-    if (STRCMP(vol->volinfo.v_cnidscheme, != , "dbd"))
+    if (STRCMP(vol->volinfo.v_cnidscheme, !=, "dbd"))
         ERROR("\"%s\" isn't a \"dbd\" CNID volume!", vol->volinfo.v_path);
 
     if (vol_load_charsets(&vol->volinfo) == -1)
@@ -138,12 +138,11 @@ int openvol(const char *path, afpvol_t *vol)
     cnid_getstamp(vol->volume.v_cdb,
                   vol->db_stamp,
                   sizeof(vol->db_stamp));
-    
+
     return 0;
 }
 
-void closevol(afpvol_t *vol)
-{
+void closevol(afpvol_t *vol) {
     if (vol->volume.v_cdb)
         cnid_close(vol->volume.v_cdb);
 
@@ -153,13 +152,12 @@ void closevol(afpvol_t *vol)
 /*
   Taken form afpd/desktop.c
 */
-char *utompath(const struct volinfo *volinfo, const char *upath)
-{
-    static char  mpath[ MAXPATHLEN + 2]; /* for convert_charset dest_len parameter +2 */
-    char         *m;
-    const char   *u;
-    uint16_t     flags = CONV_IGNORE | CONV_UNESCAPEHEX;
-    size_t       outlen;
+char *utompath(const struct volinfo *volinfo, const char *upath) {
+    static char mpath[MAXPATHLEN + 2]; /* for convert_charset dest_len parameter +2 */
+    char *m;
+    const char *u;
+    uint16_t flags = CONV_IGNORE | CONV_UNESCAPEHEX;
+    size_t outlen;
 
     if (!upath)
         return NULL;
@@ -178,16 +176,16 @@ char *utompath(const struct volinfo *volinfo, const char *upath)
     }
 
     /* convert charsets */
-    if ((size_t)-1 == ( outlen = convert_charset(volinfo->v_volcharset,
+    if ((size_t) -1 == (outlen = convert_charset(volinfo->v_volcharset,
                                                  CH_UTF8_MAC,
                                                  volinfo->v_maccharset,
-                                                 u, outlen, mpath, MAXPATHLEN, &flags)) ) {
+                                                 u, outlen, mpath, MAXPATHLEN, &flags))) {
         SLOG("Conversion from %s to %s for %s failed.",
              volinfo->v_volcodepage, volinfo->v_maccodepage, u);
         return NULL;
     }
 
-    return(m);
+    return (m);
 }
 
 
@@ -205,15 +203,14 @@ char *utompath(const struct volinfo *volinfo, const char *upath)
  *
  * @returns 0 on sucess, -1 on error
  */
-int convert_dots_encoding(const afpvol_t *svol, const afpvol_t *dvol, char *path, size_t buflen)
-{
+int convert_dots_encoding(const afpvol_t *svol, const afpvol_t *dvol, char *path, size_t buflen) {
     static charset_t from = (charset_t) -1;
-    static char buf[MAXPATHLEN+2];
+    static char buf[MAXPATHLEN + 2];
     char *bname = stripped_slashes_basename(path);
     int pos = bname - path;
     uint16_t flags = 0;
 
-    if ( ! svol->volinfo.v_path) {
+    if (!svol->volinfo.v_path) {
         /* no source volume: escape special chars (eg ':') */
         from = dvol->volinfo.v_volcharset; /* src = dst charset */
         flags |= CONV_ESCAPEHEX;
@@ -221,12 +218,12 @@ int convert_dots_encoding(const afpvol_t *svol, const afpvol_t *dvol, char *path
         from = svol->volinfo.v_volcharset;
     }
 
-    if ( (svol->volinfo.v_path)
-         && ! (svol->volinfo.v_flags & AFPVOL_USEDOTS)
-         && (dvol->volinfo.v_flags & AFPVOL_USEDOTS)) {
+    if ((svol->volinfo.v_path)
+        && !(svol->volinfo.v_flags & AFPVOL_USEDOTS)
+        && (dvol->volinfo.v_flags & AFPVOL_USEDOTS)) {
         /* source is without dots, destination is with */
         flags |= CONV_UNESCAPEHEX;
-    } else if (! (dvol->volinfo.v_flags & AFPVOL_USEDOTS)) {
+    } else if (!(dvol->volinfo.v_flags & AFPVOL_USEDOTS)) {
         flags |= CONV_ESCAPEDOTS;
     }
 
@@ -264,8 +261,7 @@ int convert_dots_encoding(const afpvol_t *svol, const afpvol_t *dvol, char *path
  */
 cnid_t cnid_for_path(const afpvol_t *vol,
                      const char *path,
-                     cnid_t *did)
-{
+                     cnid_t *did) {
     EC_INIT;
 
     cnid_t cnid;
@@ -281,7 +277,7 @@ cnid_t cnid_for_path(const afpvol_t *vol,
     EC_ZERO(bcatcstr(statpath, "/"));
 
     l = bsplit(rpath, '/');
-    for (int i = 0; i < l->qty ; i++) {
+    for (int i = 0; i < l->qty; i++) {
         *did = cnid;
 
         EC_ZERO(bconcat(statpath, l->entry[i]));
@@ -301,7 +297,7 @@ cnid_t cnid_for_path(const afpvol_t *vol,
         EC_ZERO(bcatcstr(statpath, "/"));
     }
 
-EC_CLEANUP:
+    EC_CLEANUP:
     bdestroy(rpath);
     bstrListDestroy(l);
     bdestroy(statpath);
@@ -331,8 +327,7 @@ EC_CLEANUP:
  */
 cnid_t cnid_for_paths_parent(const afpvol_t *vol,
                              const char *path,
-                             cnid_t *did)
-{
+                             cnid_t *did) {
     EC_INIT;
 
     cnid_t cnid;
@@ -370,7 +365,7 @@ cnid_t cnid_for_paths_parent(const afpvol_t *vol,
         EC_ZERO(bcatcstr(statpath, "/"));
     }
 
-EC_CLEANUP:
+    EC_CLEANUP:
     bdestroy(rpath);
     bstrListDestroy(l);
     bdestroy(statpath);

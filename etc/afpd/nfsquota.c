@@ -15,7 +15,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #if !defined(NO_QUOTA_SUPPORT) && !defined(HAVE_LIBQUOTA)
@@ -155,7 +157,7 @@ int getnfsquota(struct vol *vol, const int uid, const u_int32_t bsize,
 #else /* __svr4__ || TRU64 */
         /* NOTE: linux' rquotad program doesn't currently report the
         * correct rq_bsize. */
-	/* NOTE: This is integer division and can introduce rounding errors */
+    /* NOTE: This is integer division and can introduce rounding errors */
 #define NFS_BSIZE gq_rslt.GQR_RQUOTA.rq_bsize / bsize
 #endif /* __svr4__  || TRU64 */
 

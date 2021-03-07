@@ -4,7 +4,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -39,13 +41,12 @@
 #include "volume.h"
 #include "afp_zeroconf.h"
 
-#define LINESIZE 1024  
+#define LINESIZE 1024
 
 /* get rid of unneeded configurations. i use reference counts to deal
  * w/ multiple configs sharing the same afp_options. oh, to dream of
  * garbage collection ... */
-void configfree(AFPConfig *configs, const AFPConfig *config)
-{
+void configfree(AFPConfig *configs, const AFPConfig *config) {
     AFPConfig *p, *q;
 
     for (p = configs; p; p = q) {
@@ -61,18 +62,18 @@ void configfree(AFPConfig *configs, const AFPConfig *config)
 
         switch (p->obj.proto) {
 #ifndef NO_DDP
-        case AFPPROTO_ASP:
-            free(p->obj.Obj);
-            free(p->obj.Type);
-            free(p->obj.Zone);
-            atp_close(((ASP) p->obj.handle)->asp_atp);
-            free(p->obj.handle);
-            break;
+            case AFPPROTO_ASP:
+                free(p->obj.Obj);
+                free(p->obj.Type);
+                free(p->obj.Zone);
+                atp_close(((ASP) p->obj.handle)->asp_atp);
+                free(p->obj.handle);
+                break;
 #endif /* no afp/asp */
-        case AFPPROTO_DSI:
-            close(p->fd);
-            free(p->obj.handle);
-            break;
+            case AFPPROTO_DSI:
+                close(p->fd);
+                free(p->obj.handle);
+                break;
         }
         free(p);
     }
@@ -90,58 +91,57 @@ static char hex[17] = "0123456789abcdef";
 
 static char * srvloc_encode(const struct afp_options *options, const char *name)
 {
-	static char buf[512];
-	char *conv_name;
-	unsigned char *p;
-	unsigned int i = 0;
+    static char buf[512];
+    char *conv_name;
+    unsigned char *p;
+    unsigned int i = 0;
 #ifndef NO_DDP
-	char *Obj, *Type = "", *Zone = "";
+    char *Obj, *Type = "", *Zone = "";
 #endif
 
-	/* Convert name to maccharset */
+    /* Convert name to maccharset */
         if ((size_t)-1 ==(convert_string_allocate( options->unixcharset, options->maccharset,
-			 name, -1, &conv_name)) )
-		return (char*)name;
+             name, -1, &conv_name)) )
+        return (char*)name;
 
-	/* Escape characters */
-	p = conv_name;
-	while (*p && i<(sizeof(buf)-4)) {
-	    if (*p == '@')
-		break;
-	    else if (isspace(*p)) {
-	        buf[i++] = '%';
-           	buf[i++] = '2';
-           	buf[i++] = '0';
-		p++;
-	    }	
-	    else if ((!isascii(*p)) || *p <= 0x2f || *p == 0x3f ) {
-	        buf[i++] = '%';
-           	buf[i++] = hex[*p >> 4];
-           	buf[i++] = hex[*p++ & 15];
-	    }
-	    else {
-		buf[i++] = *p++;
-	    }
-	}
-	buf[i] = '\0';
+    /* Escape characters */
+    p = conv_name;
+    while (*p && i<(sizeof(buf)-4)) {
+        if (*p == '@')
+        break;
+        else if (isspace(*p)) {
+            buf[i++] = '%';
+               buf[i++] = '2';
+               buf[i++] = '0';
+        p++;
+        }
+        else if ((!isascii(*p)) || *p <= 0x2f || *p == 0x3f ) {
+            buf[i++] = '%';
+               buf[i++] = hex[*p >> 4];
+               buf[i++] = hex[*p++ & 15];
+        }
+        else {
+        buf[i++] = *p++;
+        }
+    }
+    buf[i] = '\0';
 
 #ifndef NO_DDP
-	/* Add ZONE,  */
+    /* Add ZONE,  */
         if (nbp_name(options->server, &Obj, &Type, &Zone )) {
-        	LOG(log_error, logtype_afpd, "srvloc_encode: can't parse %s", options->server );
-    	}
-	else {
-		snprintf( buf+i, sizeof(buf)-i-1 ,"&ZONE=%s", Zone);
-	}
+            LOG(log_error, logtype_afpd, "srvloc_encode: can't parse %s", options->server );
+        }
+    else {
+        snprintf( buf+i, sizeof(buf)-i-1 ,"&ZONE=%s", Zone);
+    }
 #endif
-	free (conv_name);
+    free (conv_name);
 
-	return buf;
+    return buf;
 }
 #endif /* USE_SRVLOC */
 
-static void dsi_cleanup(const AFPConfig *config)
-{
+static void dsi_cleanup(const AFPConfig *config) {
 #ifdef USE_SRVLOC
     SLPError err;
     SLPError callbackerr;
@@ -211,8 +211,7 @@ static int asp_start(AFPConfig *config, AFPConfig *configs,
 #endif /* no afp/asp */
 
 static afp_child_t *dsi_start(AFPConfig *config, AFPConfig *configs,
-                              server_child *server_children)
-{
+                              server_child *server_children) {
     DSI *dsi = config->obj.handle;
     afp_child_t *child = NULL;
 
@@ -222,7 +221,7 @@ static afp_child_t *dsi_start(AFPConfig *config, AFPConfig *configs,
         /* we've forked. */
         configfree(configs, config);
         afp_over_dsi(&config->obj); /* start a session */
-        exit (0);
+        exit(0);
     }
 
     return child;
@@ -326,14 +325,13 @@ serv_free_return:
 
 static AFPConfig *DSIConfigInit(const struct afp_options *options,
                                 unsigned char *refcount,
-                                const dsi_proto protocol)
-{
+                                const dsi_proto protocol) {
     AFPConfig *config;
     DSI *dsi;
     char *p, *q;
 
     if ((config = (AFPConfig *) calloc(1, sizeof(AFPConfig))) == NULL) {
-        LOG(log_error, logtype_afpd, "DSIConfigInit: malloc(config): %s", strerror(errno) );
+        LOG(log_error, logtype_afpd, "DSIConfigInit: malloc(config): %s", strerror(errno));
         return NULL;
     }
 
@@ -346,7 +344,7 @@ static AFPConfig *DSIConfigInit(const struct afp_options *options,
                         options->ipaddr, options->port,
                         options->flags & OPTION_PROXY,
                         options->server_quantum)) == NULL) {
-        LOG(log_error, logtype_afpd, "main: dsi_init: %s", strerror(errno) );
+        LOG(log_error, logtype_afpd, "main: dsi_init: %s", strerror(errno));
         free(config);
         return NULL;
     }
@@ -354,10 +352,10 @@ static AFPConfig *DSIConfigInit(const struct afp_options *options,
 
     if (options->flags & OPTION_PROXY) {
         LOG(log_note, logtype_afpd, "AFP/TCP proxy initialized for %s:%d (%s)",
-            getip_string((struct sockaddr *)&dsi->server), getip_port((struct sockaddr *)&dsi->server), VERSION);
+            getip_string((struct sockaddr *) &dsi->server), getip_port((struct sockaddr *) &dsi->server), VERSION);
     } else {
         LOG(log_note, logtype_afpd, "AFP/TCP started, advertising %s:%d (%s)",
-            getip_string((struct sockaddr *)&dsi->server), getip_port((struct sockaddr *)&dsi->server), VERSION);
+            getip_string((struct sockaddr *) &dsi->server), getip_port((struct sockaddr *) &dsi->server), VERSION);
     }
 
 #ifdef USE_SRVLOC
@@ -371,68 +369,68 @@ static AFPConfig *DSIConfigInit(const struct afp_options *options,
         char *srvloc_hostname;
         const char *hostname;
 
-	err = SLPOpen("en", SLP_FALSE, &hslp);
-	if (err != SLP_OK) {
-	    LOG(log_error, logtype_afpd, "DSIConfigInit: Error opening SRVLOC handle");
-	    goto srvloc_reg_err;
-	}
+    err = SLPOpen("en", SLP_FALSE, &hslp);
+    if (err != SLP_OK) {
+        LOG(log_error, logtype_afpd, "DSIConfigInit: Error opening SRVLOC handle");
+        goto srvloc_reg_err;
+    }
 
-	/* XXX We don't want to tack on the port number if we don't have to.
-	 * Why?
-	 * Well, this seems to break MacOS < 10.  If the user _really_ wants to
-	 * use a non-default port, they can, but be aware, this server might
-	 * not show up int the Network Browser.
-	 */
-	afp_port = getip_port((struct sockaddr *)&dsi->server);
-	/* If specified use the FQDN to register with srvloc, otherwise use IP. */
-	p = NULL;
-	if (options->fqdn) {
-	    hostname = options->fqdn;
-	    p = strchr(hostname, ':');
-	}	
-	else 
-	    hostname = getip_string((struct sockaddr *)&dsi->server);
+    /* XXX We don't want to tack on the port number if we don't have to.
+     * Why?
+     * Well, this seems to break MacOS < 10.  If the user _really_ wants to
+     * use a non-default port, they can, but be aware, this server might
+     * not show up int the Network Browser.
+     */
+    afp_port = getip_port((struct sockaddr *)&dsi->server);
+    /* If specified use the FQDN to register with srvloc, otherwise use IP. */
+    p = NULL;
+    if (options->fqdn) {
+        hostname = options->fqdn;
+        p = strchr(hostname, ':');
+    }
+    else
+        hostname = getip_string((struct sockaddr *)&dsi->server);
 
-	srvloc_hostname = srvloc_encode(options, (options->server ? options->server : options->hostname));
+    srvloc_hostname = srvloc_encode(options, (options->server ? options->server : options->hostname));
 
-	if ((p) || afp_port == 548) {
-	    l = snprintf(dsi->srvloc_url, sizeof(dsi->srvloc_url), "afp://%s/?NAME=%s", hostname, srvloc_hostname);
-	}
-	else {
-	    l = snprintf(dsi->srvloc_url, sizeof(dsi->srvloc_url), "afp://%s:%d/?NAME=%s", hostname, afp_port, srvloc_hostname);
-	}
+    if ((p) || afp_port == 548) {
+        l = snprintf(dsi->srvloc_url, sizeof(dsi->srvloc_url), "afp://%s/?NAME=%s", hostname, srvloc_hostname);
+    }
+    else {
+        l = snprintf(dsi->srvloc_url, sizeof(dsi->srvloc_url), "afp://%s:%d/?NAME=%s", hostname, afp_port, srvloc_hostname);
+    }
 
-	if (l == -1 || l >= (int)sizeof(dsi->srvloc_url)) {
-	    LOG(log_error, logtype_afpd, "DSIConfigInit: Hostname is too long for SRVLOC");
-	    dsi->srvloc_url[0] = '\0';
-	    goto srvloc_reg_err;
-	}
+    if (l == -1 || l >= (int)sizeof(dsi->srvloc_url)) {
+        LOG(log_error, logtype_afpd, "DSIConfigInit: Hostname is too long for SRVLOC");
+        dsi->srvloc_url[0] = '\0';
+        goto srvloc_reg_err;
+    }
 
-	err = SLPReg(hslp,
-		     dsi->srvloc_url,
-		     SLP_LIFETIME_MAXIMUM,
-		     "afp",
-		     "",
-		     SLP_TRUE,
-		     SRVLOC_callback,
-		     &callbackerr);
-	if (err != SLP_OK) {
-	    LOG(log_error, logtype_afpd, "DSIConfigInit: Error registering %s with SRVLOC", dsi->srvloc_url);
-	    dsi->srvloc_url[0] = '\0';
-	    goto srvloc_reg_err;
-	}
+    err = SLPReg(hslp,
+             dsi->srvloc_url,
+             SLP_LIFETIME_MAXIMUM,
+             "afp",
+             "",
+             SLP_TRUE,
+             SRVLOC_callback,
+             &callbackerr);
+    if (err != SLP_OK) {
+        LOG(log_error, logtype_afpd, "DSIConfigInit: Error registering %s with SRVLOC", dsi->srvloc_url);
+        dsi->srvloc_url[0] = '\0';
+        goto srvloc_reg_err;
+    }
 
-	if (callbackerr != SLP_OK) {
-	    LOG(log_error, logtype_afpd, "DSIConfigInit: Error in callback trying to register %s with SRVLOC", dsi->srvloc_url);
-	    dsi->srvloc_url[0] = '\0';
-	    goto srvloc_reg_err;
-	}
+    if (callbackerr != SLP_OK) {
+        LOG(log_error, logtype_afpd, "DSIConfigInit: Error in callback trying to register %s with SRVLOC", dsi->srvloc_url);
+        dsi->srvloc_url[0] = '\0';
+        goto srvloc_reg_err;
+    }
 
-	LOG(log_info, logtype_afpd, "Sucessfully registered %s with SRVLOC", dsi->srvloc_url);
-	config->server_cleanup = dsi_cleanup;
+    LOG(log_info, logtype_afpd, "Sucessfully registered %s with SRVLOC", dsi->srvloc_url);
+    config->server_cleanup = dsi_cleanup;
 
 srvloc_reg_err:
-	SLPClose(hslp);
+    SLPClose(hslp);
     }
 #endif /* USE_SRVLOC */
 
@@ -460,14 +458,13 @@ srvloc_reg_err:
  * entry in config->last or something like that. that would make
  * supporting multiple dsi transports easier. */
 static AFPConfig *AFPConfigInit(struct afp_options *options,
-                                const struct afp_options *defoptions)
-{
+                                const struct afp_options *defoptions) {
     AFPConfig *config = NULL, *next = NULL;
     unsigned char *refcount;
 
     if ((refcount = (unsigned char *)
-                    calloc(1, sizeof(unsigned char))) == NULL) {
-        LOG(log_error, logtype_afpd, "AFPConfigInit: calloc(refcount): %s", strerror(errno) );
+            calloc(1, sizeof(unsigned char))) == NULL) {
+        LOG(log_error, logtype_afpd, "AFPConfigInit: calloc(refcount): %s", strerror(errno));
         return NULL;
     }
 
@@ -492,9 +489,9 @@ static AFPConfig *AFPConfigInit(struct afp_options *options,
      *     next->defoptions = defoptions;
      */
     if ((options->transports & AFPTRANS_TCP) &&
-            (((options->flags & OPTION_PROXY) == 0) ||
-             ((options->flags & OPTION_PROXY) && config))
-            && (next = DSIConfigInit(options, refcount, DSI_TCPIP)))
+        (((options->flags & OPTION_PROXY) == 0) ||
+         ((options->flags & OPTION_PROXY) && config))
+        && (next = DSIConfigInit(options, refcount, DSI_TCPIP)))
         next->defoptions = defoptions;
 
     /* load in all the authentication modules. we can load the same
@@ -518,17 +515,15 @@ static AFPConfig *AFPConfigInit(struct afp_options *options,
 }
 
 /* fill in the appropriate bits for each interface */
-AFPConfig *configinit(struct afp_options *cmdline)
-{
+AFPConfig *configinit(struct afp_options *cmdline) {
     FILE *fp;
     char buf[LINESIZE + 1], *p, have_option = 0;
     size_t len;
     struct afp_options options;
-    AFPConfig *config=NULL, *first = NULL; 
+    AFPConfig *config = NULL, *first = NULL;
 
     /* if config file doesn't exist, load defaults */
-    if ((fp = fopen(cmdline->configfile, "r")) == NULL)
-    {
+    if ((fp = fopen(cmdline->configfile, "r")) == NULL) {
         LOG(log_debug, logtype_afpd, "ConfigFile %s not found, assuming defaults",
             cmdline->configfile);
         return AFPConfigInit(cmdline, cmdline);
@@ -537,14 +532,14 @@ AFPConfig *configinit(struct afp_options *cmdline)
     /* scan in the configuration file */
     len = 0;
     while (!feof(fp)) {
-	if (!fgets(&buf[len], LINESIZE - len, fp) || buf[len] == '#')
+        if (!fgets(&buf[len], LINESIZE - len, fp) || buf[len] == '#')
             continue;
-	len = strlen(buf);
-	if ( len >= 2 && buf[len-2] == '\\' ) {
-	    len -= 2;
-	    continue;
-	} else
-	    len = 0;
+        len = strlen(buf);
+        if (len >= 2 && buf[len - 2] == '\\') {
+            len -= 2;
+            continue;
+        } else
+            len = 0;
 
         /* a little pre-processing to get rid of spaces and end-of-lines */
         p = buf;

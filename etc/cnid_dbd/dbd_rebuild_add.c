@@ -6,7 +6,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -24,8 +26,7 @@
 /* rebuild_add: Enter all fields (including the CNID) into the database and
    update the current cnid, for emergency repairs. */
 
-int dbd_rebuild_add(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply)
-{
+int dbd_rebuild_add(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply) {
     DBT key, data;
     cnid_t cur, tmp, id;
 
@@ -51,7 +52,7 @@ int dbd_rebuild_add(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *
     LOG(log_debug, logtype_cnid,
         "dbd_rebuild_add(CNID: %u, did: %u, name: \"%s\", dev/ino:0x%llx/0x%llx): success",
         ntohl(rqst->cnid), ntohl(rqst->did), rqst->name,
-        (unsigned long long)rqst->dev, (unsigned long long)rqst->ino);
+        (unsigned long long) rqst->dev, (unsigned long long) rqst->ino);
 
     key.data = ROOTINFO_KEY;
     key.size = ROOTINFO_KEYLEN;
@@ -65,7 +66,7 @@ int dbd_rebuild_add(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *
 
     memcpy(&tmp, (char *) data.data + CNID_TYPE_OFS, sizeof(cnid_t));
     cur = ntohl(tmp);
-    id  = ntohl(rqst->cnid);
+    id = ntohl(rqst->cnid);
 
     if (id > cur) {
         data.size = ROOTINFO_DATALEN;

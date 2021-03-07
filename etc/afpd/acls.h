@@ -12,14 +12,14 @@
    GNU General Public License for more details.
  */
 
-#ifndef AFPD_ACLS_H 
+#ifndef AFPD_ACLS_H
 #define AFPD_ACLS_H
 
 #ifdef HAVE_SOLARIS_ACLS
 #include <sys/acl.h>
 #endif
 
-#include <atalk/uuid.h>		/* for atalk_uuid_t */
+#include <atalk/uuid.h>        /* for atalk_uuid_t */
 
 /*
  * This is what Apple says about ACL flags in sys/kauth.h:
@@ -41,11 +41,11 @@
 
 /* FPGet|Set Bitmap */
 enum {
-    kFileSec_UUID      = (1<<0),
-    kFileSec_GRPUUID   = (1<<1),
-    kFileSec_ACL       = (1<<2),
-    kFileSec_REMOVEACL = (1<<3),
-    kFileSec_Inherit   = (1<<4)
+    kFileSec_UUID = (1 << 0),
+    kFileSec_GRPUUID = (1 << 1),
+    kFileSec_ACL = (1 << 2),
+    kFileSec_REMOVEACL = (1 << 3),
+    kFileSec_Inherit = (1 << 4)
 };
 
 /* ACL Flags */
@@ -93,9 +93,9 @@ enum {
 
 /* Access Control List Entry (ACE) */
 typedef struct {
-    atalk_uuid_t      darwin_ace_uuid;
-    uint32_t    darwin_ace_flags;
-    uint32_t    darwin_ace_rights;
+    atalk_uuid_t darwin_ace_uuid;
+    uint32_t darwin_ace_flags;
+    uint32_t darwin_ace_rights;
 } darwin_ace_t;
 
 /* Access Control List */
@@ -105,14 +105,18 @@ typedef struct {
 } darwin_acl_header_t;
 
 /* FP functions */
-int afp_access (AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,  size_t *rbuflen);
-int afp_getacl (AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,  size_t *rbuflen);
-int afp_setacl (AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,  size_t *rbuflen);
+int afp_access(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+
+int afp_getacl(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+
+int afp_setacl(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
 
 /* Parse afp_ldap.conf */
 extern int acl_ldap_readconfig(char *name);
 
 /* Misc funcs */
 extern int acltoownermode(const struct vol *vol, char *path, struct stat *st, struct maccess *ma);
+
 extern int check_vol_acl_support(const struct vol *vol);
+
 #endif

@@ -99,4 +99,4 @@ struct darwin_to_nfsv4_flags_map darwin_to_nfsv4_flags[] = {
 };
 #endif /* HAVE_SOLARIS_ACLS */
 
-#endif	/* ACL_MAPPINGS */
+#endif    /* ACL_MAPPINGS */

@@ -9,7 +9,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #ifndef NO_DDP
@@ -82,44 +84,44 @@ static void afp_authprint_remove(AFPObj *obj)
     memset( addr_filename_buff, 0, 256 );
 
     if (stat(addr_filename, &cap_st) == 0) {
-	if( S_ISREG(cap_st.st_mode) ) {
-	    int len;
-	    int capfd = open( addr_filename, O_RDONLY );
-	    if ((len = read( capfd, addr_filename_buff, 256 )) > 0) {
-		int file_pid;
-		char *p_filepid;
-		addr_filename_buff[len] = 0;
-		if ( (p_filepid = strrchr(addr_filename_buff, ':')) != NULL) {
-		    *p_filepid = '\0';
-		    p_filepid++;
-		    file_pid = atoi(p_filepid);
-		    if (file_pid == (int)getpid()) {
-			if(unlink(addr_filename) == 0) {
-			    LOG(log_info, logtype_afpd, "removed %s", addr_filename);
-			} else {
-			    LOG(log_info, logtype_afpd, "error removing %s: %s",
-				    addr_filename, strerror(errno));
-			}
-		    } else {
-			LOG(log_info, logtype_afpd, "%s belongs to another pid %d",
-			     addr_filename, file_pid );
-		    }
-		} else { /* no pid info */
-		    if (unlink(addr_filename) == 0) {
-			LOG(log_info, logtype_afpd, "removed %s", addr_filename );
-		    } else {
-			LOG(log_info, logtype_afpd, "error removing %s: %s",
-				addr_filename, strerror(errno));
-		    }
-		}
-	    } else {
-		LOG(log_info, logtype_afpd, "couldn't read data from %s", addr_filename );
-	    }
+    if( S_ISREG(cap_st.st_mode) ) {
+        int len;
+        int capfd = open( addr_filename, O_RDONLY );
+        if ((len = read( capfd, addr_filename_buff, 256 )) > 0) {
+        int file_pid;
+        char *p_filepid;
+        addr_filename_buff[len] = 0;
+        if ( (p_filepid = strrchr(addr_filename_buff, ':')) != NULL) {
+            *p_filepid = '\0';
+            p_filepid++;
+            file_pid = atoi(p_filepid);
+            if (file_pid == (int)getpid()) {
+            if(unlink(addr_filename) == 0) {
+                LOG(log_info, logtype_afpd, "removed %s", addr_filename);
+            } else {
+                LOG(log_info, logtype_afpd, "error removing %s: %s",
+                    addr_filename, strerror(errno));
+            }
+            } else {
+            LOG(log_info, logtype_afpd, "%s belongs to another pid %d",
+                 addr_filename, file_pid );
+            }
+        } else { /* no pid info */
+            if (unlink(addr_filename) == 0) {
+            LOG(log_info, logtype_afpd, "removed %s", addr_filename );
+            } else {
+            LOG(log_info, logtype_afpd, "error removing %s: %s",
+                addr_filename, strerror(errno));
+            }
+        }
+        } else {
+        LOG(log_info, logtype_afpd, "couldn't read data from %s", addr_filename );
+        }
         if (capfd != -1)
             close(capfd);
-	} else {
-	    LOG(log_info, logtype_afpd, "%s is not a regular file", addr_filename );
-	}
+    } else {
+        LOG(log_info, logtype_afpd, "%s is not a regular file", addr_filename );
+    }
     } else {
         LOG(log_info, logtype_afpd, "error stat'ing %s: %s",
                    addr_filename, strerror(errno));
@@ -214,7 +216,7 @@ void afp_over_asp(AFPObj *obj)
     int		func,  reply = 0;
 #ifdef DEBUG1
     int ccnt = 0;
-#endif    
+#endif
 
     AFPobj = obj;
     obj->exit = afp_asp_die;
@@ -223,19 +225,19 @@ void afp_over_asp(AFPObj *obj)
     child = obj;
     asp = (ASP) obj->handle;
 
-    /* install signal handlers 
+    /* install signal handlers
      * With ASP tickle handler is done in the parent process
     */
     memset(&action, 0, sizeof(action));
 
     /* install SIGHUP */
-    action.sa_handler = afp_asp_reload; 
+    action.sa_handler = afp_asp_reload;
     sigemptyset( &action.sa_mask );
     sigaddset(&action.sa_mask, SIGTERM);
     sigaddset(&action.sa_mask, SIGUSR1);
 #ifdef SERVERTEXT
     sigaddset(&action.sa_mask, SIGUSR2);
-#endif    
+#endif
     action.sa_flags = SA_RESTART;
     if ( sigaction( SIGHUP, &action, NULL ) < 0 ) {
         LOG(log_error, logtype_afpd, "afp_over_asp: sigaction: %s", strerror(errno) );
@@ -249,7 +251,7 @@ void afp_over_asp(AFPObj *obj)
     sigaddset(&action.sa_mask, SIGUSR1);
 #ifdef SERVERTEXT
     sigaddset(&action.sa_mask, SIGUSR2);
-#endif    
+#endif
     action.sa_flags = SA_RESTART;
     if ( sigaction( SIGTERM, &action, NULL ) < 0 ) {
         LOG(log_error, logtype_afpd, "afp_over_asp: sigaction: %s", strerror(errno) );
@@ -271,13 +273,13 @@ void afp_over_asp(AFPObj *obj)
 #endif /* SERVERTEXT */
 
     /*  SIGUSR1 - set down in 5 minutes  */
-    action.sa_handler = afp_asp_timedown; 
+    action.sa_handler = afp_asp_timedown;
     sigemptyset( &action.sa_mask );
     sigaddset(&action.sa_mask, SIGHUP);
     sigaddset(&action.sa_mask, SIGTERM);
 #ifdef SERVERTEXT
     sigaddset(&action.sa_mask, SIGUSR2);
-#endif    
+#endif
     action.sa_flags = SA_RESTART;
     if ( sigaction( SIGUSR1, &action, NULL ) < 0 ) {
         LOG(log_error, logtype_afpd, "afp_over_asp: sigaction: %s", strerror(errno) );
@@ -319,7 +321,7 @@ void afp_over_asp(AFPObj *obj)
             if ( writtenfork ) {
                 if ( flushfork( writtenfork ) < 0 ) {
                     LOG(log_error, logtype_afpd, "main flushfork: %s",
-						strerror(errno));
+                        strerror(errno));
                 }
                 writtenfork = NULL;
             }
@@ -330,7 +332,7 @@ void afp_over_asp(AFPObj *obj)
                 printf("command: %d (%s)\n", func, AfpNum2name(func));
                 bprint( asp->commands, asp->cmdlen );
             }
-#endif            
+#endif
             if ( afp_switch[ func ] != NULL ) {
                 /*
                  * The function called from afp_switch is expected to
@@ -343,9 +345,9 @@ void afp_over_asp(AFPObj *obj)
                                               asp->commands, asp->cmdlen,
                                               asp->data, &asp->datalen);
 #ifdef FORCE_UIDGID
-            	/* bring everything back to old euid, egid */
-		if (obj->force_uid)
-            	    restore_uidgid ( &obj->uidgid );
+                /* bring everything back to old euid, egid */
+        if (obj->force_uid)
+                    restore_uidgid ( &obj->uidgid );
 #endif /* FORCE_UIDGID */
             } else {
                 LOG(log_error, logtype_afpd, "bad function %X", func );
@@ -378,9 +380,9 @@ void afp_over_asp(AFPObj *obj)
                                               asp->commands, asp->cmdlen,
                                               asp->data, &asp->datalen);
 #ifdef FORCE_UIDGID
-            	/* bring everything back to old euid, egid */
-		if (obj->force_uid)
-            	    restore_uidgid ( &obj->uidgid );
+                /* bring everything back to old euid, egid */
+        if (obj->force_uid)
+                    restore_uidgid ( &obj->uidgid );
 #endif /* FORCE_UIDGID */
             } else {
                 LOG(log_error, logtype_afpd, "(write) bad function %X", func );

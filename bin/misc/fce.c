@@ -1,5 +1,7 @@
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -24,27 +26,25 @@
 #define MAXBUFLEN 1024
 
 static char *fce_ev_names[] = {
-    "",
-    "FCE_FILE_MODIFY",
-    "FCE_FILE_DELETE",
-    "FCE_DIR_DELETE",
-    "FCE_FILE_CREATE",
-    "FCE_DIR_CREATE",
-    "FCE_TM_SIZE"
+        "",
+        "FCE_FILE_MODIFY",
+        "FCE_FILE_DELETE",
+        "FCE_DIR_DELETE",
+        "FCE_FILE_CREATE",
+        "FCE_DIR_CREATE",
+        "FCE_TM_SIZE"
 };
 
 // get sockaddr, IPv4 or IPv6:
-static void *get_in_addr(struct sockaddr *sa)
-{
+static void *get_in_addr(struct sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
+        return &(((struct sockaddr_in *) sa)->sin_addr);
     }
 
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+    return &(((struct sockaddr_in6 *) sa)->sin6_addr);
 }
 
-static int unpack_fce_packet(unsigned char *buf, struct fce_packet *packet)
-{
+static int unpack_fce_packet(unsigned char *buf, struct fce_packet *packet) {
     unsigned char *p = buf;
 
     memcpy(&packet->magic[0], p, sizeof(packet->magic));
@@ -70,8 +70,7 @@ static int unpack_fce_packet(unsigned char *buf, struct fce_packet *packet)
     return 0;
 }
 
-int main(void)
-{
+int main(void) {
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
@@ -92,7 +91,7 @@ int main(void)
     }
 
     // loop through all the results and bind to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next) {
+    for (p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                              p->ai_protocol)) == -1) {
             perror("listener: socket");
@@ -125,36 +124,36 @@ int main(void)
                                  buf,
                                  MAXBUFLEN - 1,
                                  0,
-                                 (struct sockaddr *)&their_addr,
+                                 (struct sockaddr *) &their_addr,
                                  &addr_len)) == -1) {
             perror("recvfrom");
             exit(1);
         }
 
-        unpack_fce_packet((unsigned char *)buf, &packet);
+        unpack_fce_packet((unsigned char *) buf, &packet);
 
         if (memcmp(packet.magic, FCE_PACKET_MAGIC, sizeof(packet.magic)) == 0) {
 
             switch (packet.mode) {
-            case FCE_TM_SIZE:
-                memcpy(&tmsize, packet.data, sizeof(uint64_t));
-                tmsize = ntoh64(tmsize);
-                printf("ID: %" PRIu32 ", Event: %s, Volume: %s, TM used size: %" PRIu64 " \n",
-                       packet.event_id, fce_ev_names[packet.mode], packet.data + sizeof(uint64_t), tmsize);
-                break;
+                case FCE_TM_SIZE:
+                    memcpy(&tmsize, packet.data, sizeof(uint64_t));
+                    tmsize = ntoh64(tmsize);
+                    printf("ID: %" PRIu32 ", Event: %s, Volume: %s, TM used size: %" PRIu64 " \n",
+                           packet.event_id, fce_ev_names[packet.mode], packet.data + sizeof(uint64_t), tmsize);
+                    break;
 
-            case FCE_CONN_START:
-                printf("FCE Start\n");
-                break;
+                case FCE_CONN_START:
+                    printf("FCE Start\n");
+                    break;
 
-            case FCE_CONN_BROKEN:
-                printf("Broken FCE connection\n");
-                break;
+                case FCE_CONN_BROKEN:
+                    printf("Broken FCE connection\n");
+                    break;
 
-            default:
-                printf("ID: %" PRIu32 ", Event: %s, Path: %s\n",
-                       packet.event_id, fce_ev_names[packet.mode], packet.data);
-                break;
+                default:
+                    printf("ID: %" PRIu32 ", Event: %s, Path: %s\n",
+                           packet.event_id, fce_ev_names[packet.mode], packet.data);
+                    break;
             }
         }
     }

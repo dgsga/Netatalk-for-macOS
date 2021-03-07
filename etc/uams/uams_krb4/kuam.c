@@ -101,7 +101,7 @@ kuam_get_in_tkt(user, instance, realm, service, sinstance, life, rpkt )
     (void) strcpy((char *)(pkt->dat+2),user); /* aname */
     pkt->length = 3 + strlen(user);
     (void) strcpy((char *)(pkt->dat+pkt->length),
-		  instance);	/* instance */
+          instance);	/* instance */
     pkt->length += 1 + strlen(instance);
     (void) strcpy((char *)(pkt->dat+pkt->length),realm); /* realm */
     pkt->length += 1 + strlen(realm);
@@ -189,7 +189,7 @@ kuam_set_in_tkt( user, instance, realm, service, sinstance, ptr)
 
     if (strcmp(s_name, service) || strcmp(s_instance, sinstance) ||
         strcmp(rlm, realm))	/* not what we asked for */
-	return(INTK_ERR);	/* we need a better code here XXX */
+    return(INTK_ERR);	/* we need a better code here XXX */
 
     /* check KDC time stamp */
     memcpy(&kdc_time, ptr, 4); /* Time (coarse) */
@@ -205,12 +205,12 @@ kuam_set_in_tkt( user, instance, realm, service, sinstance, ptr)
 
     /* initialize ticket cache */
     if (in_tkt(user,instance) != KSUCCESS)
-	return(INTK_ERR);
+    return(INTK_ERR);
 
     /* stash ticket, session key, etc. for future use */
     if (kerror = save_credentials(s_name, s_instance, rlm, ses,
-				  lifetime, kvno, tkt, t_local.tv_sec))
-	return(kerror);
+                  lifetime, kvno, tkt, t_local.tv_sec))
+    return(kerror);
 
     return(INTK_OK);
 }

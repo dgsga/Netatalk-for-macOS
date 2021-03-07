@@ -13,7 +13,9 @@
 */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <unistd.h>
@@ -43,14 +45,12 @@ static volatile sig_atomic_t alarmed;
   catch SIGINT and SIGTERM which cause clean exit. Ignore anything else.
 */
 
-static void sig_handler(int signo)
-{
+static void sig_handler(int signo) {
     alarmed = 1;
     return;
 }
 
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_handler;
@@ -76,29 +76,27 @@ static void set_signal(void)
         ERROR("error in sigaction(SIGQUIT): %s", strerror(errno));
 }
 
-static void usage_find(void)
-{
+static void usage_find(void) {
     printf(
-        "Usage: ad find [-v VOLUME_PATH] NAME\n"
-        );
+            "Usage: ad find [-v VOLUME_PATH] NAME\n"
+    );
 }
 
-int ad_find(int argc, char **argv)
-{
+int ad_find(int argc, char **argv) {
     int c, ret;
     afpvol_t vol;
     const char *srchvol = getcwdpath();
 
-    while ((c = getopt(argc-1, &argv[1], ":v:")) != -1) {
-        switch(c) {
-        case 'v':
-            srchvol = strdup(optarg);
-            break;
-        case ':':
-        case '?':
-            usage_find();
-            return -1;
-            break;
+    while ((c = getopt(argc - 1, &argv[1], ":v:")) != -1) {
+        switch (c) {
+            case 'v':
+                srchvol = strdup(optarg);
+                break;
+            case ':':
+            case '?':
+                usage_find();
+                return -1;
+                break;
         }
 
     }
@@ -124,7 +122,7 @@ int ad_find(int argc, char **argv)
                         strlen(argv[optind]),
                         namebuf,
                         MAXPATHLEN,
-                        &flags) == (size_t)-1) {
+                        &flags) == (size_t) -1) {
         ERROR("conversion error");
     }
 
@@ -161,10 +159,10 @@ int ad_find(int argc, char **argv)
             }
             bstrListPush(pathlist, volpath);
             path = bjoinInv(pathlist, sep);
-            
+
             printf("%s\n", cfrombstr(path));
 
-        next:
+            next:
             bstrListDestroy(pathlist);
             bdestroy(path);
         }

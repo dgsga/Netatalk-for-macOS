@@ -13,7 +13,9 @@
 */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <unistd.h>
@@ -54,22 +56,22 @@ static int ls_u;
 static int first = 1;
 static int recursion;
 
-static char           *netatalk_dirs[] = {
-    ADv2_DIRNAME,
-    ".AppleDB",
-    ".AppleDesktop",
-    NULL
+static char *netatalk_dirs[] = {
+        ADv2_DIRNAME,
+        ".AppleDB",
+        ".AppleDesktop",
+        NULL
 };
 
 static char *labels[] = {
-    "---",
-    "gry",
-    "gre",
-    "vio",
-    "blu",
-    "yel",
-    "red",
-    "ora"
+        "---",
+        "gry",
+        "gre",
+        "vio",
+        "blu",
+        "yel",
+        "red",
+        "ora"
 };
 
 /*
@@ -77,14 +79,12 @@ static char *labels[] = {
   catch SIGINT and SIGTERM which cause clean exit. Ignore anything else.
 */
 
-static void sig_handler(int signo)
-{
+static void sig_handler(int signo) {
     alarmed = 1;
     return;
 }
 
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_handler;
@@ -114,11 +114,10 @@ static void set_signal(void)
   Check for netatalk special folders e.g. ".AppleDB" or ".AppleDesktop"
   Returns pointer to name or NULL.
 */
-static const char *check_netatalk_dirs(const char *name)
-{
+static const char *check_netatalk_dirs(const char *name) {
     int c;
 
-    for (c=0; netatalk_dirs[c]; c++) {
+    for (c = 0; netatalk_dirs[c]; c++) {
         if ((strcmp(name, netatalk_dirs[c])) == 0)
             return netatalk_dirs[c];
     }
@@ -126,76 +125,70 @@ static const char *check_netatalk_dirs(const char *name)
 }
 
 
-static void usage_ls(void)
-{
+static void usage_ls(void) {
     printf(
-        "Usage: ad ls [-dRl[u]] [file|dir, ...]\n\n"
-        "  -l Long Output [-u: unix info]:\n"
-        "     <unixinfo ...> <FinderFlags> <AFPAttributes> <Color> <Type> <Creator> <CNID from AppleDouble> <name>\n\n"
-        "     FinderFlags (valid for (f)ile and/or (d)irectory):\n"
-        "       d = On Desktop (f/d)\n"
-        "       e = Hidden extension (f/d)\n"
-        "       m = Shared (can run multiple times) (f)\n"
-        "       n = No INIT resources (f)\n"
-        "       i = Inited (f/d)\n"
-        "       c = Custom icon (f/d)\n"
-        "       t = Stationery (f)\n"
-        "       s = Name locked (f/d)\n"
-        "       b = Bundle (f/d)\n"
-        "       v = Invisible (f/d)\n"
-        "       a = Alias file (f/d)\n\n"
-        "     AFPAttributes:\n"
-        "       y = System (f/d)\n"
-        "       w = No write (f)\n"
-        "       p = Needs backup (f/d)\n"
-        "       r = No rename (f/d)\n"
-        "       l = No delete (f/d)\n"
-        "       o = No copy (f)\n\n"
-        "     Note: any letter appearing in uppercase means the flag is set\n"
-        "           but it's a directory for which the flag is not allowed.\n"
-        );
+            "Usage: ad ls [-dRl[u]] [file|dir, ...]\n\n"
+            "  -l Long Output [-u: unix info]:\n"
+            "     <unixinfo ...> <FinderFlags> <AFPAttributes> <Color> <Type> <Creator> <CNID from AppleDouble> <name>\n\n"
+            "     FinderFlags (valid for (f)ile and/or (d)irectory):\n"
+            "       d = On Desktop (f/d)\n"
+            "       e = Hidden extension (f/d)\n"
+            "       m = Shared (can run multiple times) (f)\n"
+            "       n = No INIT resources (f)\n"
+            "       i = Inited (f/d)\n"
+            "       c = Custom icon (f/d)\n"
+            "       t = Stationery (f)\n"
+            "       s = Name locked (f/d)\n"
+            "       b = Bundle (f/d)\n"
+            "       v = Invisible (f/d)\n"
+            "       a = Alias file (f/d)\n\n"
+            "     AFPAttributes:\n"
+            "       y = System (f/d)\n"
+            "       w = No write (f)\n"
+            "       p = Needs backup (f/d)\n"
+            "       r = No rename (f/d)\n"
+            "       l = No delete (f/d)\n"
+            "       o = No copy (f)\n\n"
+            "     Note: any letter appearing in uppercase means the flag is set\n"
+            "           but it's a directory for which the flag is not allowed.\n"
+    );
 }
 
-static void print_numlinks(const struct stat *statp)
-{
-    printf("%5ld", (long)statp->st_nlink);
+static void print_numlinks(const struct stat *statp) {
+    printf("%5ld", (long) statp->st_nlink);
 }
 
-static void print_owner(const struct stat *statp)
-{
+static void print_owner(const struct stat *statp) {
     struct passwd *pwd = getpwuid(statp->st_uid);
 
     if (pwd == NULL)
-        printf(" %-8ld", (long)statp->st_uid);
+        printf(" %-8ld", (long) statp->st_uid);
     else
         printf(" %-8s", pwd->pw_name);
 }
 
-static void print_group(const struct stat *statp)
-{
+static void print_group(const struct stat *statp) {
     struct group *grp = getgrgid(statp->st_gid);
 
     if (grp == NULL)
-        printf(" %-8ld", (long)statp->st_gid);
+        printf(" %-8ld", (long) statp->st_gid);
     else
         printf(" %-8s", grp->gr_name);
 }
 
-static void print_size(const struct stat *statp)
-{
+static void print_size(const struct stat *statp) {
     switch (statp->st_mode & S_IFMT) {
-    case S_IFCHR:
-    case S_IFBLK:
-        printf("%4u,%4u", (unsigned)(statp->st_rdev >> 8),
-               (unsigned)(statp->st_rdev & 0xFF));
-        break;
-    default:
-        printf("%9lu", (unsigned long)statp->st_size);
+        case S_IFCHR:
+        case S_IFBLK:
+            printf("%4u,%4u", (unsigned) (statp->st_rdev >> 8),
+                   (unsigned) (statp->st_rdev & 0xFF));
+            break;
+        default:
+            printf("%9lu", (unsigned long) statp->st_size);
     }
 }
 
-static void print_date(const struct stat *statp)
-{
+static void print_date(const struct stat *statp) {
     time_t now;
     double diff;
     char buf[100], *fmt;
@@ -213,8 +206,7 @@ static void print_date(const struct stat *statp)
     printf(" %s", buf);
 }
 
-static void print_flags(char *path, afpvol_t *vol, const struct stat *st)
-{
+static void print_flags(char *path, afpvol_t *vol, const struct stat *st) {
     int adflags = 0;
     struct adouble ad;
     char *FinderInfo;
@@ -233,7 +225,7 @@ static void print_flags(char *path, afpvol_t *vol, const struct stat *st)
 
     ad_init(&ad, vol->volinfo.v_adouble, vol->volinfo.v_ad_options);
 
-    if ( ad_metadata(path, adflags, &ad) < 0 )
+    if (ad_metadata(path, adflags, &ad) < 0)
         return;
 
     FinderInfo = ad_entry(&ad, ADEID_FINDERI);
@@ -351,7 +343,7 @@ static void print_flags(char *path, afpvol_t *vol, const struct stat *st)
         if (adflags & ADFLAGS_DIR)
             putchar('O');
         else
-            putchar('o');                
+            putchar('o');
     } else
         putchar('-');
 
@@ -359,20 +351,20 @@ static void print_flags(char *path, afpvol_t *vol, const struct stat *st)
     printf(" %s ", labels[(FinderFlags & FINDERINFO_COLOR) >> 1]);
 
     /* Type & Creator */
-    for(i=0; i<4; i++) {
+    for (i = 0; i < 4; i++) {
         if (isalnum(type[i]))
             putchar(type[i]);
         else
             putchar('-');
     }
-    putchar(' '); 
-    for(i=0; i<4; i++) {
+    putchar(' ');
+    for (i = 0; i < 4; i++) {
         if (isalnum(creator[i]))
             putchar(creator[i]);
         else
             putchar('-');
     }
-    putchar(' '); 
+    putchar(' ');
 
     /* CNID */
     cnid = ad_forcegetid(&ad);
@@ -387,8 +379,7 @@ static void print_flags(char *path, afpvol_t *vol, const struct stat *st)
 #define TYPE(b) ((st->st_mode & (S_IFMT)) == (b))
 #define MODE(b) ((st->st_mode & (b)) == (b))
 
-static void print_mode(const struct stat *st)
-{
+static void print_mode(const struct stat *st) {
     if (TYPE(S_IFBLK))
         putchar('b');
     else if (TYPE(S_IFCHR))
@@ -412,8 +403,7 @@ static void print_mode(const struct stat *st)
             putchar('s');
         else
             putchar('S');
-    }
-    else if (MODE(S_IXUSR))
+    } else if (MODE(S_IXUSR))
         putchar('x');
     else
         putchar('-');
@@ -424,8 +414,7 @@ static void print_mode(const struct stat *st)
             putchar('s');
         else
             putchar('S');
-    }
-    else if (MODE(S_IXGRP))
+    } else if (MODE(S_IXGRP))
         putchar('x');
     else
         putchar('-');
@@ -436,18 +425,17 @@ static void print_mode(const struct stat *st)
             putchar('t');
         else
             putchar('T');
-    }
-    else if (MODE(S_IXOTH))
+    } else if (MODE(S_IXOTH))
         putchar('x');
     else
         putchar('-');
 }
+
 #undef TYPE
 #undef MODE
 
-static int ad_print(char *path, const struct stat *st, afpvol_t *vol)
-{
-    if ( ! ls_l) {
+static int ad_print(char *path, const struct stat *st, afpvol_t *vol) {
+    if (!ls_l) {
         printf("%s  ", path);
         if (ls_d)
             printf("\n");
@@ -464,23 +452,22 @@ static int ad_print(char *path, const struct stat *st, afpvol_t *vol)
         print_date(st);
     }
     print_flags(path, vol, st);
-    printf("  %s\n", path);    
+    printf("  %s\n", path);
 
 
     return 0;
 }
 
-static int ad_ls_r(char *path, afpvol_t *vol)
-{
+static int ad_ls_r(char *path, afpvol_t *vol) {
     int ret = 0, cwd, dirprinted = 0, dirempty;
     const char *name;
     char *tmp;
-    static char cwdpath[MAXPATHLEN+1];
+    static char cwdpath[MAXPATHLEN + 1];
     DIR *dp;
     struct dirent *ep;
     static struct stat st;      /* Save some stack space */
 
-    if ( first)
+    if (first)
         cwdpath[0] = 0;
     else
         strcat(cwdpath, "/");
@@ -507,14 +494,14 @@ static int ad_ls_r(char *path, afpvol_t *vol)
         return -1;
     }
 
-    if ((dp = opendir (".")) == NULL) {
+    if ((dp = opendir(".")) == NULL) {
         perror("Couldn't opendir .");
         return -1;
     }
 
     /* First run: print everything */
     dirempty = 1;
-    while ((ep = readdir (dp))) {
+    while ((ep = readdir(dp))) {
         if (alarmed) {
             ret = -1;
             goto exit;
@@ -528,12 +515,12 @@ static int ad_ls_r(char *path, afpvol_t *vol)
         if ((name = check_netatalk_dirs(ep->d_name)) != NULL)
             continue;
 
-        if ((ep->d_name[0] == '.') && ! ls_a)
+        if ((ep->d_name[0] == '.') && !ls_a)
             continue;
 
         dirempty = 0;
 
-        if (recursion && ! dirprinted) {
+        if (recursion && !dirprinted) {
             printf("\n%s:\n", cwdpath);
             dirprinted = 1;
         }
@@ -548,13 +535,13 @@ static int ad_ls_r(char *path, afpvol_t *vol)
             goto exit;
     }
 
-    if (! ls_l && ! dirempty)
+    if (!ls_l && !dirempty)
         printf("\n");
 
     /* Second run: recurse to dirs */
     if (ls_R) {
         rewinddir(dp);
-        while ((ep = readdir (dp))) {
+        while ((ep = readdir(dp))) {
             if (alarmed) {
                 ret = -1;
                 goto exit;
@@ -583,7 +570,7 @@ static int ad_ls_r(char *path, afpvol_t *vol)
         }
     }
 
-exit:
+    exit:
     closedir(dp);
     fchdir(cwd);
     close(cwd);
@@ -595,34 +582,33 @@ exit:
     return ret;
 }
 
-int ad_ls(int argc, char **argv)
-{
+int ad_ls(int argc, char **argv) {
     int c, firstarg;
     afpvol_t vol;
     struct stat st;
 
     while ((c = getopt(argc, argv, ":adlRu")) != -1) {
-        switch(c) {
-        case 'a':
-            ls_a = 1;
-            break;
-        case 'd':
-            ls_d = 1;
-            break;
-        case 'l':
-            ls_l = 1;
-            break;
-        case 'R':
-            ls_R = 1;
-            break;
-        case 'u':
-            ls_u = 1;
-            break;
-        case ':':
-        case '?':
-            usage_ls();
-            return -1;
-            break;
+        switch (c) {
+            case 'a':
+                ls_a = 1;
+                break;
+            case 'd':
+                ls_d = 1;
+                break;
+            case 'l':
+                ls_l = 1;
+                break;
+            case 'R':
+                ls_R = 1;
+                break;
+            case 'u':
+                ls_u = 1;
+                break;
+            case ':':
+            case '?':
+                usage_ls();
+                return -1;
+                break;
         }
 
     }
@@ -634,14 +620,13 @@ int ad_ls(int argc, char **argv)
         openvol(".", &vol);
         ad_ls_r(".", &vol);
         closevol(&vol);
-    }
-    else {
+    } else {
         int havefile = 0;
 
         firstarg = optind;
 
         /* First run: only print files from argv paths */
-        while(optind < argc) {
+        while (optind < argc) {
             if (stat(argv[optind], &st) != 0)
                 goto next;
             if (S_ISDIR(st.st_mode))
@@ -654,18 +639,18 @@ int ad_ls(int argc, char **argv)
             openvol(argv[optind], &vol);
             ad_ls_r(argv[optind], &vol);
             closevol(&vol);
-        next:
+            next:
             optind++;
         }
-        if (havefile && (! ls_l))
+        if (havefile && (!ls_l))
             printf("\n");
 
         /* Second run: print dirs */
         optind = firstarg;
-        while(optind < argc) {
+        while (optind < argc) {
             if (stat(argv[optind], &st) != 0)
                 goto next2;
-            if ( ! S_ISDIR(st.st_mode))
+            if (!S_ISDIR(st.st_mode))
                 goto next2;
             if ((optind > firstarg) || havefile)
                 printf("\n%s:\n", argv[optind]);
@@ -677,7 +662,7 @@ int ad_ls(int argc, char **argv)
             ad_ls_r(argv[optind], &vol);
             closevol(&vol);
 
-        next2:
+            next2:
             optind++;
         }
 

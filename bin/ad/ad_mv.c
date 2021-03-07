@@ -13,7 +13,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <sys/types.h>
@@ -51,26 +53,28 @@ static int fflg, iflg, nflg, vflg;
 static afpvol_t svolume, dvolume;
 static cnid_t did, pdid;
 static volatile sig_atomic_t alarmed;
-static char           *netatalk_dirs[] = {
-    ".AppleDouble",
-    ".AppleDB",
-    ".AppleDesktop",
-    NULL
+static char *netatalk_dirs[] = {
+        ".AppleDouble",
+        ".AppleDB",
+        ".AppleDesktop",
+        NULL
 };
 
 static int copy(const char *, const char *);
+
 static int do_move(const char *, const char *);
+
 static void preserve_fd_acls(int source_fd, int dest_fd, const char *source_path,
                              const char *dest_path);
+
 /*
   Check for netatalk special folders e.g. ".AppleDB" or ".AppleDesktop"
   Returns pointer to name or NULL.
 */
-static const char *check_netatalk_dirs(const char *name)
-{
+static const char *check_netatalk_dirs(const char *name) {
     int c;
 
-    for (c=0; netatalk_dirs[c]; c++) {
+    for (c = 0; netatalk_dirs[c]; c++) {
         if ((strcmp(name, netatalk_dirs[c])) == 0)
             return netatalk_dirs[c];
     }
@@ -82,14 +86,12 @@ static const char *check_netatalk_dirs(const char *name)
   catch SIGINT and SIGTERM which cause clean exit. Ignore anything else.
 */
 
-static void sig_handler(int signo)
-{
+static void sig_handler(int signo) {
     alarmed = 1;
     return;
 }
 
-static void set_signal(void)
-{
+static void set_signal(void) {
     struct sigaction sv;
 
     sv.sa_handler = sig_handler;
@@ -115,33 +117,31 @@ static void set_signal(void)
         ERROR("error in sigaction(SIGQUIT): %s", strerror(errno));
 }
 
-static void usage_mv(void)
-{
+static void usage_mv(void) {
     printf(
-        "Usage: ad mv [-f | -i | -n] [-v] source target\n"
-        "       ad mv [-f | -i | -n] [-v] source ... directory\n\n"
-        "Move files around within an AFP volume, updating the CNID\n"
-        "database as needed. If either:\n"
-        " - source or destination is not an AFP volume\n"
-        " - source volume != destinatio volume\n"
-        "the files are copied and removed from the source.\n\n"
-        "The following options are available:\n\n"
-        "   -f   Do not prompt for confirmation before overwriting the destination\n"
-        "        path.  (The -f option overrides any previous -i or -n options.)\n"
-        "   -i   Cause mv to write a prompt to standard error before moving a file\n"
-        "        that would overwrite an existing file.  If the response from the\n"
-        "        standard input begins with the character `y' or `Y', the move is\n"
-        "        attempted.  (The -i option overrides any previous -f or -n\n"
-        "        options.)\n"
-        "   -n   Do not overwrite an existing file.  (The -n option overrides any\n"
-        "        previous -f or -i options.)\n"
-        "   -v   Cause mv to be verbose, showing files after they are moved.\n"
-        );
+            "Usage: ad mv [-f | -i | -n] [-v] source target\n"
+            "       ad mv [-f | -i | -n] [-v] source ... directory\n\n"
+            "Move files around within an AFP volume, updating the CNID\n"
+            "database as needed. If either:\n"
+            " - source or destination is not an AFP volume\n"
+            " - source volume != destinatio volume\n"
+            "the files are copied and removed from the source.\n\n"
+            "The following options are available:\n\n"
+            "   -f   Do not prompt for confirmation before overwriting the destination\n"
+            "        path.  (The -f option overrides any previous -i or -n options.)\n"
+            "   -i   Cause mv to write a prompt to standard error before moving a file\n"
+            "        that would overwrite an existing file.  If the response from the\n"
+            "        standard input begins with the character `y' or `Y', the move is\n"
+            "        attempted.  (The -i option overrides any previous -f or -n\n"
+            "        options.)\n"
+            "   -n   Do not overwrite an existing file.  (The -n option overrides any\n"
+            "        previous -f or -i options.)\n"
+            "   -v   Cause mv to be verbose, showing files after they are moved.\n"
+    );
     exit(EXIT_FAILURE);
 }
 
-int ad_mv(int argc, char *argv[])
-{
+int ad_mv(int argc, char *argv[]) {
     size_t baselen, len;
     int rval;
     char *p, *endp;
@@ -158,23 +158,23 @@ int ad_mv(int argc, char *argv[])
 
     while ((ch = getopt(argc, argv, "finv")) != -1)
         switch (ch) {
-        case 'i':
-            iflg = 1;
-            fflg = nflg = 0;
-            break;
-        case 'f':
-            fflg = 1;
-            iflg = nflg = 0;
-            break;
-        case 'n':
-            nflg = 1;
-            fflg = iflg = 0;
-            break;
-        case 'v':
-            vflg = 1;
-            break;
-        default:
-            usage_mv();
+            case 'i':
+                iflg = 1;
+                fflg = nflg = 0;
+                break;
+            case 'f':
+                fflg = 1;
+                iflg = nflg = 0;
+                break;
+            case 'n':
+                nflg = 1;
+                fflg = iflg = 0;
+                break;
+            case 'v':
+                vflg = 1;
+                break;
+            default:
+                usage_mv();
         }
 
     argc -= optind;
@@ -211,7 +211,7 @@ int ad_mv(int argc, char *argv[])
     if (strlen(argv[argc - 1]) > sizeof(path) - 1)
         ERROR("%s: destination pathname too long", *argv);
 
-    (void)strcpy(path, argv[argc - 1]);
+    (void) strcpy(path, argv[argc - 1]);
     baselen = strlen(path);
     endp = &path[baselen];
     if (!baselen || *(endp - 1) != '/') {
@@ -234,7 +234,7 @@ int ad_mv(int argc, char *argv[])
             SLOG("%s: destination pathname too long", *argv);
             rval = 1;
         } else {
-            memmove(endp, p, (size_t)len + 1);
+            memmove(endp, p, (size_t) len + 1);
             openvol(*argv, &svolume);
 
             if (do_move(*argv, path))
@@ -243,13 +243,12 @@ int ad_mv(int argc, char *argv[])
         }
     }
 
-exit:
+    exit:
     closevol(&dvolume);
     return rval;
 }
 
-static int do_move(const char *from, const char *to)
-{
+static int do_move(const char *from, const char *to) {
     struct stat sb;
     int ask, ch, first;
 
@@ -272,10 +271,10 @@ static int do_move(const char *from, const char *to)
                 printf("%s not overwritten\n", to);
             return (0);
         } else if (iflg) {
-            (void)fprintf(stderr, "overwrite %s? (y/n [n]) ", to);
+            (void) fprintf(stderr, "overwrite %s? (y/n [n]) ", to);
             ask = 1;
         } else if (access(to, W_OK) && !stat(to, &sb)) {
-            (void)fprintf(stderr, "override for %s? (y/n [n]) ", to);
+            (void) fprintf(stderr, "override for %s? (y/n [n]) ", to);
             ask = 1;
         }
         if (ask) {
@@ -283,7 +282,7 @@ static int do_move(const char *from, const char *to)
             while (ch != '\n' && ch != EOF)
                 ch = getchar();
             if (first != 'y' && first != 'Y') {
-                (void)fprintf(stderr, "not overwritten\n");
+                (void) fprintf(stderr, "not overwritten\n");
                 return (0);
             }
         }
@@ -299,7 +298,7 @@ static int do_move(const char *from, const char *to)
         || !dvolume.volinfo.v_path
         || strcmp(svolume.volinfo.v_path, dvolume.volinfo.v_path) != 0)
         mustcopy = 1;
-    
+
     cnid_t cnid = 0;
     if (!mustcopy) {
         if ((cnid = cnid_for_path(&svolume, from, &did)) == CNID_INVALID) {
@@ -337,21 +336,21 @@ static int do_move(const char *from, const char *to)
                 return (1);
             }
         } /* rename != 0*/
-        
+
         switch (sb.st_mode & S_IFMT) {
-        case S_IFREG:
-            if (dvolume.volume.vfs->vfs_renamefile(&dvolume.volume, -1, from, to) != 0) {
-                SLOG("Error moving adouble file for %s", from);
+            case S_IFREG:
+                if (dvolume.volume.vfs->vfs_renamefile(&dvolume.volume, -1, from, to) != 0) {
+                    SLOG("Error moving adouble file for %s", from);
+                    return -1;
+                }
+                break;
+            case S_IFDIR:
+                break;
+            default:
+                SLOG("Not a file or dir: %s", from);
                 return -1;
-            }
-            break;
-        case S_IFDIR:
-            break;
-        default:
-            SLOG("Not a file or dir: %s", from);
-            return -1;
         }
-    
+
         /* get CNID of new parent dir */
         cnid_t newpdid, newdid;
         if ((newdid = cnid_for_paths_parent(&dvolume, to, &newpdid)) == CNID_INVALID) {
@@ -386,7 +385,7 @@ static int do_move(const char *from, const char *to)
             printf("%s -> %s\n", from, to);
         return (0);
     }
-    
+
     if (mustcopy)
         return copy(from, to);
 
@@ -394,8 +393,7 @@ static int do_move(const char *from, const char *to)
     return -1;
 }
 
-static int copy(const char *from, const char *to)
-{
+static int copy(const char *from, const char *to) {
     struct stat sb;
     int pid, status;
 
@@ -419,7 +417,7 @@ static int copy(const char *from, const char *to)
 
     /* Copy source to destination. */
     if (!(pid = fork())) {
-        execl(_PATH_AD, "ad", "cp", vflg ? "-Rpv" : "-Rp", from, to, (char *)NULL);
+        execl(_PATH_AD, "ad", "cp", vflg ? "-Rpv" : "-Rp", from, to, (char *) NULL);
         _exit(1);
     }
     while ((waitpid(pid, &status, 0)) == -1) {
@@ -433,17 +431,17 @@ static int copy(const char *from, const char *to)
         return (1);
     }
     switch (WEXITSTATUS(status)) {
-    case 0:
-        break;
-    default:
-        SLOG("%s cp -R %s %s: terminated with %d (non-zero) status",
-             _PATH_AD, from, to, WEXITSTATUS(status));
-        return (1);
+        case 0:
+            break;
+        default:
+            SLOG("%s cp -R %s %s: terminated with %d (non-zero) status",
+                 _PATH_AD, from, to, WEXITSTATUS(status));
+            return (1);
     }
 
     /* Delete the source. */
     if (!(pid = fork())) {
-        execl(_PATH_AD, "ad", "rm", "-R", from, (char *)NULL);
+        execl(_PATH_AD, "ad", "rm", "-R", from, (char *) NULL);
         _exit(1);
     }
     while ((waitpid(pid, &status, 0)) == -1) {
@@ -457,12 +455,12 @@ static int copy(const char *from, const char *to)
         return (1);
     }
     switch (WEXITSTATUS(status)) {
-    case 0:
-        break;
-    default:
-        SLOG("%s rm -R %s: terminated with %d (non-zero) status",
-              _PATH_AD, from, WEXITSTATUS(status));
-        return (1);
+        case 0:
+            break;
+        default:
+            SLOG("%s rm -R %s: terminated with %d (non-zero) status",
+                 _PATH_AD, from, WEXITSTATUS(status));
+            return (1);
     }
     return 0;
 }
@@ -471,7 +469,6 @@ static void
 preserve_fd_acls(int source_fd,
                  int dest_fd,
                  const char *source_path,
-                 const char *dest_path)
-{
+                 const char *dest_path) {
     ;
 }

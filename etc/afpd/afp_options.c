@@ -7,7 +7,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
@@ -23,12 +25,16 @@
 #include <arpa/inet.h>
 
 #ifdef HAVE_NETDB_H
+
 #include <netdb.h>
+
 #endif /* HAVE_NETDB_H */
 
 #ifdef ADMIN_GRP
+
 #include <grp.h>
 #include <sys/types.h>
+
 #endif /* ADMIN_GRP */
 
 #include <atalk/paths.h>
@@ -55,8 +61,7 @@ const char *Cnid_port = "4700";
 /* return an option. this uses an internal array, so it's necessary
  * to duplicate it if you want to hold it for long. this is probably
  * non-optimal. */
-static char *getoption(char *buf, const char *option)
-{
+static char *getoption(char *buf, const char *option) {
     static char string[LENGTH + 1];
     char *end;
     int len;
@@ -86,8 +91,7 @@ static char *getoption(char *buf, const char *option)
 
 /* get rid of any allocated afp_option buffers. */
 void afp_options_free(struct afp_options *opt,
-                      const struct afp_options *save)
-{
+                      const struct afp_options *save) {
     if (opt->defaultvol.name && (opt->defaultvol.name != save->defaultvol.name))
         free(opt->defaultvol.name);
     if (opt->defaultvol.full_name && (opt->defaultvol.full_name != save->defaultvol.full_name))
@@ -122,33 +126,32 @@ void afp_options_free(struct afp_options *opt,
     if (opt->passwdfile && (opt->passwdfile != save->passwdfile))
         free(opt->passwdfile);
     if (opt->signatureopt && (opt->signatureopt != save->signatureopt))
-	free(opt->signatureopt);
+        free(opt->signatureopt);
     if (opt->k5service && (opt->k5service != save->k5service))
-	free(opt->k5service);
+        free(opt->k5service);
     if (opt->k5realm && (opt->k5realm != save->k5realm))
-	free(opt->k5realm);
+        free(opt->k5realm);
     if (opt->k5keytab && (opt->k5keytab != save->k5keytab))
-	free(opt->k5keytab);
+        free(opt->k5keytab);
     if (opt->unixcodepage && (opt->unixcodepage != save->unixcodepage))
-	free(opt->unixcodepage);
+        free(opt->unixcodepage);
     if (opt->maccodepage && (opt->maccodepage != save->maccodepage))
-	free(opt->maccodepage);
+        free(opt->maccodepage);
 
     if (opt->ntdomain && (opt->ntdomain != save->ntdomain))
-	free(opt->ntdomain);
+        free(opt->ntdomain);
     if (opt->ntseparator && (opt->ntseparator != save->ntseparator))
-	free(opt->ntseparator);
+        free(opt->ntseparator);
     if (opt->logconfig && (opt->logconfig != save->logconfig))
-	free(opt->logconfig);
-	if (opt->mimicmodel && (opt->mimicmodel != save->mimicmodel))
-	free(opt->mimicmodel);
-	if (opt->adminauthuser && (opt->adminauthuser != save->adminauthuser))
-	free(opt->adminauthuser);
+        free(opt->logconfig);
+    if (opt->mimicmodel && (opt->mimicmodel != save->mimicmodel))
+        free(opt->mimicmodel);
+    if (opt->adminauthuser && (opt->adminauthuser != save->adminauthuser))
+        free(opt->adminauthuser);
 }
 
 /* initialize options */
-void afp_options_init(struct afp_options *options)
-{
+void afp_options_init(struct afp_options *options) {
     memset(options, 0, sizeof(struct afp_options));
     options->connections = 20;
     options->pidfile = _PATH_AFPDLOCK;
@@ -194,7 +197,7 @@ void afp_options_init(struct afp_options *options)
     options->tcp_sndbuf = 0;    /* 0 means don't change OS default */
     options->tcp_rcvbuf = 0;    /* 0 means don't change OS default */
     options->dsireadbuf = 12;
-	options->mimicmodel = NULL;
+    options->mimicmodel = NULL;
     options->fce_fmodwait = 60; /* put fmod events 60 seconds on hold */
     options->adminauthuser = NULL;
 }
@@ -207,8 +210,7 @@ void afp_options_init(struct afp_options *options)
  *
  * NOTE: this ignores unknown options 
  */
-int afp_options_parseline(char *buf, struct afp_options *options)
-{
+int afp_options_parseline(char *buf, struct afp_options *options) {
     char *c, *opt;
 
     /* handle server */
@@ -279,13 +281,12 @@ int afp_options_parseline(char *buf, struct afp_options *options)
      * if memory is lacking. */
 
     if ((c = getoption(buf, "-hostname"))) {
-        int len = strlen (c);
+        int len = strlen(c);
         if (len <= MAXHOSTNAMELEN) {
             memcpy(options->hostname, c, len);
             options->hostname[len] = 0;
-        }
-        else
-            LOG(log_info, logtype_afpd, "WARNING: hostname %s is too long (%d)",c,len);
+        } else
+            LOG(log_info, logtype_afpd, "WARNING: hostname %s is too long (%d)", c, len);
     }
 
     if ((c = getoption(buf, "-defaultvol")) && (opt = strdup(c)))
@@ -306,7 +307,7 @@ int afp_options_parseline(char *buf, struct afp_options *options)
         }
         opt[j] = 0;
         options->loginmesg = opt;
-        
+
     }
     if ((c = getoption(buf, "-guestname")) && (opt = strdup(c)))
         options->guest = opt;
@@ -351,7 +352,7 @@ int afp_options_parseline(char *buf, struct afp_options *options)
             options->volnamelen = 8; /* max mangled volname "???#FFFF" */
         }
         if (options->volnamelen > 255) {
-	    options->volnamelen = 255; /* AFP3 spec */
+            options->volnamelen = 255; /* AFP3 spec */
         }
     }
 
@@ -372,7 +373,7 @@ int afp_options_parseline(char *buf, struct afp_options *options)
     }
 
     if ((c = getoption(buf, "-unsetuplog")))
-      unsetuplog(c);
+        unsetuplog(c);
 
 #ifdef ADMIN_GRP
     if ((c = getoption(buf, "-admingroup"))) {
@@ -384,17 +385,17 @@ int afp_options_parseline(char *buf, struct afp_options *options)
 #endif /* ADMIN_GRP */
 
     if ((c = getoption(buf, "-k5service")) && (opt = strdup(c)))
-	options->k5service = opt;
+        options->k5service = opt;
     if ((c = getoption(buf, "-k5realm")) && (opt = strdup(c)))
-	options->k5realm = opt;
+        options->k5realm = opt;
     if ((c = getoption(buf, "-k5keytab"))) {
-	if ( NULL == (options->k5keytab = (char *) malloc(sizeof(char)*(strlen(c)+14)) )) {
-		LOG(log_error, logtype_afpd, "malloc failed");
-		exit(-1);
-	}
-	snprintf(options->k5keytab, strlen(c)+14, "KRB5_KTNAME=%s", c);
-	putenv(options->k5keytab);
-	/* setenv( "KRB5_KTNAME", c, 1 ); */
+        if (NULL == (options->k5keytab = (char *) malloc(sizeof(char) * (strlen(c) + 14)))) {
+            LOG(log_error, logtype_afpd, "malloc failed");
+            exit(-1);
+        }
+        snprintf(options->k5keytab, strlen(c) + 14, "KRB5_KTNAME=%s", c);
+        putenv(options->k5keytab);
+        /* setenv( "KRB5_KTNAME", c, 1 ); */
     }
     if ((c = getoption(buf, "-authprintdir")) && (opt = strdup(c)))
         options->authprintdir = opt;
@@ -448,74 +449,71 @@ int afp_options_parseline(char *buf, struct afp_options *options)
                 *p = ':';
             if ((opt = strdup(c)))
                 options->fqdn = opt;
-        }
-	else {
+        } else {
             LOG(log_error, logtype_afpd, "error parsing -fqdn, gethostbyname failed for: %s", c);
-	}
+        }
     }
 
     if ((c = getoption(buf, "-unixcodepage"))) {
-    	if ((charset_t)-1  == ( options->unixcharset = add_charset(c)) ) {
+        if ((charset_t) -1 == (options->unixcharset = add_charset(c))) {
             options->unixcharset = CH_UNIX;
             LOG(log_warning, logtype_afpd, "setting Unix codepage to '%s' failed", c);
-    	}
-	else {
+        } else {
             if ((opt = strdup(c)))
                 options->unixcodepage = opt;
-	}
+        }
     }
-	
+
     if ((c = getoption(buf, "-maccodepage"))) {
-    	if ((charset_t)-1 == ( options->maccharset = add_charset(c)) ) {
+        if ((charset_t) -1 == (options->maccharset = add_charset(c))) {
             options->maccharset = CH_MAC;
             LOG(log_warning, logtype_afpd, "setting Mac codepage to '%s' failed", c);
-    	}
-	else {
+        } else {
             if ((opt = strdup(c)))
                 options->maccodepage = opt;
-	}
+        }
     }
-    
+
     if ((c = strstr(buf, "-closevol"))) {
-        options->closevol= 1;
+        options->closevol = 1;
     }
 
     if ((c = getoption(buf, "-ntdomain")) && (opt = strdup(c)))
-       options->ntdomain = opt;
+        options->ntdomain = opt;
 
     if ((c = getoption(buf, "-ntseparator")) && (opt = strdup(c)))
-       options->ntseparator = opt;
+        options->ntseparator = opt;
 
     if ((c = getoption(buf, "-dircachesize")))
         options->dircachesize = atoi(c);
-     
+
     if ((c = getoption(buf, "-tcpsndbuf")))
         options->tcp_sndbuf = atoi(c);
 
     if ((c = getoption(buf, "-tcprcvbuf")))
         options->tcp_rcvbuf = atoi(c);
 
-	if ((c = getoption(buf, "-fcelistener"))) {
-		LOG(log_note, logtype_afpd, "Adding fce listener \"%s\"", c);
-		fce_add_udp_socket(c);
-	}
-	if ((c = getoption(buf, "-fcecoalesce"))) {
-		LOG(log_note, logtype_afpd, "Fce coalesce: %s", c);
-		fce_set_coalesce(c);
-	}
-	if ((c = getoption(buf, "-fceevents"))) {
-		LOG(log_note, logtype_afpd, "Fce events: %s", c);
-		fce_set_events(c);
-	}
+    if ((c = getoption(buf, "-fcelistener"))) {
+        LOG(log_note, logtype_afpd, "Adding fce listener \"%s\"", c);
+        fce_add_udp_socket(c);
+    }
+    if ((c = getoption(buf, "-fcecoalesce"))) {
+        LOG(log_note, logtype_afpd, "Fce coalesce: %s", c);
+        fce_set_coalesce(c);
+    }
+    if ((c = getoption(buf, "-fceevents"))) {
+        LOG(log_note, logtype_afpd, "Fce events: %s", c);
+        fce_set_events(c);
+    }
 
     if ((c = getoption(buf, "-fceholdfmod")))
         options->fce_fmodwait = atoi(c);
 
     if ((c = getoption(buf, "-mimicmodel")) && (opt = strdup(c)))
-       options->mimicmodel = opt;
+        options->mimicmodel = opt;
 
     if ((c = getoption(buf, "-adminauthuser")) && (opt = strdup(c)))
-       options->adminauthuser = opt;
+        options->adminauthuser = opt;
 
     return 1;
 }
@@ -524,158 +522,153 @@ int afp_options_parseline(char *buf, struct afp_options *options)
  * Show version information about afpd.
  * Used by "afp -v".
  */
-static void show_version( void )
-{
-	int num, i;
+static void show_version(void) {
+    int num, i;
 
-	printf( "afpd %s - Apple Filing Protocol (AFP) daemon of Netatalk\n\n", VERSION );
+    printf("afpd %s - Apple Filing Protocol (AFP) daemon of Netatalk\n\n", VERSION);
 
-	puts( "This program is free software; you can redistribute it and/or modify it under" );
-	puts( "the terms of the GNU General Public License as published by the Free Software" );
-	puts( "Foundation; either version 2 of the License, or (at your option) any later" );
-	puts( "version. Please see the file COPYING for further information and details.\n" );
+    puts("This program is free software; you can redistribute it and/or modify it under");
+    puts("the terms of the GNU General Public License as published by the Free Software");
+    puts("Foundation; either version 2 of the License, or (at your option) any later");
+    puts("version. Please see the file COPYING for further information and details.\n");
 
-	puts( "afpd has been compiled with support for these features:\n" );
+    puts("afpd has been compiled with support for these features:\n");
 
-	num = sizeof( afp_versions ) / sizeof( afp_versions[ 0 ] );
-	printf( "          AFP versions:\t" );
-	for ( i = 0; i < num; i++ ) {
-		printf( "%d.%d ", afp_versions[ i ].av_number/10, afp_versions[ i ].av_number%10);
-	}
-	puts( "" );
+    num = sizeof(afp_versions) / sizeof(afp_versions[0]);
+    printf("          AFP versions:\t");
+    for (i = 0; i < num; i++) {
+        printf("%d.%d ", afp_versions[i].av_number / 10, afp_versions[i].av_number % 10);
+    }
+    puts("");
 
-	printf( "         CNID backends:\t" );
+    printf("         CNID backends:\t");
 #ifdef CNID_BACKEND_CDB
-	printf( "cdb ");
+    printf( "cdb ");
 #endif
 #ifdef CNID_BACKEND_DB3
-	printf( "db3 " );
+    printf( "db3 " );
 #endif
 #ifdef CNID_BACKEND_DBD
 #ifdef CNID_BACKEND_DBD_TXN
-	printf( "dbd-txn " );
+    printf( "dbd-txn " );
 #else
-	printf( "dbd " );
+    printf("dbd ");
 #endif
 #endif
 #ifdef CNID_BACKEND_HASH
-	printf( "hash " );
+    printf( "hash " );
 #endif
 #ifdef CNID_BACKEND_LAST
-	printf( "last " );
+    printf("last ");
 #endif
 #ifdef CNID_BACKEND_MTAB
-	printf( "mtab " );
+    printf( "mtab " );
 #endif
 #ifdef CNID_BACKEND_TDB
-	printf( "tdb " );
+    printf( "tdb " );
 #endif
-	puts( "" );
+    puts("");
 }
 
 /*
  * Show extended version information about afpd and Netatalk.
  * Used by "afp -V".
  */
-static void show_version_extended(void )
-{
-	show_version( );
+static void show_version_extended(void) {
+    show_version();
 
-	printf( "           SLP support:\t" );
+    printf("           SLP support:\t");
 #ifdef USE_SRVLOC
-	puts( "Yes" );
+    puts( "Yes" );
 #else
-	puts( "No" );
+    puts("No");
 #endif
 
-	printf( "      Zeroconf support:\t" );
+    printf("      Zeroconf support:\t");
 #if defined (HAVE_MDNS)
-	puts( "mDNSResponder" );
+    puts( "mDNSResponder" );
 #elif defined (HAVE_AVAHI)
-	puts( "Avahi" );
+    puts( "Avahi" );
 #else
-	puts( "No" );
+    puts("No");
 #endif
 
-	printf( "  TCP wrappers support:\t" );
+    printf("  TCP wrappers support:\t");
 #ifdef TCPWRAP
-	puts( "Yes" );
+    puts( "Yes" );
 #else
-	puts( "No" );
+    puts("No");
 #endif
 
-	printf( "         Quota support:\t" );
+    printf("         Quota support:\t");
 #ifndef NO_QUOTA_SUPPORT
-	puts( "Yes" );
+    puts( "Yes" );
 #else
-	puts( "No" );
+    puts("No");
 #endif
 
-	printf( "   Admin group support:\t" );
+    printf("   Admin group support:\t");
 #ifdef ADMIN_GRP
-	puts( "Yes" );
+    puts("Yes");
 #else
-	puts( "No" );
+    puts( "No" );
 #endif
 
-	printf( "    Valid shell checks:\t" );
+    printf("    Valid shell checks:\t");
 #ifndef DISABLE_SHELLCHECK
-	puts( "Yes" );
+    puts("Yes");
 #else
-	puts( "No" );
+    puts( "No" );
 #endif
 
-	printf( "  Force volume uid/gid:\t" );
+    printf("  Force volume uid/gid:\t");
 #ifdef FORCE_UIDGID
-	puts( "Yes" );
+    puts( "Yes" );
 #else
-	puts( "No" );
+    puts("No");
 #endif
 
-	printf( "            EA support:\t" );
-	puts( EA_MODULES );
+    printf("            EA support:\t");
+    puts(EA_MODULES);
 }
 
 /*
  * Display compiled-in default paths
  */
-static void show_paths( void )
-{
-	printf( "             afpd.conf:\t%s\n", _PATH_AFPDCONF );
-	printf( "   AppleVolumes.system:\t%s\n", _PATH_AFPDSYSVOL );
-	printf( "  AppleVolumes.default:\t%s\n", _PATH_AFPDDEFVOL );
-	printf( "    afp_signature.conf:\t%s\n", _PATH_AFPDSIGCONF );
-	printf( "      afp_voluuid.conf:\t%s\n", _PATH_AFPDUUIDCONF );
-	printf( "       UAM search path:\t%s\n", _PATH_AFPDUAMPATH );
-	printf( "  Server messages path:\t%s\n", SERVERTEXT);
-	printf( "              lockfile:\t%s\n", _PATH_AFPDLOCK);
+static void show_paths(void) {
+    printf("             afpd.conf:\t%s\n", _PATH_AFPDCONF);
+    printf("   AppleVolumes.system:\t%s\n", _PATH_AFPDSYSVOL);
+    printf("  AppleVolumes.default:\t%s\n", _PATH_AFPDDEFVOL);
+    printf("    afp_signature.conf:\t%s\n", _PATH_AFPDSIGCONF);
+    printf("      afp_voluuid.conf:\t%s\n", _PATH_AFPDUUIDCONF);
+    printf("       UAM search path:\t%s\n", _PATH_AFPDUAMPATH);
+    printf("  Server messages path:\t%s\n", SERVERTEXT);
+    printf("              lockfile:\t%s\n", _PATH_AFPDLOCK);
 }
 
 /*
  * Display usage information about afpd.
  */
-static void show_usage( char *name )
-{
-	fprintf( stderr, "Usage:\t%s [-duptDTI] [-f defaultvolumes] [-s systemvolumes] [-n nbpname]\n", name );
-	fprintf( stderr, "\t     [-c maxconnections] [-g guest] [-P pidfile] [-S port] [-L message]\n" );
-	fprintf( stderr, "\t     [-F configfile] [-U uams] [-m umask]\n" );
-	fprintf( stderr, "\t%s -h|-v|-V\n", name );
+static void show_usage(char *name) {
+    fprintf(stderr, "Usage:\t%s [-duptDTI] [-f defaultvolumes] [-s systemvolumes] [-n nbpname]\n", name);
+    fprintf(stderr, "\t     [-c maxconnections] [-g guest] [-P pidfile] [-S port] [-L message]\n");
+    fprintf(stderr, "\t     [-F configfile] [-U uams] [-m umask]\n");
+    fprintf(stderr, "\t%s -h|-v|-V\n", name);
 }
 
-int afp_options_parse(int ac, char **av, struct afp_options *options)
-{
+int afp_options_parse(int ac, char **av, struct afp_options *options) {
     extern char *optarg;
     extern int optind;
 
     char *p;
-    char *tmp;	/* Used for error checking the result of strtol */
+    char *tmp;    /* Used for error checking the result of strtol */
     int c, err = 0;
 
-    if (gethostname(options->hostname, sizeof(options->hostname )) < 0 ) {
-        perror( "gethostname" );
+    if (gethostname(options->hostname, sizeof(options->hostname)) < 0) {
+        perror("gethostname");
         return 0;
     }
-    if (NULL != ( p = strchr(options->hostname, '.' )) ) {
+    if (NULL != (p = strchr(options->hostname, '.'))) {
         *p = '\0';
     }
 
@@ -688,94 +681,98 @@ int afp_options_parse(int ac, char **av, struct afp_options *options)
     openlog( p, LOG_PID ); /* ultrix only */
 #endif /* ultrix */
 
-    while (EOF != ( c = getopt( ac, av, OPTIONS )) ) {
-        switch ( c ) {
-        case 'd' :
-            options->flags |= OPTION_DEBUG;
-            break;
-        case 'n' :
-            options->server = optarg;
-            break;
-        case 'f' :
-            options->defaultvol.name = optarg;
-            break;
-        case 's' :
-            options->systemvol.name = optarg;
-            break;
-        case 'u' :
-            options->flags |= OPTION_USERVOLFIRST;
-            break;
-        case 'c' :
-            options->connections = atoi( optarg );
-            break;
-        case 'g' :
-            options->guest = optarg;
-            break;
+    while (EOF != (c = getopt(ac, av, OPTIONS))) {
+        switch (c) {
+            case 'd' :
+                options->flags |= OPTION_DEBUG;
+                break;
+            case 'n' :
+                options->server = optarg;
+                break;
+            case 'f' :
+                options->defaultvol.name = optarg;
+                break;
+            case 's' :
+                options->systemvol.name = optarg;
+                break;
+            case 'u' :
+                options->flags |= OPTION_USERVOLFIRST;
+                break;
+            case 'c' :
+                options->connections = atoi(optarg);
+                break;
+            case 'g' :
+                options->guest = optarg;
+                break;
 
-        case 'P' :
-            options->pidfile = optarg;
-            break;
+            case 'P' :
+                options->pidfile = optarg;
+                break;
 
-        case 'p':
-            options->passwdbits |= PASSWD_NOSAVE;
-            break;
-        case 't':
-            options->passwdbits |= PASSWD_SET;
-            break;
+            case 'p':
+                options->passwdbits |= PASSWD_NOSAVE;
+                break;
+            case 't':
+                options->passwdbits |= PASSWD_SET;
+                break;
 
-        case 'D':
-            options->transports &= ~AFPTRANS_DDP;
-            break;
-        case 'S':
-            options->port = optarg;
-            break;
-        case 'T':
-            options->transports &= ~AFPTRANS_TCP;
-            break;
-        case 'L':
-            options->loginmesg = optarg;
-            break;
-        case 'F':
-            options->configfile = optarg;
-            break;
-        case 'U':
-            options->uamlist = optarg;
-            break;
-        case 'v':	/* version */
-            show_version( ); puts( "" );
-	    show_paths( ); puts( "" );
-            exit( 0 );
-            break;
-        case 'V':	/* extended version */
-            show_version_extended( ); puts( "" );
-	    show_paths( ); puts( "" );
-            exit( 0 );
-            break;
-        case 'h':	/* usage */
-            show_usage("afpd");
-            exit( 0 );
-            break;
-        case 'I':
-            options->flags |= OPTION_CUSTOMICON;
-            break;
-        case 'm':
-            options->umask = strtoul(optarg, &tmp, 8);
-            if ((options->umask > 0777)) {
-                fprintf(stderr, "%s: out of range umask setting provided\n", p);
+            case 'D':
+                options->transports &= ~AFPTRANS_DDP;
+                break;
+            case 'S':
+                options->port = optarg;
+                break;
+            case 'T':
+                options->transports &= ~AFPTRANS_TCP;
+                break;
+            case 'L':
+                options->loginmesg = optarg;
+                break;
+            case 'F':
+                options->configfile = optarg;
+                break;
+            case 'U':
+                options->uamlist = optarg;
+                break;
+            case 'v':    /* version */
+                show_version();
+                puts("");
+                show_paths();
+                puts("");
+                exit(0);
+                break;
+            case 'V':    /* extended version */
+                show_version_extended();
+                puts("");
+                show_paths();
+                puts("");
+                exit(0);
+                break;
+            case 'h':    /* usage */
+                show_usage("afpd");
+                exit(0);
+                break;
+            case 'I':
+                options->flags |= OPTION_CUSTOMICON;
+                break;
+            case 'm':
+                options->umask = strtoul(optarg, &tmp, 8);
+                if ((options->umask > 0777)) {
+                    fprintf(stderr, "%s: out of range umask setting provided\n", p);
+                    err++;
+                }
+                if (tmp[0] != '\0') {
+                    fprintf(stderr, "%s: invalid characters in umask setting provided\n", p);
+                    err++;
+                }
+                break;
+            default :
                 err++;
-            }
-            if (tmp[0] != '\0') {
-                fprintf(stderr, "%s: invalid characters in umask setting provided\n", p);
-                err++;
-            }
-            break;
-        default :
-            err++;
         }
     }
-    if ( err || optind != ac ) {
-        show_usage( p );
-        exit( 2 );
+    if (err || optind != ac) {
+        show_usage(p);
+        exit(2);
     }
 
     return 1;

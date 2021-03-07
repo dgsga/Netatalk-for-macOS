@@ -6,7 +6,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <string.h>
@@ -21,8 +23,7 @@
 
 /* Return the did/name pair corresponding to a CNID. */
 
-int dbd_resolve(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply)
-{
+int dbd_resolve(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply) {
     DBT key, data;
     int rc;
 
@@ -39,11 +40,11 @@ int dbd_resolve(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply
         rply->result = CNID_DBD_RES_ERR_DB;
         return -1;
     }
-     
+
     if (rc == 0) {
 
         LOG(log_debug, logtype_cnid, "dbd_resolve: Could not resolve CNID %u", ntohl(rqst->cnid));
-    
+
         rply->result = CNID_DBD_RES_NOTFOUND;
         return 1;
     }
@@ -51,7 +52,7 @@ int dbd_resolve(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply
     memcpy(&rply->did, (char *) data.data + CNID_DID_OFS, sizeof(cnid_t));
 
     rply->namelen = data.size;
-    rply->name = (char *)data.data;
+    rply->name = (char *) data.data;
 
     LOG(log_debug, logtype_cnid, "dbd_resolve(CNID: %u): did: %u, name: \"%s\"",
         ntohl(rqst->cnid), ntohl(rply->did), rply->name + CNID_NAME_OFS);

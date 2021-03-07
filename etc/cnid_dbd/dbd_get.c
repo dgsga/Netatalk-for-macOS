@@ -6,7 +6,9 @@
  */
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
+
 #endif /* HAVE_CONFIG_H */
 
 #include <string.h>
@@ -24,8 +26,7 @@
 
 /* Return CNID for a given did/name. */
 
-int dbd_get(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply)
-{
+int dbd_get(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply) {
     char start[CNID_DID_LEN + MAXPATHLEN + 1], *buf;
     DBT key, data;
     int rc;
@@ -50,10 +51,10 @@ int dbd_get(DBD *dbd, struct cnid_dbd_rqst *rqst, struct cnid_dbd_rply *rply)
     }
 
     if (rc == 0) {
-	LOG(log_debug, logtype_cnid, "cnid_get: CNID not found for did %u name %s",
-	    ntohl(rqst->did), rqst->name);
-    rply->result = CNID_DBD_RES_NOTFOUND;
-    return 1;
+        LOG(log_debug, logtype_cnid, "cnid_get: CNID not found for did %u name %s",
+            ntohl(rqst->did), rqst->name);
+        rply->result = CNID_DBD_RES_NOTFOUND;
+        return 1;
     }
 
     memcpy(&rply->cnid, data.data, sizeof(rply->cnid));
