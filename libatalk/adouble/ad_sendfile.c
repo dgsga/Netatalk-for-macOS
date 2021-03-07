@@ -45,23 +45,7 @@
 #include <atalk/logger.h>
 #include "ad_private.h"
 
-#if defined(SENDFILE_FLAVOR_LINUX)
-#include <sys/sendfile.h>
-
-ssize_t sys_sendfile(int tofd, int fromfd, off_t *offset, size_t count)
-{
-    return sendfile(tofd, fromfd, offset, count);
-}
-
-#elif defined(SENDFILE_FLAVOR_SOLARIS)
-#include <sys/sendfile.h>
-
-ssize_t sys_sendfile(int tofd, int fromfd, off_t *offset, size_t count)
-{
-    return sendfile(tofd, fromfd, offset, count);
-}
-
-#elif defined(SENDFILE_FLAVOR_BSD )
+#if defined(SENDFILE_FLAVOR_BSD )
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -118,19 +102,6 @@ ssize_t ad_writefile(struct adouble *ad, const int eid,
 		     const int sock, off_t off, const int end,
 		     const size_t len)
 {
-#ifdef __linux__
-  ssize_t cc;
-  int fd;
-
-  fd = ad_sendfile_init(ad, eid, &off, end);
-  if ((cc = sys_sendfile(fd, sock, &off, len)) < 0)
-    return -1;
-
-  if ((eid != ADEID_DFORK) && (off > ad_getentrylen(ad, eid))) 
-    ad_setentrylen(ad, eid, off);
-
-  return cc;
-#endif /* __linux__ */
 }
 #endif /* HAVE_SENDFILE_WRITE */
 #endif /* 0 */

@@ -49,16 +49,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <libgen.h>
-
-#ifdef HAVE_SOLARIS_ACLS
-#include <sys/acl.h>
-#endif  /* HAVE_SOLARIS_ACLS */
-
-#ifdef HAVE_POSIX_ACLS
-#include <sys/types.h>
-#include <sys/acl.h>
-#endif /* HAVE_POSIX_ACLS */
-
 #include <atalk/util.h>
 #include <atalk/cnid.h>
 #include <atalk/volinfo.h>

@@ -558,32 +558,6 @@ fi
 if test x"$with_acl_support" = x"yes" ; then
 	AC_MSG_NOTICE(checking whether ACL support is available:)
 	case "$host_os" in
-	*sysv5*)
-		AC_MSG_NOTICE(Using UnixWare ACLs)
-		AC_DEFINE(HAVE_UNIXWARE_ACLS,1,[Whether UnixWare ACLs are available])
-		;;
-	*solaris*)
-		AC_MSG_NOTICE(Using solaris ACLs)
-		AC_DEFINE(HAVE_SOLARIS_ACLS,1,[Whether solaris ACLs are available])
-		ACL_LIBS="$ACL_LIBS -lsec"
-		;;
-	*hpux*)
-		AC_MSG_NOTICE(Using HPUX ACLs)
-		AC_DEFINE(HAVE_HPUX_ACLS,1,[Whether HPUX ACLs are available])
-		;;
-	*irix*)
-		AC_MSG_NOTICE(Using IRIX ACLs)
-		AC_DEFINE(HAVE_IRIX_ACLS,1,[Whether IRIX ACLs are available])
-		;;
-	*aix*)
-		AC_MSG_NOTICE(Using AIX ACLs)
-		AC_DEFINE(HAVE_AIX_ACLS,1,[Whether AIX ACLs are available])
-		;;
-	*osf*)
-		AC_MSG_NOTICE(Using Tru64 ACLs)
-		AC_DEFINE(HAVE_TRU64_ACLS,1,[Whether Tru64 ACLs are available])
-		ACL_LIBS="$ACL_LIBS -lpacl"
-		;;
 	*darwin*)
 		AC_MSG_NOTICE(ACLs on Darwin currently not supported)
 		AC_DEFINE(HAVE_NO_ACLS,1,[Whether no ACLs support is available])
@@ -669,39 +643,6 @@ neta_cv_eas_sys_not_found=no
 AC_CHECK_HEADERS(sys/attributes.h attr/xattr.h sys/xattr.h sys/extattr.h sys/uio.h sys/ea.h)
 
 case "$this_os" in
-
-  *osf*)
-	AC_SEARCH_LIBS(getproplist, [proplist])
-	AC_CHECK_FUNCS([getproplist fgetproplist setproplist fsetproplist],
-                   [neta_cv_eas_sys_found=yes],
-                   [neta_cv_eas_sys_not_found=yes])
-	AC_CHECK_FUNCS([delproplist fdelproplist add_proplist_entry get_proplist_entry],,
-                   [neta_cv_eas_sys_not_found=yes])
-	AC_CHECK_FUNCS([sizeof_proplist_entry],,
-                   [neta_cv_eas_sys_not_found=yes])
-  ;;
-
-  *solaris*)
-	AC_CHECK_FUNCS([attropen],
-                   [neta_cv_eas_sys_found=yes],
-                   [neta_cv_eas_sys_not_found=yes])
-  ;;
-
-  'freebsd')
-    AC_CHECK_FUNCS([extattr_delete_fd extattr_delete_file extattr_delete_link],
-                   [neta_cv_eas_sys_found=yes],
-                   [neta_cv_eas_sys_not_found=yes])
-    AC_CHECK_FUNCS([extattr_get_fd extattr_get_file extattr_get_link],,
-                   [neta_cv_eas_sys_not_found=yes])
-    AC_CHECK_FUNCS([extattr_list_fd extattr_list_file extattr_list_link],,
-                   [neta_cv_eas_sys_not_found=yes])
-    AC_CHECK_FUNCS([extattr_set_fd extattr_set_file extattr_set_link],,
-                   [neta_cv_eas_sys_not_found=yes])
-  ;;
-
-  *freebsd4* | *dragonfly* )
-    AC_DEFINE(BROKEN_EXTATTR, 1, [Does extattr API work])
-  ;;
 
   *)
 	AC_SEARCH_LIBS(getxattr, [attr])

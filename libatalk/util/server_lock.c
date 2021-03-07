@@ -29,7 +29,7 @@
 static struct itimerval itimer;
 
 /* this creates an open lock file which hangs around until the program
- * dies. it returns the pid. due to problems w/ solaris, this has
+ * dies. It returns the pid. This has
  * been changed to do the kill() thing. */
 pid_t server_lock(char *program, char *pidfile, int debug)
 {

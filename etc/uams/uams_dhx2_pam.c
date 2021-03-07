@@ -550,7 +550,6 @@ static int loginasroot(const char *adminauthuser, const char **hostname, int sta
         goto exit;
     }
 
-    /* solaris craps out if PAM_TTY and PAM_RHOST aren't set. */
     pam_set_item(pamh, PAM_TTY, "afpd");
     pam_set_item(pamh, PAM_RHOST, *hostname);
     if ((PAM_error = pam_authenticate(pamh, 0)) != PAM_SUCCESS)
@@ -648,7 +647,6 @@ static int logincont2(void *obj_in, struct passwd **uam_pwd,
         goto error_ctx;
     }
 
-    /* solaris craps out if PAM_TTY and PAM_RHOST aren't set. */
     pam_set_item(pamh, PAM_TTY, "afpd");
     pam_set_item(pamh, PAM_RHOST, hostname);
     pam_set_item(pamh, PAM_RUSER, PAM_username);

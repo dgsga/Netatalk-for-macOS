@@ -51,7 +51,6 @@ dnl	fi
 		AC_MSG_RESULT([])
 		AC_MSG_WARN([ PAM support was configured for your system, but the netatalk PAM configuration file])
 		AC_MSG_WARN([ cannot be installed. Please install the config/netatalk.pamd file manually.])
-		AC_MSG_WARN([ If you're running Solaris or BSD you'll have to edit /etc/pam.conf to get PAM working.])
 		AC_MSG_WARN([ You can also re-run configure and specify --without-pam to disable PAM support.])
 	fi
 

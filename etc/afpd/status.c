@@ -511,9 +511,6 @@ void status_init(AFPConfig *aspconfig, AFPConfig *dsiconfig,
                               options->hostname, options);
     status_machine(status);
     status_versions(status,
-#ifndef NO_DDP
-            asp,
-#endif
                     dsi);
     status_uams(status, options->uamlist);
     if (options->flags & OPTION_CUSTOMICON)
@@ -525,9 +522,6 @@ void status_init(AFPConfig *aspconfig, AFPConfig *dsiconfig,
     /* c now contains the offset where the netaddress offset lives */
 
     status_netaddress(status, &c,
-#ifndef NO_DDP
-            asp,
-#endif
                       dsi, options);
     /* c now contains the offset where the Directory Names Count offset lives */
 
@@ -536,16 +530,6 @@ void status_init(AFPConfig *aspconfig, AFPConfig *dsiconfig,
 
     if (statuslen < maxstatuslen)
         statuslen = status_utf8servername(status, &c, dsi, options);
-
-#ifndef NO_DDP
-    if (aspconfig) {
-        if (dsiconfig) /* status is dsiconfig->status */
-            memcpy(aspconfig->status, status, statuslen);
-        asp_setstatus(asp, status, statuslen);
-        aspconfig->signature = status + sigoff;
-        aspconfig->statuslen = statuslen;
-    }
-#endif /* ! NO_DDP */
 
     if (dsiconfig) {
         if ((options->flags & OPTION_CUSTOMICON) == 0) {
