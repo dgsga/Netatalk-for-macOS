@@ -804,6 +804,12 @@ AC_OUTPUT([Makefile
 	man/man4/Makefile
 	man/man5/Makefile
 	man/man8/Makefile
+	sys/Makefile
+	sys/generic/Makefile
+	sys/generic/sys/Makefile
+	sys/netatalk/Makefile
+	test/Makefile
+	test/afpd/Makefile
 	],
 	[chmod a+x distrib/config/netatalk-config contrib/shell_utils/apple_*]
 )
