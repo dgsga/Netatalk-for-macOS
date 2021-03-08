@@ -61,15 +61,6 @@ void configfree(AFPConfig *configs, const AFPConfig *config) {
         }
 
         switch (p->obj.proto) {
-#ifndef NO_DDP
-            case AFPPROTO_ASP:
-                free(p->obj.Obj);
-                free(p->obj.Type);
-                free(p->obj.Zone);
-                atp_close(((ASP) p->obj.handle)->asp_atp);
-                free(p->obj.handle);
-                break;
-#endif /* no afp/asp */
             case AFPPROTO_DSI:
                 close(p->fd);
                 free(p->obj.handle);
@@ -105,7 +96,7 @@ static char * srvloc_encode(const struct afp_options *options, const char *name)
         return (char*)name;
 
     /* Escape characters */
-    p = conv_name;
+    p = (unsigned char *)conv_name;
     while (*p && i<(sizeof(buf)-4)) {
         if (*p == '@')
         break;
@@ -126,15 +117,6 @@ static char * srvloc_encode(const struct afp_options *options, const char *name)
     }
     buf[i] = '\0';
 
-#ifndef NO_DDP
-    /* Add ZONE,  */
-        if (nbp_name(options->server, &Obj, &Type, &Zone )) {
-            LOG(log_error, logtype_afpd, "srvloc_encode: can't parse %s", options->server );
-        }
-    else {
-        snprintf( buf+i, sizeof(buf)-i-1 ,"&ZONE=%s", Zone);
-    }
-#endif
     free (conv_name);
 
     return buf;
