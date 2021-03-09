@@ -392,8 +392,6 @@ esac
 
 case "$host_cpu" in
 	i386|i486|i586|i686|k7)		this_cpu=x86 ;;
-	alpha)						this_cpu=alpha ;;
-	mips)						this_cpu=mips ;;
 	powerpc|ppc)				this_cpu=ppc ;;
 esac
 
@@ -404,9 +402,6 @@ if test x"$this_os" = "xmacosx"; then
 	AC_MSG_RESULT([ * Mac OSX specific configuration])
 	AC_DEFINE(BSD4_4, 1, [BSD compatiblity macro])
 	AC_DEFINE(HAVE_2ARG_DBTOB, 1, [Define if dbtob takes two arguments])
-	dnl AC_DEFINE(NO_DLFCN_H)
-	AC_DEFINE(NO_DDP, 1, [Define if DDP should be disabled])
-	AC_DEFINE(NO_QUOTA_SUPPORT, 1, [Define if Quota support should be disabled])
 	AC_DEFINE(MACOSX_SERVER, 1, [Define if compiling for MacOS X Server])
 fi
 

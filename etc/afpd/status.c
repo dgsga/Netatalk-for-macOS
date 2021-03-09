@@ -30,12 +30,8 @@
 #endif /* BSD4_4 */
 #endif
 
-#include <netatalk/at.h>
 #include <netatalk/endian.h>
 #include <atalk/dsi.h>
-#include <atalk/atp.h>
-#include <atalk/asp.h>
-#include <atalk/nbp.h>
 #include <atalk/unicode.h>
 #include <atalk/util.h>
 #include <atalk/globals.h>
@@ -85,9 +81,6 @@ static int status_server(char *data, const char *server, const struct afp_option
 
     /* extract the obj part of the server */
     Obj = (char *) server;
-#ifndef NO_DDP
-    nbp_name(server, &Obj, &Type, &Zone);
-#endif
     if ((size_t) -1 == (len = convert_string(
             options->unixcharset, options->maccharset,
             Obj, -1, buf, sizeof(buf)))) {
@@ -185,9 +178,6 @@ static u_int16_t status_signature(char *data, int *servoffset,
 }
 
 static size_t status_netaddress(char *data, int *servoffset,
-#ifndef NO_DDP
-        const ASP asp,
-#endif
                                 const DSI *dsi,
                                 const struct afp_options *options) {
     char *begin;
@@ -212,9 +202,6 @@ static size_t status_netaddress(char *data, int *servoffset,
        connection, but we don't have the ip address. to get around this,
        we turn off the status flag for tcp/ip. */
     *data++ = ((options->fqdn && dsi) ? 1 : 0) + (dsi ? 1 : 0) +
-              #ifndef NO_DDP
-              (asp ? 1 : 0) +
-              #endif
               (((options->flags & OPTION_ANNOUNCESSH) && options->fqdn && dsi) ? 1 : 0);
 
     /* ip address */
@@ -287,23 +274,6 @@ static size_t status_netaddress(char *data, int *servoffset,
             }
         }
     }
-
-#ifndef NO_DDP
-    if (asp) {
-        const struct sockaddr_at *ddpaddr = atp_sockaddr(asp->asp_atp);
-
-        /* ddp address */
-        *data++ = 6;
-        *data++ = 0x03; /* ddp address */
-        memcpy(data, &ddpaddr->sat_addr.s_net, sizeof(ddpaddr->sat_addr.s_net));
-        data += sizeof(ddpaddr->sat_addr.s_net);
-        memcpy(data, &ddpaddr->sat_addr.s_node,
-               sizeof(ddpaddr->sat_addr.s_node));
-        data += sizeof(ddpaddr->sat_addr.s_node);
-        memcpy(data, &ddpaddr->sat_port, sizeof(ddpaddr->sat_port));
-        data += sizeof(ddpaddr->sat_port);
-    }
-#endif /* ! NO_DDP */
 
     /* calculate/store Directory Services Names offset */
     offset = htons(data - begin);
@@ -388,9 +358,6 @@ static size_t status_utf8servername(char *data, int *nameoffset,
 
     /* extract the obj part of the server */
     Obj = (char *) (options->server ? options->server : options->hostname);
-#ifndef NO_DDP
-    nbp_name(options->server ? options->server : options->hostname, &Obj, &Type, &Zone);
-#endif
     if ((size_t) -1 == (len = convert_string(
             options->unixcharset, CH_UTF8_MAC,
             Obj, -1, data + sizeof(namelen), maxstatuslen - offset))) {
@@ -440,9 +407,6 @@ static void status_icon(char *data, const unsigned char *icondata,
  */
 void status_init(AFPConfig *aspconfig, AFPConfig *dsiconfig,
                  const struct afp_options *options) {
-#ifndef NO_DDP
-    ASP asp;
-#endif
     DSI *dsi;
     char *status = NULL;
     size_t statuslen;
@@ -450,15 +414,6 @@ void status_init(AFPConfig *aspconfig, AFPConfig *dsiconfig,
 
     if (!(aspconfig || dsiconfig) || !options)
         return;
-
-#ifndef NO_DDP
-    if (aspconfig) {
-        status = aspconfig->status;
-        maxstatuslen=sizeof(aspconfig->status);
-        asp = aspconfig->obj.handle;
-    } else
-        asp = NULL;
-#endif
 
     ipok = 0;
     if (dsiconfig) {

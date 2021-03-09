@@ -46,7 +46,6 @@ char *strchr (), *strrchr ();
 #include <inttypes.h>
 #include <time.h>
 
-#include <atalk/asp.h>
 #include <atalk/dsi.h>
 #include <atalk/adouble.h>
 #include <atalk/afp.h>
@@ -279,17 +278,6 @@ static char *volxlate(AFPObj *obj,
         } else if (is_var(p, "$c")) {
             if (afpmaster && xlatevolname)
                 return NULL;
-#ifndef NO_DDP
-            if (obj->proto == AFPPROTO_ASP) {
-                ASP asp = obj->handle;
-
-                len = sprintf(dest, "%u.%u", ntohs(asp->asp_sat.sat_addr.s_net),
-                              asp->asp_sat.sat_addr.s_node);
-                dest += len;
-                destlen -= len;
-
-            }
-#endif
             if (obj->proto == AFPPROTO_DSI) {
                 DSI *dsi = obj->handle;
                 len = sprintf(dest, "%s:%u",
@@ -319,15 +307,6 @@ static char *volxlate(AFPObj *obj,
         } else if (is_var(p, "$i")) {
             if (afpmaster && xlatevolname)
                 return NULL;
-#ifndef NO_DDP
-            if (obj->proto == AFPPROTO_ASP) {
-                ASP asp = obj->handle;
-                len = sprintf(dest, "%u", ntohs(asp->asp_sat.sat_addr.s_net));
-                dest += len;
-                destlen -= len;
-
-            }
-#endif
             if (obj->proto == AFPPROTO_DSI) {
                 DSI *dsi = obj->handle;
                 q = getip_string((struct sockaddr *) &dsi->client);

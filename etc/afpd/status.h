@@ -3,7 +3,6 @@
 
 #include <sys/cdefs.h>
 #include <atalk/dsi.h>
-#include <atalk/asp.h>
 #include <atalk/globals.h>
 
 #include "afp_config.h"
@@ -42,9 +41,6 @@
 #define PASSWD_ALL     (PASSWD_SET | PASSWD_NOSAVE)
 
 extern void status_versions(char * /*status*/,
-#ifndef NO_DDP
-        const ASP,
-#endif
                             const DSI *);
 
 extern void status_uams(char * /*status*/, const char * /*authlist*/);

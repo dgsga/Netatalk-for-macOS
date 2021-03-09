@@ -97,20 +97,7 @@ static int pwd_login(void *obj, char *username, int ulen, struct passwd **uam_pw
     size_t i;
     DH *dh;
 
-#ifdef TRU64
-    int rnd_seed[256];
-    for (i = 0; i < 256; i++)
-        rnd_seed[i] = random();
-    RAND_seed(rnd_seed, sizeof(rnd_seed));
-#endif /* TRU64 */
-
     *rbuflen = 0;
-
-#ifdef TRU64
-    if( uam_afpserver_option( obj, UAM_OPTION_CLIENTNAME,
-                              (void *) &clientname, NULL ) < 0 )
-        return AFPERR_PARAM;
-#endif /* TRU64 */
 
     if ((dhxpwd = uam_getname(obj, username, ulen)) == NULL) {
         return AFPERR_NOTAUTH;

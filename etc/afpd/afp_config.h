@@ -10,7 +10,6 @@
 #endif /* HAVE_SYS_CDEFS_H */
 
 #include <atalk/server_child.h>
-#include <atalk/atp.h>
 #include <atalk/globals.h>
 
 typedef struct AFPConfig {

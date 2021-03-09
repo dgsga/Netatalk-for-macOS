@@ -82,9 +82,6 @@ static struct uam_obj *afp_uam = NULL;
 
 
 void status_versions(char *data,
-#ifndef NO_DDP
-        const ASP asp,
-#endif
                      const DSI *dsi) {
     char *start = data;
     u_int16_t status;
@@ -94,9 +91,6 @@ void status_versions(char *data,
     num = sizeof(afp_versions) / sizeof(afp_versions[0]);
 
     for (i = 0; i < num; i++) {
-#ifndef NO_DDP
-        if ( !asp && (afp_versions[ i ].av_number <= 21)) continue;
-#endif /* ! NO_DDP */
         if (!dsi && (afp_versions[i].av_number >= 22)) continue;
         count++;
     }
@@ -104,9 +98,6 @@ void status_versions(char *data,
     *data++ = count;
 
     for (i = 0; i < num; i++) {
-#ifndef NO_DDP
-        if ( !asp && (afp_versions[ i ].av_number <= 21)) continue;
-#endif /* ! NO_DDP */
         if (!dsi && (afp_versions[i].av_number >= 22)) continue;
         len = strlen(afp_versions[i].av_name);
         *data++ = len;
@@ -247,45 +238,6 @@ static int login(AFPObj *obj, struct passwd *pwd, void (*logout)(void), int expi
     LOG(log_note, logtype_afpd, "%s Login by %s",
         afp_versions[afp_version_index].av_name, pwd->pw_name);
 
-#ifndef NO_DDP
-    if (obj->proto == AFPPROTO_ASP) {
-        ASP asp = obj->handle;
-        int addr_net = ntohs( asp->asp_sat.sat_addr.s_net );
-        int addr_node  = asp->asp_sat.sat_addr.s_node;
-
-        if (obj->options.authprintdir) {
-            if(addr_net && addr_node) { /* Do we have a valid Appletalk address? */
-                char nodename[256];
-                FILE *fp;
-                int mypid = getpid();
-                struct stat stat_buf;
-
-                sprintf(nodename, "%s/net%d.%dnode%d", obj->options.authprintdir,
-                        addr_net / 256, addr_net % 256, addr_node);
-                LOG(log_info, logtype_afpd, "registering %s (uid %d) on %u.%u as %s",
-                    pwd->pw_name, pwd->pw_uid, addr_net, addr_node, nodename);
-
-                if (stat(nodename, &stat_buf) == 0) { /* file exists */
-                    if (S_ISREG(stat_buf.st_mode)) { /* normal file */
-                        unlink(nodename);
-                        fp = fopen(nodename, "w");
-                        fprintf(fp, "%s:%d\n", pwd->pw_name, mypid);
-                        fclose(fp);
-                        chown( nodename, pwd->pw_uid, -1 );
-                    } else { /* somebody is messing with us */
-                        LOG(log_error, logtype_afpd, "print authfile %s is not a normal file, it will not be modified", nodename );
-                    }
-                } else { /* file 'nodename' does not exist */
-                    fp = fopen(nodename, "w");
-                    fprintf(fp, "%s:%d\n", pwd->pw_name, mypid);
-                    fclose(fp);
-                    chown( nodename, pwd->pw_uid, -1 );
-                }
-            } /* if (addr_net && addr_node ) */
-        } /* if (options->authprintdir) */
-    } /* if (obj->proto == AFPPROTO_ASP) */
-#endif
-
     if (set_groups(obj, pwd) != 0)
         return AFPERR_BADUAM;
 
@@ -304,47 +256,11 @@ static int login(AFPObj *obj, struct passwd *pwd, void (*logout)(void), int expi
     }
     if (!admin)
 #endif /* ADMIN_GRP */
-#ifdef TRU64
-        {
-            struct DSI *dsi = obj->handle;
-            struct hostent *hp;
-            char *clientname;
-            int argc;
-            char **argv;
-            char hostname[256];
 
-            afp_get_cmdline( &argc, &argv );
-
-            hp = gethostbyaddr( (char *) &dsi->client.sin_addr,
-                                sizeof( struct in_addr ),
-                                dsi->client.sin_family );
-
-            if( hp )
-                clientname = hp->h_name;
-            else
-                clientname = inet_ntoa( dsi->client.sin_addr );
-
-            sprintf( hostname, "%s@%s", pwd->pw_name, clientname );
-
-            if( sia_become_user( NULL, argc, argv, hostname, pwd->pw_name,
-                                 NULL, FALSE, NULL, NULL,
-                                 SIA_BEU_REALLOGIN ) != SIASUCCESS )
-                return AFPERR_BADUAM;
-
-            LOG(log_info, logtype_afpd, "session from %s (%s)", hostname,
-                inet_ntoa( dsi->client.sin_addr ) );
-
-            if (setegid( pwd->pw_gid ) < 0 || seteuid( pwd->pw_uid ) < 0) {
-                LOG(log_error, logtype_afpd, "login: %s %s", pwd->pw_name, strerror(errno) );
-                return AFPERR_BADUAM;
-            }
-        }
-#else /* TRU64 */
-        if (setegid(pwd->pw_gid) < 0 || seteuid(pwd->pw_uid) < 0) {
-            LOG(log_error, logtype_afpd, "login: %s %s", pwd->pw_name, strerror(errno));
-            return AFPERR_BADUAM;
-        }
-#endif /* TRU64 */
+    if (setegid(pwd->pw_gid) < 0 || seteuid(pwd->pw_uid) < 0) {
+        LOG(log_error, logtype_afpd, "login: %s %s", pwd->pw_name, strerror(errno));
+        return AFPERR_BADUAM;
+    }
 
     LOG(log_debug, logtype_afpd, "login: supplementary groups: %s", print_groups(ngroups, groups));
 

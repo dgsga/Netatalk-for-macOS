@@ -27,9 +27,6 @@
 #include <atalk/logger.h>
 #include <atalk/util.h>
 #include <atalk/dsi.h>
-#include <atalk/atp.h>
-#include <atalk/asp.h>
-#include <atalk/nbp.h>
 #include <atalk/afp.h>
 #include <atalk/compat.h>
 #include <atalk/server_child.h>
@@ -86,9 +83,6 @@ static char * srvloc_encode(const struct afp_options *options, const char *name)
     char *conv_name;
     unsigned char *p;
     unsigned int i = 0;
-#ifndef NO_DDP
-    char *Obj, *Type = "", *Zone = "";
-#endif
 
     /* Convert name to maccharset */
         if ((size_t)-1 ==(convert_string_allocate( options->unixcharset, options->maccharset,
@@ -160,38 +154,6 @@ srvloc_dereg_err:
 #endif /* USE_SRVLOC */
 }
 
-#ifndef NO_DDP
-static void asp_cleanup(const AFPConfig *config)
-{
-    /* we need to stop tickle handler */
-    asp_stop_tickle();
-    nbp_unrgstr(config->obj.Obj, config->obj.Type, config->obj.Zone,
-                &config->obj.options.ddpaddr);
-}
-
-/* these two are almost identical. it should be possible to collapse them
- * into one with minimal junk. */
-static int asp_start(AFPConfig *config, AFPConfig *configs,
-                     server_child *server_children)
-{
-    ASP asp;
-
-    if (!(asp = asp_getsession(config->obj.handle, server_children,
-                               config->obj.options.tickleval))) {
-        LOG(log_error, logtype_afpd, "main: asp_getsession: %s", strerror(errno) );
-        exit( EXITERR_CLNT );
-    }
-
-    if (asp->child) {
-        configfree(configs, config); /* free a bunch of stuff */
-        afp_over_asp(&config->obj);
-        exit (0);
-    }
-
-    return 0;
-}
-#endif /* no afp/asp */
-
 static afp_child_t *dsi_start(AFPConfig *config, AFPConfig *configs,
                               server_child *server_children) {
     DSI *dsi = config->obj.handle;
@@ -208,102 +170,6 @@ static afp_child_t *dsi_start(AFPConfig *config, AFPConfig *configs,
 
     return child;
 }
-
-#ifndef NO_DDP
-static AFPConfig *ASPConfigInit(const struct afp_options *options,
-                                unsigned char *refcount)
-{
-    AFPConfig *config;
-    ATP atp;
-    ASP asp;
-    char *Obj, *Type = "AFPServer", *Zone = "*";
-    char *convname = NULL;
-
-    if ((config = (AFPConfig *) calloc(1, sizeof(AFPConfig))) == NULL)
-        return NULL;
-
-    if ((atp = atp_open(ATADDR_ANYPORT, &options->ddpaddr)) == NULL)  {
-        LOG(log_error, logtype_afpd, "main: atp_open: %s", strerror(errno) );
-        free(config);
-        return NULL;
-    }
-
-    if ((asp = asp_init( atp )) == NULL) {
-        LOG(log_error, logtype_afpd, "main: asp_init: %s", strerror(errno) );
-        atp_close(atp);
-        free(config);
-        return NULL;
-    }
-
-    /* register asp server */
-    Obj = (char *) options->hostname;
-    if (options->server && (size_t)-1 ==(convert_string_allocate( options->unixcharset, options->maccharset,
-                         options->server, strlen(options->server), &convname)) ) {
-        if ((convname = strdup(options->server)) == NULL ) {
-            LOG(log_error, logtype_afpd, "malloc: %s", strerror(errno) );
-            goto serv_free_return;
-        }
-    }
-
-    if (nbp_name(convname, &Obj, &Type, &Zone )) {
-        LOG(log_error, logtype_afpd, "main: can't parse %s", options->server );
-        goto serv_free_return;
-    }
-    if (convname)
-        free (convname);
-
-    /* dup Obj, Type and Zone as they get assigned to a single internal
-     * buffer by nbp_name */
-    if ((config->obj.Obj  = strdup(Obj)) == NULL)
-        goto serv_free_return;
-
-    if ((config->obj.Type = strdup(Type)) == NULL) {
-        free(config->obj.Obj);
-        goto serv_free_return;
-    }
-
-    if ((config->obj.Zone = strdup(Zone)) == NULL) {
-        free(config->obj.Obj);
-        free(config->obj.Type);
-        goto serv_free_return;
-    }
-
-    /* make sure we're not registered */
-    nbp_unrgstr(Obj, Type, Zone, &options->ddpaddr);
-    if (nbp_rgstr( atp_sockaddr( atp ), Obj, Type, Zone ) < 0 ) {
-        LOG(log_error, logtype_afpd, "Can't register %s:%s@%s", Obj, Type, Zone );
-        free(config->obj.Obj);
-        free(config->obj.Type);
-        free(config->obj.Zone);
-        goto serv_free_return;
-    }
-
-    LOG(log_info, logtype_afpd, "%s:%s@%s started on %u.%u:%u (%s)", Obj, Type, Zone,
-        ntohs( atp_sockaddr( atp )->sat_addr.s_net ),
-        atp_sockaddr( atp )->sat_addr.s_node,
-        atp_sockaddr( atp )->sat_port, VERSION );
-
-    config->fd = atp_fileno(atp);
-    config->obj.handle = asp;
-    config->obj.config = config;
-    config->obj.proto = AFPPROTO_ASP;
-
-    memcpy(&config->obj.options, options, sizeof(struct afp_options));
-    config->optcount = refcount;
-    (*refcount)++;
-
-    config->server_start = asp_start;
-    config->server_cleanup = asp_cleanup;
-
-    return config;
-
-serv_free_return:
-                    asp_close(asp);
-    free(config);
-    return NULL;
-}
-#endif /* no afp/asp */
-
 
 static AFPConfig *DSIConfigInit(const struct afp_options *options,
                                 unsigned char *refcount,
@@ -449,14 +315,6 @@ static AFPConfig *AFPConfigInit(struct afp_options *options,
         LOG(log_error, logtype_afpd, "AFPConfigInit: calloc(refcount): %s", strerror(errno));
         return NULL;
     }
-
-#ifndef NO_DDP
-    /* handle asp transports */
-    if ((options->transports & AFPTRANS_DDP) &&
-            (config = ASPConfigInit(options, refcount)))
-        config->defoptions = defoptions;
-#endif /* NO_DDP */
-
 
     /* set signature */
     set_signature(options);

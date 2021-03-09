@@ -26,11 +26,8 @@
 
 #include <atalk/adouble.h>
 
-#include <netatalk/at.h>
 #include <atalk/compat.h>
 #include <atalk/dsi.h>
-#include <atalk/atp.h>
-#include <atalk/asp.h>
 #include <atalk/afp.h>
 #include <atalk/paths.h>
 #include <atalk/util.h>
@@ -132,10 +129,6 @@ static void fd_reset_listening_sockets(void) {
 /* ------------------ */
 static void afp_goaway(int sig) {
     AFPConfig *config;
-
-#ifndef NO_DDP
-    asp_kill(sig);
-#endif /* ! NO_DDP */
 
     switch (sig) {
 
