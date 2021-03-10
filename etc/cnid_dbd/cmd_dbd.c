@@ -104,19 +104,19 @@ static struct db_param db_param = {
         -1,                         /* idle_timeout */
         -1                          /* max_vols */
 };
+
 static char dbpath[MAXPATHLEN + 1];   /* Path to the dbd database */
 
 /* 
    Provide some logging
  */
 void dbd_log(enum logtype lt, char *fmt, ...) {
-    int len;
     static char logbuffer[1024];
     va_list args;
 
     if ((lt == LOGSTD) || (verbose == 1)) {
         va_start(args, fmt);
-        len = vsnprintf(logbuffer, 1023, fmt, args);
+        vsnprintf(logbuffer, 1023, fmt, args);
         va_end(args);
         logbuffer[1023] = 0;
 
@@ -214,8 +214,9 @@ static void usage(void) {
 }
 
 int main(int argc, char **argv) {
-    int c, lockfd, ret = -1;
-    int dump = 0, scan = 0, rebuild = 0, prep_upgrade = 0, rebuildindexes = 0, dumpindexes = 0, force = 0;
+    int c;
+    int ret = -1;
+    int dump=0, scan=0, rebuild=0, prep_upgrade=0, rebuildindexes=0, dumpindexes=0;
     dbd_flags_t flags = 0;
     char *volpath;
     int cdir;
@@ -265,7 +266,6 @@ int main(int argc, char **argv) {
                 rebuildindexes = 1;
                 break;
             case 'f':
-                force = 1;
                 exclusive = 1;
                 flags |= DBD_FLAGS_FORCE | DBD_FLAGS_EXCL;
                 break;
@@ -449,7 +449,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    exit_success:
     ret = 0;
 
     exit_failure:
