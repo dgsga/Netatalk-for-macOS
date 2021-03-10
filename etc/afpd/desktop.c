@@ -37,6 +37,8 @@
 #include "desktop.h"
 #include "mangle.h"
 
+extern int debug;
+
 
 int afp_opendt(AFPObj *obj _U_, char *ibuf, size_t ibuflen _U_, char *rbuf, size_t *rbuflen) {
     struct vol *vol;
@@ -575,9 +577,8 @@ char *mtoupath(const struct vol *vol, char *mpath, cnid_t did, int utf8) {
         return NULL;
     }
 
-#ifdef DEBUG
-    LOG(log_debug9, logtype_afpd, "mtoupath: '%s':'%s'", mpath, upath);
-#endif /* DEBUG */
+    if ( debug )
+        LOG(log_debug9, logtype_afpd, "mtoupath: '%s':'%s'", mpath, upath);
     return (upath);
 }
 
@@ -613,9 +614,8 @@ char *utompath(const struct vol *vol, char *upath, cnid_t id, int utf8) {
 
     m = mangle(vol, mpath, outlen, upath, id, flags);
 
-#ifdef DEBUG
-    LOG(log_debug9, logtype_afpd, "utompath: '%s':'%s':'%2.2X'", upath, m, ntohl(id));
-#endif /* DEBUG */
+    if ( debug )
+            LOG(log_debug9, logtype_afpd, "utompath: '%s':'%s':'%2.2X'", upath, m, ntohl(id));
     return (m);
 
     utompath_error:

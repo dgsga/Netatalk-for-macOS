@@ -41,19 +41,11 @@
 #include "uam_auth.h"
 #include "afp_zeroconf.h"
 
-#ifdef TRU64
-#include <sys/security.h>
-#include <prot.h>
-#include <sia.h>
-
-static int argc = 0;
-static char **argv = NULL;
-#endif /* TRU64 */
-
 #define AFP_LISTENERS 32
 #define FDSET_SAFETY  5
 
 unsigned char nologin = 0;
+int debug = 0;
 struct afp_options default_options;
 static AFPConfig *configs;
 static server_child *server_children;
