@@ -23,9 +23,6 @@ $MAC_PROCESS = "afpd";
 if ($^O eq "freebsd" || $^O eq "openbsd") {
         $PS_STR    = "-awwxouser,pid,ppid,start,command";
         $MATCH_STR = '(\w+)\s+(\d+)\s+(\d+)\s+([\d\w:]+)';
-} elsif ($^O eq "solaris") {
-        $PS_STR    = "-eo user,pid,ppid,c,stime,tty,time,comm";
-        $MATCH_STR = '\s*(\w+)\s+(\d+)\s+(\d+)\s+\d+\s+([\d\w:]+)';
 } else {
         $PS_STR    = "-eo user:32,pid,ppid,c,stime,tty,time,cmd";
         $MATCH_STR = '\s*(\w+)\s+(\d+)\s+(\d+)\s+\d+\s+([\d\w:]+)';
@@ -54,12 +51,6 @@ if ($^O eq "freebsd") {
         print
             "PID      UID      Username         Name                 Logintime Mac\n";
         close(SOCKSTAT);
-} elsif ($^O eq "solaris") {
-        if ($< != 0) {
-            print "must be run as root\n";
-            exit(1);
-        }
-        print "PID      UID      Username         Name                 Logintime Mac\n";
 } elsif ($LSOF == 1) {
         open(LSOF, "lsof -i :$ASIP_PORT |");
 
@@ -92,26 +83,6 @@ while (<PS>) {
         $time = $4;
 
         if ($ppid != 1) {
-                if ($^O eq "solaris") {
-                        open(PFILES, "pfiles $pid |");
-                        while (<PFILES>) {
-                                next if ($_ !~ /port: $ASIP_PORT_NO/);
-                                while (<PFILES>) {
-                                        next if ($_ !~ /peername/);
-                                        if ($_ =~ /AF_INET (.*) port/) {
-                                            $ip = $1;
-                                            if ($ip =~ /::ffff:(.*)/ ) {
-                                                $ip = $1;
-                                            }
-                                        }
-                                        $mac{$pid} = $ip;
-                                        last;
-                                }
-                                last;
-                        }
-                        close(PFILES);
-                }
-
                 ($t, $t, $uid, $t, $t, $t, $name, $t, $t) = getpwnam($user);
                 ($name) = ( $name =~ /(^[^,]+)/ );
                 printf "%-8d %-8d %-16s %-20s %-9s %s\n", $pid, $uid, $user,

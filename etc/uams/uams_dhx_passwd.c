@@ -74,13 +74,6 @@ static CAST_KEY castkey;
 static struct passwd *dhxpwd;
 static u_int8_t randbuf[16];
 
-#ifdef TRU64
-#include <sia.h>
-#include <siad.h>
-
-static const char *clientname;
-#endif /* TRU64 */
-
 /* dhx passwd */
 static int pwd_login(void *obj, char *username, int ulen, struct passwd **uam_pwd _U_,
                      char *ibuf, size_t ibuflen _U_,
@@ -325,24 +318,6 @@ static int passwd_logincont(void *obj, struct passwd **uam_pwd,
     BN_free(bn3);
 
     rbuf[PASSWDLEN] = '\0';
-#ifdef TRU64
-    {
-        int ac;
-        char **av;
-        char hostname[256];
-
-        uam_afp_getcmdline( &ac, &av );
-        sprintf( hostname, "%s@%s", dhxpwd->pw_name, clientname );
-
-        if( uam_sia_validate_user( NULL, ac, av, hostname, dhxpwd->pw_name,
-                                   NULL, FALSE, NULL, rbuf ) != SIASUCCESS )
-            return AFPERR_NOTAUTH;
-
-        memset( rbuf, 0, PASSWDLEN );
-        *uam_pwd = dhxpwd;
-        return AFP_OK;
-    }
-#else /* TRU64 */
     p = crypt(rbuf, dhxpwd->pw_passwd);
     memset(rbuf, 0, PASSWDLEN);
     if (strcmp(p, dhxpwd->pw_passwd) == 0) {
@@ -366,7 +341,6 @@ static int passwd_logincont(void *obj, struct passwd **uam_pwd,
     }
 #endif /* SHADOWPW */
     return err;
-#endif /* TRU64 */
 
     return AFPERR_NOTAUTH;
 }

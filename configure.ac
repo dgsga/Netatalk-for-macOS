@@ -113,7 +113,7 @@ fi
 rm -rf conftest*
 
 case $host_cpu:$atalk_cv_cc_64bit_output in
-powerpc64:yes | s390x:yes | sparc*:yes | x86_64:yes | i386:yes)
+powerpc64:yes | x86_64:yes | i386:yes)
     case $target_os in
     *)
         AC_MSG_RESULT([yes])

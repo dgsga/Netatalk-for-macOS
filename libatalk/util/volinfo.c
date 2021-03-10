@@ -31,9 +31,9 @@
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
-#ifdef STDC_HEADERS
+
 #include <string.h>
-#endif
+
 #include <sys/param.h>
 
 #include <atalk/adouble.h>

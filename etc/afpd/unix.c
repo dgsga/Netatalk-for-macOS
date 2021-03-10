@@ -14,23 +14,8 @@
 #include <inttypes.h>
 
 /* STDC check */
-#ifdef STDC_HEADERS
 
 #include <string.h>
-
-#else /* STDC_HEADERS */
-
-#ifndef HAVE_STRCHR
-#define strchr index
-#define strrchr index
-#endif /* HAVE_STRCHR */
-char *strchr (), *strrchr ();
-
-#ifndef HAVE_MEMCPY
-#define memcpy(d,s,n) bcopy ((s), (d), (n))
-#define memmove(d,s,n) bcopy ((s), (d), (n))
-#endif /* ! HAVE_MEMCPY */
-#endif /* STDC_HEADERS */
 
 #include <errno.h>
 #include <limits.h>
@@ -55,24 +40,15 @@ char *strchr (), *strrchr ();
 int ustatfs_getvolspace(const struct vol *vol, VolSpace *bfree, VolSpace *btotal, u_int32_t *bsize) {
     VolSpace maxVolSpace = UINT64_MAX;
 
-#ifdef ultrix
-    struct fs_data	sfs;
-#else /*ultrix*/
     struct statfs sfs;
-#endif /*ultrix*/
 
     if (statfs(vol->v_path, &sfs) < 0) {
         LOG(log_error, logtype_afpd, "ustatfs_getvolspace unable to stat %s", vol->v_path);
         return (AFPERR_PARAM);
     }
 
-#ifdef ultrix
-    *bfree = (VolSpace) sfs.fd_req.bfreen;
-    *bsize = 1024;
-#else /* !ultrix */
     *bfree = (VolSpace) sfs.f_bavail;
     *bsize = sfs.f_frsize;
-#endif /* ultrix */
 
     if (*bfree > maxVolSpace / *bsize) {
         *bfree = maxVolSpace;
@@ -80,13 +56,8 @@ int ustatfs_getvolspace(const struct vol *vol, VolSpace *bfree, VolSpace *btotal
         *bfree *= *bsize;
     }
 
-#ifdef ultrix
-    *btotal = (VolSpace)
-              ( sfs.fd_req.btot - ( sfs.fd_req.bfree - sfs.fd_req.bfreen ));
-#else /* !ultrix */
     *btotal = (VolSpace)
             (sfs.f_blocks - (sfs.f_bfree - sfs.f_bavail));
-#endif /* ultrix */
 
     /* see similar block above comments */
     if (*btotal > maxVolSpace / *bsize) {

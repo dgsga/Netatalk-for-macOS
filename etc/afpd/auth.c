@@ -33,15 +33,6 @@
 #include <pwd.h>
 #include <grp.h>
 
-#ifdef TRU64
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sia.h>
-#include <siad.h>
-
-extern void afp_get_cmdline( int *ac, char ***av );
-#endif /* TRU64 */
-
 #include <atalk/logger.h>
 #include <atalk/server_ipc.h>
 #include <atalk/uuid.h>
@@ -59,16 +50,8 @@ static int afp_version_index;
 
 uid_t uuid;
 
-#if defined( sun ) && !defined( __svr4__ ) || defined( ultrix )
-
-int *groups;
-#define GROUPS_SIZE sizeof(int)
-
-#else /* sun __svr4__ ultrix */
-
 gid_t *groups;
 #define GROUPS_SIZE sizeof(gid_t)
-#endif /* sun ultrix */
 
 int ngroups;
 
