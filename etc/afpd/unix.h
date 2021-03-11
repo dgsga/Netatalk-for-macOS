@@ -13,13 +13,30 @@
 #include "config.h"
 #include "volume.h"
 
+#if defined(HAVE_SYS_VFS_H)
+#include <sys/vfs.h>
+#endif /* HAVE_SYS_VFS_H */
+
+#if defined(HAVE_STATFS_H)
+#include <sys/statfs.h>
+/* this might not be right. */
+#define f_mntfromname f_fname
+#endif /* HAVE_STATFS_H */
+
+#if defined(__NetBSD__)
+#include <sys/statvfs.h>
+#define statfs statvfs
+#else
 #define    f_frsize f_bsize
+#endif /* __NetBSD__ */
 
-#if defined(HAVE_SYS_MOUNT_H) || defined(BSD4_4)
-
+#if defined(HAVE_SYS_MOUNT_H)
 #include <sys/mount.h>
+#endif /* HAVE_SYS_MOUNT_H */
 
-#endif /* HAVE_SYS_MOUNT_H || BSD4_4 */
+#if defined(HAVE_MNTENT_H)
+#include <mntent.h>
+#endif /* HAVE_MNTENT_H */
 
 extern struct afp_options default_options;
 
