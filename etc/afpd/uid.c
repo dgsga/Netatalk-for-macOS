@@ -7,11 +7,7 @@
  * across the package).
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
 
 /* don't compile this file at all unless FORCE_UIDGID is set */
 #ifdef FORCE_UIDGID
@@ -26,9 +22,7 @@
 #include <grp.h>
 #include "uid.h"
 
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 
 extern uid_t    uuid; 
 

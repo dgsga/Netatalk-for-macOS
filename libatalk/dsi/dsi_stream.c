@@ -9,17 +9,10 @@
  * dsi_stream_receive:  read a DSI header + data.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
-
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>

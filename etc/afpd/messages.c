@@ -5,22 +5,13 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
-
-#endif /* HAVE_UNISTD_H */
-
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+
 #include <atalk/afp.h>
 #include <atalk/dsi.h>
 #include <atalk/util.h>

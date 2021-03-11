@@ -5,28 +5,16 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
 
 /* STDC check */
-
 #include <string.h>
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
 
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_FCNTL_H
-
 #include <fcntl.h>
-
 #endif /* HAVE_FCNTL_H */
 
 #include <ctype.h>
@@ -36,9 +24,7 @@
 #include <sys/time.h>
 
 #ifdef HAVE_DLFCN_H
-
 #include <dlfcn.h>
-
 #endif /* HAVE_DLFCN_H */
 
 #include <netinet/in.h>

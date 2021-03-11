@@ -4,41 +4,26 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
 
-#endif /* HAVE_CONFIG_H */
-
 #if defined (USE_PAM) && defined (UAM_DHX2)
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <atalk/logger.h>
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
-
-#endif /* HAVE_UNISTD_H */
-
 #include <errno.h>
 
 #ifdef HAVE_SECURITY_PAM_APPL_H
-
 #include <security/pam_appl.h>
-
 #endif
+
 #ifdef HAVE_PAM_PAM_APPL_H
 #include <pam/pam_appl.h>
 #endif
 
-
 #ifdef HAVE_LIBGCRYPT
-
 #include <gcrypt.h>
-
 #endif /* HAVE_LIBGCRYPT */
 
 #include <atalk/afp.h>

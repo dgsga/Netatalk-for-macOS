@@ -8,22 +8,16 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 
 /* STDC check */
 
 #include <string.h>
-
 #include <errno.h>
+
 #include <atalk/logger.h>
 #include <atalk/afp.h>
 #include <atalk/uam.h>

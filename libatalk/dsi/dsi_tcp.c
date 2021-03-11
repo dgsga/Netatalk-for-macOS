@@ -8,20 +8,17 @@
  * protocol specific initialization and shutdown procedures. all the
  * read/write stuff is done in dsi_stream.c.  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #include <errno.h>
+
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
+
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -38,10 +35,6 @@
 
 #include <signal.h>
 #include <atalk/logger.h>
-
-#ifdef __svr4__
-#include <sys/sockio.h>
-#endif /* __svr4__ */
 
 #ifdef TCPWRAP
 #include <tcpd.h>

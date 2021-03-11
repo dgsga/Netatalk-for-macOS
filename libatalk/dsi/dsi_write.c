@@ -7,21 +7,19 @@
  * 7 Oct 1997 added checks for 0 data.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 /* this streams writes */
 #include <stdio.h>
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif /* HAVE_FCNTL_H */
+
 #include <string.h>
 
 #include <atalk/dsi.h>

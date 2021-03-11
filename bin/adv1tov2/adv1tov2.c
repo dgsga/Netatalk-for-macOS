@@ -4,28 +4,17 @@
  * files/directories into appledouble v2.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <atalk/adouble.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
 
 #ifdef HAVE_FCNTL_H
-
 #include <fcntl.h>
-
 #endif /* HAVE_FCNTL_H */
-#ifdef HAVE_UNISTD_H
 
 #include <unistd.h>
-
-#endif /* HAVE_UNISTD_H */
-
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>

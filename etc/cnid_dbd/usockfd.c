@@ -3,23 +3,11 @@
  * All Rights Reserved.  See COPYING.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
-
-#endif /* HAVE_UNISTD_H */
-
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -27,14 +15,11 @@
 #include <netdb.h>
 
 #ifdef HAVE_SYS_TYPES_H
-
 #include <sys/types.h>
-
 #endif /* HAVE_SYS_TYPES_H */
+
 #ifdef HAVE_SYS_TIME_H
-
 #include <sys/time.h>
-
 #endif /* HAVE_SYS_TIME_H */
 
 
