@@ -1,3 +1,3 @@
 # Makefile.am for sys/
 
-SUBDIRS = netatalk generic
+SUBDIRS = netatalk
