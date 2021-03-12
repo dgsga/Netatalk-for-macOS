@@ -3,12 +3,7 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
 /* STDC check */
@@ -16,9 +11,7 @@
 #include <string.h>
 
 #ifdef HAVE_STRINGS_H
-
 #include <strings.h>
-
 #endif
 
 #include <errno.h>

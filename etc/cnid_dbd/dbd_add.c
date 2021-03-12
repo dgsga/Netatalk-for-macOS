@@ -4,31 +4,18 @@
  * All Rights Reserved.  See COPYING.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <string.h>
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
 
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_FCNTL_H
-
 #include <fcntl.h>
-
 #endif /* HAVE_FCNTL_H */
 
 #include <errno.h>
 
 #ifdef HAVE_SYS_TIME_H
-
 #include <sys/time.h>
-
 #endif /* HAVE_SYS_TIME_H */
 
 #include <atalk/logger.h>

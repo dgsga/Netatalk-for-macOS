@@ -5,14 +5,9 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include <config.h>
 
-#endif
-
 #ifdef HAVE_AVAHI
-
 #include <unistd.h>
 #include <time.h>
 

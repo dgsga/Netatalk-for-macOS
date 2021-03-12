@@ -6,12 +6,7 @@
  * modified from main.c. this handles afp options.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,16 +20,12 @@
 #include <arpa/inet.h>
 
 #ifdef HAVE_NETDB_H
-
 #include <netdb.h>
-
 #endif /* HAVE_NETDB_H */
 
 #ifdef ADMIN_GRP
-
 #include <grp.h>
 #include <sys/types.h>
-
 #endif /* ADMIN_GRP */
 
 #include <atalk/paths.h>

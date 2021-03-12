@@ -6,14 +6,9 @@
  * All Rights Reserved.  See COPYRIGHT.
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
 
-#endif /* HAVE_CONFIG_H */
-
 #ifdef UAM_DHX2
-
 #include <atalk/standards.h>
 
 #include <stdio.h>
@@ -21,27 +16,18 @@
 #include <string.h>
 #include <errno.h>
 #include <pwd.h>
-
-#ifdef HAVE_UNISTD_H
-
 #include <unistd.h>
-
-#endif
 
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
-
 #include <sys/time.h>
-
 #endif
 
 #ifdef HAVE_TIME_H
-
 #include <time.h>
-
 #endif
 
 #ifdef SHADOWPW
@@ -49,9 +35,7 @@
 #endif
 
 #ifdef HAVE_LIBGCRYPT
-
 #include <gcrypt.h>
-
 #endif
 
 #include <atalk/afp.h>

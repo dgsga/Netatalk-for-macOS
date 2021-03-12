@@ -25,13 +25,7 @@
    cnid_metad and cnid_dbd have been converted to non-blocking IO in 2010.
  */
 
-
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
-
 #include <unistd.h>
 
 #undef __USE_GNU

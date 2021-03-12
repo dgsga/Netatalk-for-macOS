@@ -7,12 +7,7 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-
 #include <config.h>
-
-#endif
-
 #include "afp_zeroconf.h"
 #include "afp_config.h"
 
