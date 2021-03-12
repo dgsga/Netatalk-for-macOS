@@ -820,7 +820,8 @@ int setfilparams(struct vol *vol,
     struct extmap *em;
     int bit, isad = 1, err = AFP_OK;
     char *upath;
-    u_char achar, *fdType, xyy[4]; /* uninitialized, OK 310105 */
+    u_char achar, xyy[4];
+    u_char *fdType = NULL;    /* "uninitialized, OK 310105" -- yeah, no */
     u_int16_t ashort, bshort, oshort;
     u_int32_t aint;
     u_int32_t upriv;
@@ -835,7 +836,8 @@ int setfilparams(struct vol *vol,
     uid_t f_uid;
     gid_t f_gid;
     u_int16_t bitmap = f_bitmap;
-    u_int32_t cdate, bdate;
+    u_int32_t cdate = 0;
+    u_int32_t bdate = 0;
     u_char finder_buf[32];
     int fp;
     ssize_t len;

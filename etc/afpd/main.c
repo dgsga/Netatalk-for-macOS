@@ -226,17 +226,9 @@ static int setlimits(void) {
 
 int main(int ac, char **av) {
     AFPConfig *config;
-    fd_set rfds;
-    void *ipc;
     struct sigaction sv;
     sigset_t sigs;
     int ret;
-
-#ifdef TRU64
-    argc = ac;
-    argv = av;
-    set_auth_parameters( ac, av );
-#endif /* TRU64 */
 
     /* Parse argv args and initialize default options */
     afp_options_init(&default_options);

@@ -188,7 +188,6 @@ int getuuidfromname( const char *name, uuidtype_t type, uuidp_t uuid) {
         add_cachebyname(name, uuid, mytype, 0);
     }
 
-cleanup:
     return ret;
 }
 

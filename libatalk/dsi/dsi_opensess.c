@@ -35,6 +35,8 @@ void dsi_opensession(DSI *dsi)
 {
   u_int32_t i = 0; /* this serves double duty. it must be 4-bytes long */
   int offs;
+  uint8_t cmd;
+  size_t option_len;
 
   dsi_init_buffer(dsi);
   if (setnonblock(dsi->socket, 1) < 0) {
@@ -43,17 +45,32 @@ void dsi_opensession(DSI *dsi)
   }
 
   /* parse options */
-  while (i < dsi->cmdlen) {
-    switch (dsi->commands[i++]) {
+  while (i + 1 < dsi->cmdlen) {
+      cmd = dsi->commands[i++];
+        option_len = dsi->commands[i++];
+
+    if (i + option_len > dsi->cmdlen) {
+        LOG(log_error, logtype_dsi, "option %ux too large: %zu",
+              cmd, option_len);
+        exit(EXITERR_CLNT);
+    }
+
+    switch (cmd) {
     case DSIOPT_ATTNQUANT:
-      memcpy(&dsi->attn_quantum, dsi->commands + i + 1, dsi->commands[i]);
-      dsi->attn_quantum = ntohl(dsi->attn_quantum);
+        if (option_len != sizeof(dsi->attn_quantum)) {
+            LOG(log_error, logtype_dsi, "option %ux bad length: %zu",
+                cmd, option_len);
+            exit(EXITERR_CLNT);
+        }
+        memcpy(&dsi->attn_quantum, &dsi->commands[i], option_len);
+        dsi->attn_quantum = ntohl(dsi->attn_quantum);
 
     case DSIOPT_SERVQUANT: /* just ignore these */
     default:
-      i += dsi->commands[i] + 1; /* forward past length tag + length */
       break;
     }
+      
+    i += option_len;
   }
 
   /* let the client know the server quantum. we don't use the
