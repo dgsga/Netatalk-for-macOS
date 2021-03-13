@@ -226,11 +226,10 @@ wide strstr()
 
 ucs2_t *strstr_w(const ucs2_t *s, const ucs2_t *ins) {
   ucs2_t *r;
-  size_t slen, inslen;
+  size_t inslen;
 
   if (!s || !*s || !ins || !*ins)
     return NULL;
-  slen = strlen_w(s);
   inslen = strlen_w(ins);
   r = (ucs2_t *)s;
   while ((r = strchr_w(r, *ins))) {
@@ -248,11 +247,10 @@ wide strcasestr()
 
 ucs2_t *strcasestr_w(const ucs2_t *s, const ucs2_t *ins) {
   ucs2_t *r;
-  size_t slen, inslen;
+  size_t inslen;
 
   if (!s || !*s || !ins || !*ins)
     return NULL;
-  slen = strlen_w(s);
   inslen = strlen_w(ins);
   r = (ucs2_t *)s;
 

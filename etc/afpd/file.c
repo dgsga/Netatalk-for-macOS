@@ -820,7 +820,8 @@ int setfilparams(struct vol *vol, struct path *path, u_int16_t f_bitmap,
   char *upath;
   u_char achar, xyy[4];
   u_char *fdType = NULL; /* "uninitialized, OK 310105" -- yeah, no */
-  u_int16_t ashort, bshort, oshort;
+  u_int16_t ashort = 0;
+  u_int16_t bshort, oshort;
   u_int32_t aint;
   u_int32_t upriv;
   u_int16_t upriv_bit = 0;
@@ -1400,35 +1401,6 @@ static int copy_fork(int eid, struct adouble *add, struct adouble *ads) {
 
   if ((off_t)-1 == lseek(dfd, ad_getentryoff(add, eid), SEEK_SET))
     return -1;
-
-#if 0 /* ifdef SENDFILE_FLAVOR_LINUX */
-    /* doesn't work With 2.6 FIXME, only check for EBADFD ? */
-    off_t   offset = 0;
-    size_t  size;
-    struct stat         st;
-#define BUF 128 * 1024 * 1024
-
-    if (fstat(sfd, &st) == 0) {
-        
-        while (1) {
-            if ( offset >= st.st_size) {
-               return 0;
-            }
-            size = (st.st_size -offset > BUF)?BUF:st.st_size -offset;
-            if ((cc = sys_sendfile(dfd, sfd, &offset, size)) < 0) {
-                switch (errno) {
-                case ENOSYS:
-                case EINVAL:  /* there's no guarantee that all fs support sendfile */
-                    goto no_sendfile;
-                default:
-                    return -1;
-                }
-            }
-        }
-    }
-    no_sendfile:
-    lseek(sfd, offset, SEEK_SET);
-#endif
 
   while (1) {
     if ((cc = read(sfd, filebuf, sizeof(filebuf))) < 0) {
@@ -2198,7 +2170,7 @@ int afp_exchangefiles(AFPObj *obj, char *ibuf, size_t ibuflen _U_,
    * NOTE: the temp file will be in the dest file's directory. it
    * will also be inaccessible from AFP. */
   memcpy(temp, APPLETEMP, sizeof(APPLETEMP));
-  if (!mktemp(temp)) {
+  if ( (mkstemp(temp)) == -1) {
     err = AFPERR_MISC;
     goto err_exchangefile;
   }
@@ -2290,10 +2262,20 @@ int afp_exchangefiles(AFPObj *obj, char *ibuf, size_t ibuflen _U_,
   path->u_name = p;
 
   setfilunixmode(vol, path, srcst.st_mode);
+  LOG(log_error, logtype_afpd, "set %s mode to %i", path, srcst.st_mode);
   setfilowner(vol, srcst.st_uid, srcst.st_gid, path);
 
-  if (setegid(gid) < 0 || seteuid(uid) < 0) {
-    LOG(log_error, logtype_afpd, "can't seteuid back %s", strerror(errno));
+  if (setegid(gid) < 0) {
+    LOG(log_error, logtype_afpd, "afp_exchangefiles: can't setegid back to %i (%s)",
+      gid,
+      strerror(errno));
+    exit(EXITERR_SYS);
+  }
+
+  if (seteuid(uid) < 0) {
+    LOG(log_error, logtype_afpd, "afp_exchangefiles: can't seteuid back to %i (%s)",
+      uid,
+      strerror(errno));
     exit(EXITERR_SYS);
   }
 

@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
   if (db_locked != LOCK_EXCL) {
     /* Couldn't get exclusive lock, try shared lock if -e wasn't requested */
     if (exclusive) {
-      dbd_log(LOGSTD, "Database is in use and exlusive was requested");
+      dbd_log(LOGSTD, "Database is in use and exclusive was requested");
       goto exit_noenv;
     }
     if ((db_locked = get_lock(LOCK_SHRD, NULL)) != LOCK_SHRD)

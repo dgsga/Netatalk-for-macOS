@@ -80,13 +80,9 @@ extern void of_close_all_forks(void);
 extern struct adouble *of_ad(const struct vol *, struct path *,
                              struct adouble *);
 
-#ifdef HAVE_ATFUNCS
-
 extern struct ofork *of_findnameat(int dirfd, struct path *path);
 
 extern int of_fstatat(int dirfd, struct path *path);
-
-#endif /* HAVE_ATFUNCS */
 
 /* in fork.c */
 extern int flushfork(struct ofork *);

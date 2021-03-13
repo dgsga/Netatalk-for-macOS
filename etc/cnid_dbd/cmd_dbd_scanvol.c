@@ -56,7 +56,7 @@ static struct vol volume; /* fake it for ea_open */
 static char pname[MAXPATHLEN] = "../";
 
 /*
-  Taken form afpd/desktop.c
+  Taken from afpd/desktop.c
 */
 static char *utompath(char *upath) {
   static char
@@ -95,7 +95,7 @@ static char *utompath(char *upath) {
 }
 
 /*
-  Taken form afpd/desktop.c
+  Taken from afpd/desktop.c
 */
 static char *mtoupath(char *mpath) {
   static char

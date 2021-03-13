@@ -210,8 +210,8 @@ static inline void LOG(int log_level, int type, char *fmt, ...) {
   char buffer[256];
   FILE *logfile = NULL;
   char logpath[256];
-  char *lognames[] = {"default", "logger", "cnid", "afpd",       "dsi",
-                      "atalkd",  "papd",   "uams", "end-of-list"};
+  char *lognames[] = {"default", "logger", "cnid", "afpd", "dsi",
+                      "uams", "end-of-list"};
 
   char *loglevel_names[] = {"none",   "severe", "error",  "warning",
                             "note",   "info",   "debug",  "debug6",

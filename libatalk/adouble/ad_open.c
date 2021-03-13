@@ -1073,11 +1073,7 @@ static int ad_error(struct adouble *ad, int adflags) {
 
 static int new_rfork(const char *path, struct adouble *ad, int adflags);
 
-#ifdef HAVE_PREAD
 #define AD_SET(a)
-#else
-#define AD_SET(a) a = 0
-#endif
 
 /* --------------------------- */
 static int ad_check_size(struct adouble *ad _U_, struct stat *st) {

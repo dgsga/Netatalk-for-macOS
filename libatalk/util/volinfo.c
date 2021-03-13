@@ -17,9 +17,7 @@
    copyright Bjoern Fernhomberg, 2004
 */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #include <ctype.h>
 #include <errno.h>
@@ -28,12 +26,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifdef HAVE_STRINGS_H
 #include <strings.h>
-#endif
-
 #include <string.h>
-
 #include <sys/param.h>
 
 #include <atalk/adouble.h>
@@ -41,6 +35,7 @@
 #include <atalk/util.h>
 #include <atalk/volinfo.h>
 #include <atalk/volume.h>
+
 #ifdef CNID_DB
 #include <atalk/cnid.h>
 #endif /* CNID_DB*/

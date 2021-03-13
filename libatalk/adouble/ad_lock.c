@@ -14,19 +14,16 @@
  *       sorted.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
-
-#include <atalk/adouble.h>
-#include <atalk/logger.h>
 
 #include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string.h>
+
+#include <atalk/adouble.h>
+#include <atalk/logger.h>
 
 #include "ad_private.h"
 
@@ -36,10 +33,6 @@
        ? LOCK_SH                                                               \
        : ((type) == ADLOCK_WR ? LOCK_EX                                        \
                               : ((type) == ADLOCK_CLR ? LOCK_UN : -1)))
-
-#ifdef DISABLE_LOCKING
-#define fcntl(a, b, c) (0)
-#endif
 
 /* ----------------------- */
 static int set_lock(int fd, int cmd, struct flock *lock) {

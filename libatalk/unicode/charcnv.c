@@ -21,27 +21,27 @@
   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
-#ifdef HAVE_CONFIG_H
+
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #include <ctype.h>
 #include <errno.h>
+
+#if HAVE_LANGINFO_H
+#include <langinfo.h>
+#endif
+
+#if HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#ifdef HAVE_USABLE_ICONV
 #include <iconv.h>
-#endif
-#if HAVE_LOCALE_H
-#include <locale.h>
-#endif
-#if HAVE_LANGINFO_H
-#include <langinfo.h>
-#endif
 
 #include "byteorder.h"
 #include <atalk/logger.h>

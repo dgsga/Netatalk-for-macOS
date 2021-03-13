@@ -4,22 +4,20 @@
  * All Rights Reserved.  See COPYING.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #ifdef CNID_BACKEND_DBD
-
 #include <stdlib.h>
+
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif /* HAVE_SYS_STAT_H */
+
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
 #endif /* HAVE_SYS_UIO_H */
-#ifdef HAVE_STRINGS_H
+
 #include <strings.h>
-#endif
 #include <arpa/inet.h>
 #include <errno.h>
 #include <net/if.h>
@@ -553,7 +551,7 @@ void cnid_dbd_close(struct _cnid_db *cdb) {
 
 /* ---------------------- */
 cnid_t cnid_dbd_add(struct _cnid_db *cdb, const struct stat *st,
-                    const cnid_t did, char *name, const size_t len,
+                    const cnid_t did, const char *name, const size_t len,
                     cnid_t hint) {
   CNID_private *db;
   struct cnid_dbd_rqst rqst;
@@ -583,7 +581,7 @@ cnid_t cnid_dbd_add(struct _cnid_db *cdb, const struct stat *st,
   rqst.type = S_ISDIR(st->st_mode) ? 1 : 0;
   rqst.cnid = hint;
   rqst.did = did;
-  rqst.name = name;
+  rqst.name = (char *) name;
   rqst.namelen = len;
 
   LOG(log_debug, logtype_cnid,
@@ -810,7 +808,7 @@ cnid_t cnid_dbd_lookup(struct _cnid_db *cdb, const struct stat *st,
 }
 
 /* ---------------------- */
-int cnid_dbd_find(struct _cnid_db *cdb, char *name, size_t namelen,
+int cnid_dbd_find(struct _cnid_db *cdb, const char *name, size_t namelen,
                   void *buffer, size_t buflen) {
   CNID_private *db;
   struct cnid_dbd_rqst rqst;
@@ -834,7 +832,7 @@ int cnid_dbd_find(struct _cnid_db *cdb, char *name, size_t namelen,
   RQST_RESET(&rqst);
   rqst.op = CNID_DBD_OP_SEARCH;
 
-  rqst.name = name;
+  rqst.name = (char *) name;
   rqst.namelen = namelen;
 
   rply.name = buffer;

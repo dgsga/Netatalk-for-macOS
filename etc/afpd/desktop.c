@@ -293,6 +293,8 @@ static const u_char	uicon[] = {
 int afp_geticoninfo(AFPObj *obj _U_, char *ibuf, size_t ibuflen _U_, char *rbuf,
                     size_t *rbuflen) {
   struct vol *vol;
+  off_t offset;
+  ssize_t rc;
   u_char fcreator[4], ih[12];
   u_int16_t vid, iindex, bsize;
 

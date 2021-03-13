@@ -260,7 +260,6 @@ int server_child_transfer_session(server_child *children, int forkid, pid_t pid,
   EC_INIT;
   server_child_fork *fork;
   struct server_child_data *child;
-  int i;
 
   fork = (server_child_fork *)children->fork + forkid;
   if ((child = resolve_child(fork->table, pid)) == NULL) {

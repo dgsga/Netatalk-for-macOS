@@ -27,9 +27,7 @@
  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #ifdef WITH_SENDFILE
 
@@ -88,16 +86,4 @@ int ad_readfile_init(const struct adouble *ad, const int eid, off_t *off,
 
   return fd;
 }
-
-/* ------------------------ */
-#if 0
-#ifdef HAVE_SENDFILE_WRITE
-/* read from a socket and write to an adouble file */
-ssize_t ad_writefile(struct adouble *ad, const int eid, 
-		     const int sock, off_t off, const int end,
-		     const size_t len)
-{
-}
-#endif /* HAVE_SENDFILE_WRITE */
-#endif /* 0 */
 #endif
