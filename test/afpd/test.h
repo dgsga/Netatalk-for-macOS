@@ -20,58 +20,59 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
-#include <string.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <string.h>
 
-#include <atalk/util.h>
-#include <atalk/cnid.h>
-#include <atalk/logger.h>
-#include <atalk/volume.h>
-#include <atalk/directory.h>
-#include <atalk/queue.h>
 #include <atalk/bstrlib.h>
+#include <atalk/cnid.h>
+#include <atalk/directory.h>
 #include <atalk/globals.h>
+#include <atalk/logger.h>
+#include <atalk/queue.h>
+#include <atalk/util.h>
+#include <atalk/volume.h>
 
-#include "directory.h"
-#include "dircache.h"
-#include "hash.h"
 #include "afp_config.h"
-#include "volume.h"
+#include "dircache.h"
+#include "directory.h"
+#include "hash.h"
 #include "subtests.h"
+#include "volume.h"
 
-static inline void alignok(int len)
-{
-    int i = 1;
-    if (len < 80)
-        i = 80 - len;
-    while (i--)
-        printf(" ");
+static inline void alignok(int len) {
+  int i = 1;
+  if (len < 80)
+    i = 80 - len;
+  while (i--)
+    printf(" ");
 }
 
-#define TEST(a) \
-    printf("Testing: %s ... ", (#a) ); \
-    alignok(strlen(#a));               \
-    a;                                 \
-    printf("[ok]\n");
+#define TEST(a)                                                                \
+  printf("Testing: %s ... ", (#a));                                            \
+  alignok(strlen(#a));                                                         \
+  a;                                                                           \
+  printf("[ok]\n");
 
-#define TEST_int(a, b) \
-    printf("Testing: %s ... ", (#a) );            \
-    alignok(strlen(#a));                          \
-    if ((reti = (a)) != b) {                      \
-        printf("[error]\n");                      \
-        exit(1);                                  \
-    } else { printf("[ok]\n"); }
+#define TEST_int(a, b)                                                         \
+  printf("Testing: %s ... ", (#a));                                            \
+  alignok(strlen(#a));                                                         \
+  if ((reti = (a)) != b) {                                                     \
+    printf("[error]\n");                                                       \
+    exit(1);                                                                   \
+  } else {                                                                     \
+    printf("[ok]\n");                                                          \
+  }
 
-#define TEST_expr(a, b)                              \
-    printf("Testing: %s ... ", (#a) );               \
-    alignok(strlen(#a));                             \
-    a;                                               \
-    if (b) {                                         \
-        printf("[ok]\n");                            \
-    } else {                                         \
-        printf("[error]\n");                         \
-        exit(1);                                     \
-    }
-#endif  /* TEST_H */
+#define TEST_expr(a, b)                                                        \
+  printf("Testing: %s ... ", (#a));                                            \
+  alignok(strlen(#a));                                                         \
+  a;                                                                           \
+  if (b) {                                                                     \
+    printf("[ok]\n");                                                          \
+  } else {                                                                     \
+    printf("[error]\n");                                                       \
+    exit(1);                                                                   \
+  }
+#endif /* TEST_H */

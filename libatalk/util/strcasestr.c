@@ -28,97 +28,95 @@
 /* added strcasestr support, davidm@lineo.com */
 
 #if HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 
-#ifndef HAVE_STRCASESTR 
+#ifndef HAVE_STRCASESTR
 
-#if  defined HAVE_STRING_H
-# include <string.h>
+#if defined HAVE_STRING_H
+#include <string.h>
 #endif
 
 typedef unsigned chartype;
 
 #include <ctype.h>
-#define VAL(x)	tolower(x)
+#define VAL(x) tolower(x)
 #define FUNC strcasestr
 #undef strcasestr
 
-char * FUNC ( const char *phaystack, const char *pneedle)
-{
-	register const unsigned char *haystack, *needle;
-	register chartype b, c;
+char *FUNC(const char *phaystack, const char *pneedle) {
+  register const unsigned char *haystack, *needle;
+  register chartype b, c;
 
-	haystack = (const unsigned char *) phaystack;
-	needle = (const unsigned char *) pneedle;
+  haystack = (const unsigned char *)phaystack;
+  needle = (const unsigned char *)pneedle;
 
-	b = *needle;
-	if (b != '\0') {
-		haystack--;				/* possible ANSI violation */
-		do {
-			c = *++haystack;
-			if (c == '\0')
-				goto ret0;
-		}
-		while (VAL(c) != VAL(b));
+  b = *needle;
+  if (b != '\0') {
+    haystack--; /* possible ANSI violation */
+    do {
+      c = *++haystack;
+      if (c == '\0')
+        goto ret0;
+    } while (VAL(c) != VAL(b));
 
-		c = *++needle;
-		if (c == '\0')
-			goto foundneedle;
-		++needle;
-		goto jin;
+    c = *++needle;
+    if (c == '\0')
+      goto foundneedle;
+    ++needle;
+    goto jin;
 
-		for (;;) {
-			register chartype a;
-			register const unsigned char *rhaystack, *rneedle;
+    for (;;) {
+      register chartype a;
+      register const unsigned char *rhaystack, *rneedle;
 
-			do {
-				a = *++haystack;
-				if (a == '\0')
-					goto ret0;
-				if (VAL(a) == VAL(b))
-					break;
-				a = *++haystack;
-				if (a == '\0')
-					goto ret0;
-		  shloop:;}
-			while (VAL(a) != VAL(b));
+      do {
+        a = *++haystack;
+        if (a == '\0')
+          goto ret0;
+        if (VAL(a) == VAL(b))
+          break;
+        a = *++haystack;
+        if (a == '\0')
+          goto ret0;
+      shloop:;
+      } while (VAL(a) != VAL(b));
 
-		  jin:a = *++haystack;
-			if (a == '\0')
-				goto ret0;
+    jin:
+      a = *++haystack;
+      if (a == '\0')
+        goto ret0;
 
-			if (VAL(a) != VAL(c))
-				goto shloop;
+      if (VAL(a) != VAL(c))
+        goto shloop;
 
-			rhaystack = haystack-- + 1;
-			rneedle = needle;
-			a = *rneedle;
+      rhaystack = haystack-- + 1;
+      rneedle = needle;
+      a = *rneedle;
 
-			if (VAL(*rhaystack) == VAL(a))
-				do {
-					if (a == '\0')
-						goto foundneedle;
-					++rhaystack;
-					a = *++needle;
-					if (VAL(*rhaystack) != VAL(a))
-						break;
-					if (a == '\0')
-						goto foundneedle;
-					++rhaystack;
-					a = *++needle;
-				}
-				while (VAL(*rhaystack) == VAL(a));
+      if (VAL(*rhaystack) == VAL(a))
+        do {
+          if (a == '\0')
+            goto foundneedle;
+          ++rhaystack;
+          a = *++needle;
+          if (VAL(*rhaystack) != VAL(a))
+            break;
+          if (a == '\0')
+            goto foundneedle;
+          ++rhaystack;
+          a = *++needle;
+        } while (VAL(*rhaystack) == VAL(a));
 
-			needle = rneedle;	/* took the register-poor approach */
+      needle = rneedle; /* took the register-poor approach */
 
-			if (a == '\0')
-				break;
-		}
-	}
-  foundneedle:
-	return (char *) haystack;
-  ret0:
-	return 0;
+      if (a == '\0')
+        break;
+    }
+  }
+foundneedle:
+  return (char *)haystack;
+ret0:
+  return 0;
 }
 #endif

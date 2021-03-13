@@ -10,55 +10,55 @@
 #ifndef AFPD_UAM_AUTH_H
 #define AFPD_UAM_AUTH_H 1
 
-#include <sys/cdefs.h>
 #include <pwd.h>
+#include <sys/cdefs.h>
 
-#include <atalk/uam.h>
 #include <atalk/globals.h>
+#include <atalk/uam.h>
 
 struct uam_mod {
-    void *uam_module;
-    struct uam_export *uam_fcn;
-    struct uam_mod *uam_prev, *uam_next;
+  void *uam_module;
+  struct uam_export *uam_fcn;
+  struct uam_mod *uam_prev, *uam_next;
 };
 
 struct uam_obj {
-    const char *uam_name; /* authentication method */
-    char *uam_path; /* where it's located */
-    int uam_count;
+  const char *uam_name; /* authentication method */
+  char *uam_path;       /* where it's located */
+  int uam_count;
 
-    union {
-        struct {
-            int (*login)(void *, struct passwd **,
-                         char *, int, char *, size_t *);
+  union {
+    struct {
+      int (*login)(void *, struct passwd **, char *, int, char *, size_t *);
 
-            int (*logincont)(void *, struct passwd **, char *,
-                             int, char *, size_t *);
+      int (*logincont)(void *, struct passwd **, char *, int, char *, size_t *);
 
-            void (*logout)(void);
+      void (*logout)(void);
 
-            int (*login_ext)(void *, char *, struct passwd **,
-                             char *, int, char *, size_t *);
-        } uam_login;
+      int (*login_ext)(void *, char *, struct passwd **, char *, int, char *,
+                       size_t *);
+    } uam_login;
 
-        int (*uam_changepw)(void *, char *, struct passwd *, char *,
-                            int, char *, size_t *);
-    } u;
+    int (*uam_changepw)(void *, char *, struct passwd *, char *, int, char *,
+                        size_t *);
+  } u;
 
-    struct uam_obj *uam_prev, *uam_next;
+  struct uam_obj *uam_prev, *uam_next;
 };
 
-#define uam_attach(a, b) do { \
-    (a)->uam_prev->uam_next = (b); \
-    (b)->uam_prev = (a)->uam_prev; \
-    (b)->uam_next = (a); \
-    (a)->uam_prev = (b); \
-} while (0)
+#define uam_attach(a, b)                                                       \
+  do {                                                                         \
+    (a)->uam_prev->uam_next = (b);                                             \
+    (b)->uam_prev = (a)->uam_prev;                                             \
+    (b)->uam_next = (a);                                                       \
+    (a)->uam_prev = (b);                                                       \
+  } while (0)
 
-#define uam_detach(a) do { \
-    (a)->uam_prev->uam_next = (a)->uam_next; \
-    (a)->uam_next->uam_prev = (a)->uam_prev; \
-} while (0)
+#define uam_detach(a)                                                          \
+  do {                                                                         \
+    (a)->uam_prev->uam_next = (a)->uam_next;                                   \
+    (a)->uam_next->uam_prev = (a)->uam_prev;                                   \
+  } while (0)
 
 extern struct uam_mod *uam_load(const char *, const char *);
 

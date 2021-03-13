@@ -27,8 +27,8 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 /*#include <sys/stat.h>*/ /* including it here causes some confusion */
-#include <netatalk/endian.h>
 #include <dirent.h>
+#include <netatalk/endian.h>
 
 /* sys/types.h usually snarfs in major/minor macros. if they don't
  * try this file. */
@@ -42,51 +42,53 @@
 #include "volume.h"
 
 /* directory bits */
-#define DIRPBIT_ATTR    0
-#define DIRPBIT_PDID    1
-#define DIRPBIT_CDATE    2
-#define DIRPBIT_MDATE    3
-#define DIRPBIT_BDATE    4
-#define DIRPBIT_FINFO    5
-#define DIRPBIT_LNAME    6
-#define DIRPBIT_SNAME    7
-#define DIRPBIT_DID    8
-#define DIRPBIT_OFFCNT    9
-#define DIRPBIT_UID    10
-#define DIRPBIT_GID    11
-#define DIRPBIT_ACCESS    12
-#define DIRPBIT_PDINFO  13         /* ProDOS Info */
-#define DIRPBIT_UNIXPR  15
+#define DIRPBIT_ATTR 0
+#define DIRPBIT_PDID 1
+#define DIRPBIT_CDATE 2
+#define DIRPBIT_MDATE 3
+#define DIRPBIT_BDATE 4
+#define DIRPBIT_FINFO 5
+#define DIRPBIT_LNAME 6
+#define DIRPBIT_SNAME 7
+#define DIRPBIT_DID 8
+#define DIRPBIT_OFFCNT 9
+#define DIRPBIT_UID 10
+#define DIRPBIT_GID 11
+#define DIRPBIT_ACCESS 12
+#define DIRPBIT_PDINFO 13 /* ProDOS Info */
+#define DIRPBIT_UNIXPR 15
 
-#define FILDIRBIT_ISDIR        (1 << 7) /* is a directory */
-#define FILDIRBIT_ISFILE       (0)      /* is a file */
+#define FILDIRBIT_ISDIR (1 << 7) /* is a directory */
+#define FILDIRBIT_ISFILE (0)     /* is a file */
 
 /* file/directory ids. what a mess. we scramble things in a vain attempt
  * to get something meaningful */
 
 #if 0
-#define CNID_XOR(a)  (((a) >> 16) ^ (a))
-#define CNID_DEV(a)   ((((CNID_XOR(major((a)->st_dev)) & 0xf) << 3) | \
-    (CNID_XOR(minor((a)->st_dev)) & 0x7)) << 24)
-#define CNID_INODE(a) (((a)->st_ino ^ (((a)->st_ino & 0xff000000) >> 8)) \
-                       & 0x00ffffff)
-#define CNID_FILE(a)  (((a) & 0x1) << 31)
-#define CNID(a,b)     (CNID_DEV(a) | CNID_INODE(a) | CNID_FILE(b))
+#define CNID_XOR(a) (((a) >> 16) ^ (a))
+#define CNID_DEV(a)                                                            \
+  ((((CNID_XOR(major((a)->st_dev)) & 0xf) << 3) |                              \
+    (CNID_XOR(minor((a)->st_dev)) & 0x7))                                      \
+   << 24)
+#define CNID_INODE(a)                                                          \
+  (((a)->st_ino ^ (((a)->st_ino & 0xff000000) >> 8)) & 0x00ffffff)
+#define CNID_FILE(a) (((a)&0x1) << 31)
+#define CNID(a, b) (CNID_DEV(a) | CNID_INODE(a) | CNID_FILE(b))
 #endif
 
-#define CNID(a, b)     ((a)->st_ino & 0xffffffff)
+#define CNID(a, b) ((a)->st_ino & 0xffffffff)
 
 struct maccess {
-    u_char ma_user;
-    u_char ma_world;
-    u_char ma_group;
-    u_char ma_owner;
+  u_char ma_user;
+  u_char ma_world;
+  u_char ma_group;
+  u_char ma_owner;
 };
 
-#define    AR_USEARCH    (1<<0)
-#define    AR_UREAD    (1<<1)
-#define    AR_UWRITE    (1<<2)
-#define    AR_UOWN        (1<<7)
+#define AR_USEARCH (1 << 0)
+#define AR_UREAD (1 << 1)
+#define AR_UWRITE (1 << 2)
+#define AR_UOWN (1 << 7)
 
 q_t *invalid_dircache_entries;
 
@@ -94,15 +96,18 @@ typedef int (*dir_loop)(struct dirent *, char *, void *);
 
 extern void dir_free_invalid_q(void);
 
-extern struct dir *dir_new(const char *mname, const char *uname, const struct vol *,
-                           cnid_t pdid, cnid_t did, bstring fullpath, struct stat *);
+extern struct dir *dir_new(const char *mname, const char *uname,
+                           const struct vol *, cnid_t pdid, cnid_t did,
+                           bstring fullpath, struct stat *);
 
 extern void dir_free(struct dir *);
 
-extern struct dir *dir_add(struct vol *, const struct dir *, struct path *, int);
+extern struct dir *dir_add(struct vol *, const struct dir *, struct path *,
+                           int);
 
-extern int dir_modify(const struct vol *vol, struct dir *dir, cnid_t pdid, cnid_t did,
-                      const char *new_mname, const char *new_uname, bstring pdir_fullpath);
+extern int dir_modify(const struct vol *vol, struct dir *dir, cnid_t pdid,
+                      cnid_t did, const char *new_mname, const char *new_uname,
+                      bstring pdir_fullpath);
 
 extern int dir_remove(const struct vol *vol, struct dir *dir);
 
@@ -148,30 +153,42 @@ extern int caseenumerate(const struct vol *, struct path *, struct dir *);
 extern char *check_dirent(const struct vol *, char *);
 
 /* FP functions */
-int afp_createdir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_createdir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                  size_t *rbuflen);
 
-int afp_opendir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_opendir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                size_t *rbuflen);
 
-int afp_setdirparams(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_setdirparams(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                     size_t *rbuflen);
 
-int afp_closedir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_closedir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                 size_t *rbuflen);
 
-int afp_mapid(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_mapid(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+              size_t *rbuflen);
 
-int afp_mapname(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_mapname(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                size_t *rbuflen);
 
-int afp_syncdir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_syncdir(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                size_t *rbuflen);
 
 /* from enumerate.c */
-int afp_enumerate(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_enumerate(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                  size_t *rbuflen);
 
-int afp_enumerate_ext(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_enumerate_ext(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                      size_t *rbuflen);
 
-int afp_enumerate_ext2(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_enumerate_ext2(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                       size_t *rbuflen);
 
 /* from catsearch.c */
-int afp_catsearch(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_catsearch(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                  size_t *rbuflen);
 
-int afp_catsearch_ext(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf, size_t *rbuflen);
+int afp_catsearch_ext(AFPObj *obj, char *ibuf, size_t ibuflen, char *rbuf,
+                      size_t *rbuflen);
 
 #endif

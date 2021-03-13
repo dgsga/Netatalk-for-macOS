@@ -12,13 +12,13 @@
 #include "volume.h"
 
 /* functions to save and restore uid/gid pairs */
-extern void save_uidgid    ( uidgidset * );
-extern void restore_uidgid ( uidgidset * );
-extern void set_uidgid     ( const struct vol * );
+extern void save_uidgid(uidgidset *);
+extern void restore_uidgid(uidgidset *);
+extern void set_uidgid(const struct vol *);
 
 /* internal functions to convert user and group names to ids */
-extern int  user_to_uid  ( char * );
-extern int  group_to_gid ( char * );
+extern int user_to_uid(char *);
+extern int group_to_gid(char *);
 
 #endif /* FORCE_UIDGID */
 

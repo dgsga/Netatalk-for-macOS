@@ -5,11 +5,11 @@
  * All Rights Reserved.
  */
 
-# if defined( ultrix ) || defined( BSD4_4 )
+#if defined(ultrix) || defined(BSD4_4)
 #include <net/if_llc.h>
-# else /* ultrix || BSD4_4 */
+#else /* ultrix || BSD4_4 */
 
-#if defined( sun ) && !defined( __svr4__ )
+#if defined(sun) && !defined(__svr4__)
 #include <net/if_ieee802.h>
 #endif /* sun && !__svr4__ */
 
@@ -29,29 +29,29 @@
  */
 
 struct llc {
-	u_char	llc_dsap;
-	u_char	llc_ssap;
-	union {
-	    struct {
-		u_char control;
-		u_char format_id;
-		u_char class;
-		u_char window_x2;
-	    } type_u;
-	    struct {
-		u_char num_snd_x2;
-		u_char num_rcv_x2;
-	    } type_i;
-	    struct {
-		u_char control;
-		u_char num_rcv_x2;
-	    } type_s;
-	    struct {
-		u_char control;
-		u_char org_code[3];
-		u_short ether_type;
-	    } type_snap;
-	} llc_un;
+  u_char llc_dsap;
+  u_char llc_ssap;
+  union {
+    struct {
+      u_char control;
+      u_char format_id;
+      u_char class;
+      u_char window_x2;
+    } type_u;
+    struct {
+      u_char num_snd_x2;
+      u_char num_rcv_x2;
+    } type_i;
+    struct {
+      u_char control;
+      u_char num_rcv_x2;
+    } type_s;
+    struct {
+      u_char control;
+      u_char org_code[3];
+      u_short ether_type;
+    } type_snap;
+  } llc_un;
 };
 #define llc_control llc_un.type_u.control
 #define llc_fid llc_un.type_u.format_id
@@ -60,24 +60,24 @@ struct llc {
 #define llc_org_code llc_un.type_snap.org_code
 #define llc_ether_type llc_un.type_snap.ether_type
 
-#define LLC_UI		0x3
-#define LLC_UI_P	0x13
-#define LLC_XID		0xaf
-#define LLC_XID_P	0xbf
-#define LLC_TEST	0xe3
-#define LLC_TEST_P	0xf3
+#define LLC_UI 0x3
+#define LLC_UI_P 0x13
+#define LLC_XID 0xaf
+#define LLC_XID_P 0xbf
+#define LLC_TEST 0xe3
+#define LLC_TEST_P 0xf3
 
-#define LLC_ISO_LSAP	0xfe
-#define LLC_SNAP_LSAP	0xaa
+#define LLC_ISO_LSAP 0xfe
+#define LLC_SNAP_LSAP 0xaa
 
-# endif /* ultrix && BSD4_4 */
+#endif /* ultrix && BSD4_4 */
 
-#if defined( sun ) || defined( ibm032 )
-#define SIOCPHASE1	_IOW(i, 100, struct ifreq)	/* AppleTalk phase 1 */
-#define SIOCPHASE2	_IOW(i, 101, struct ifreq)	/* AppleTalk phase 2 */
-#endif /* sun || ibm032 */
+#if defined(sun) || defined(ibm032)
+#define SIOCPHASE1 _IOW(i, 100, struct ifreq) /* AppleTalk phase 1 */
+#define SIOCPHASE2 _IOW(i, 101, struct ifreq) /* AppleTalk phase 2 */
+#endif                                        /* sun || ibm032 */
 
-#if defined( ultrix ) || defined( BSD4_4 ) || defined( _IBMR2 )
-#define SIOCPHASE1	_IOW('i', 100, struct ifreq)	/* AppleTalk phase 1 */
-#define SIOCPHASE2	_IOW('i', 101, struct ifreq)	/* AppleTalk phase 2 */
-#endif /* ultrix || BSD4_4 || _IBMR2 */
+#if defined(ultrix) || defined(BSD4_4) || defined(_IBMR2)
+#define SIOCPHASE1 _IOW('i', 100, struct ifreq) /* AppleTalk phase 1 */
+#define SIOCPHASE2 _IOW('i', 101, struct ifreq) /* AppleTalk phase 2 */
+#endif                                          /* ultrix || BSD4_4 || _IBMR2 */

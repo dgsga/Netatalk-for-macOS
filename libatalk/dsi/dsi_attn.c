@@ -9,37 +9,36 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 #include <sys/types.h>
 
-#include <atalk/dsi.h>
 #include <atalk/afp.h>
+#include <atalk/dsi.h>
 #include <netatalk/endian.h>
 
 #ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif /* MIN */
 
 /* send an attention. this may get called at any time, so we can't use
- * DSI buffers to send one. 
+ * DSI buffers to send one.
    return 0 on error
- 
+
  */
-int dsi_attention(DSI *dsi, AFPUserBytes flags)
-{
+int dsi_attention(DSI *dsi, AFPUserBytes flags) {
   /* header + AFPUserBytes */
   char block[DSI_BLOCKSIZ + sizeof(AFPUserBytes)];
   u_int32_t len, nlen;
   u_int16_t id;
 
   if (dsi->flags & DSI_SLEEPING)
-      return 1;
+    return 1;
 
   if (dsi->in_write) {
-      return -1;
-  }      
+    return -1;
+  }
   id = htons(dsi_serverID(dsi));
   flags = htons(flags);
   len = MIN(sizeof(flags), dsi->attn_quantum);

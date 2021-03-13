@@ -1,10 +1,10 @@
 
-/* 
+/*
  * $Id: cnid_init.c,v 1.3 2009-10-13 22:55:37 didg Exp $
  *
  * Copyright (c) 2003 the Netatalk Team
  * Copyright (c) 2003 Rafal Lewczuk <rlewczuk@pronet.pl>
- * 
+ *
  * This program is free software; you can redistribute and/or modify
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation version 2 of the License or later
@@ -14,8 +14,8 @@
 
 /*
  * This file contains initialization stuff for CNID backends.
- * Currently it only employs static bindings. 
- * No plans for dynamically loaded CNID backends here (temporary). 
+ * Currently it only employs static bindings.
+ * No plans for dynamically loaded CNID backends here (temporary).
  * Maybe somewhere in the future.
  */
 
@@ -27,7 +27,6 @@
 #include <atalk/list.h>
 #include <atalk/logger.h>
 #include <stdlib.h>
-
 
 #ifdef CNID_BACKEND_DB3
 extern struct _cnid_module cnid_db3_module;
@@ -57,33 +56,32 @@ extern struct _cnid_module cnid_dbd_module;
 extern struct _cnid_module cnid_tdb_module;
 #endif
 
-void cnid_init(void)
-{
+void cnid_init(void) {
 #ifdef CNID_BACKEND_DB3
-    cnid_register(&cnid_db3_module);
+  cnid_register(&cnid_db3_module);
 #endif
 
 #ifdef CNID_BACKEND_HASH
-    cnid_register(&cnid_hash_module);
+  cnid_register(&cnid_hash_module);
 #endif
 
 #ifdef CNID_BACKEND_LAST
-    cnid_register(&cnid_last_module);
+  cnid_register(&cnid_last_module);
 #endif
 
 #ifdef CNID_BACKEND_MTAB
-    cnid_register(&cnid_mtab_module);
+  cnid_register(&cnid_mtab_module);
 #endif
 
 #ifdef CNID_BACKEND_CDB
-    cnid_register(&cnid_cdb_module);
+  cnid_register(&cnid_cdb_module);
 #endif
 
 #ifdef CNID_BACKEND_DBD
-    cnid_register(&cnid_dbd_module);
+  cnid_register(&cnid_dbd_module);
 #endif
 
 #ifdef CNID_BACKEND_TDB
-    cnid_register(&cnid_tdb_module);
+  cnid_register(&cnid_tdb_module);
 #endif
 }

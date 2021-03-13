@@ -13,13 +13,11 @@
  * include it.
  */
 
+#include <netatalk/endian.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
-#include <netatalk/endian.h>
 
-extern int dsi_tcp_init (DSI *, const char * /*host*/, 
-			     const char * /*address*/,
-			     const char * /*port*/,
-			     const int /*proxy*/);
+extern int dsi_tcp_init(DSI *, const char * /*host*/, const char * /*address*/,
+                        const char * /*port*/, const int /*proxy*/);
 
 #endif /* _DSI_PRIVATE_H */

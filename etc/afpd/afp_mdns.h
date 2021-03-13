@@ -1,14 +1,14 @@
 /*
  * Author:   Lee Essen <lee.essen@nowonline.co.uk>
- * Based on: avahi support from Daniel S. Haischt <me@daniel.stefan.haischt.name>
- * Purpose:  mdns based Zeroconf support
+ * Based on: avahi support from Daniel S. Haischt
+ * <me@daniel.stefan.haischt.name> Purpose:  mdns based Zeroconf support
  */
 
 #ifndef AFPD_MDNS_H
 #define AFPD_MDNS_H
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <dns_sd.h>
@@ -22,4 +22,4 @@ void md_zeroconf_register(const AFPConfig *configs);
 
 int md_zeroconf_unregister(void);
 
-#endif   /* AFPD_MDNS_H */
+#endif /* AFPD_MDNS_H */

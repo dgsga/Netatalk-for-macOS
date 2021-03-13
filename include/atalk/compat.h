@@ -3,26 +3,26 @@
  * All Rights Reserved.  See COPYRIGHT.
  *
  * NOTE: SunOS 4 and ultrix are pretty much the only reason why there
- * are checks for EINTR everywhere. 
+ * are checks for EINTR everywhere.
  */
 
-#include <sys/cdefs.h>
 #include <signal.h>
+#include <sys/cdefs.h>
 
 #ifdef __svr4__
 /*
  * SunOS 5 (solaris) has SA_RESTART, but no SA_INTERRUPT.
  */
 #ifndef SA_INTERRUPT
-#define SA_INTERRUPT	0
+#define SA_INTERRUPT 0
 #endif
 
-#include <sys/types.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
 
-extern int flock (int, int);
-extern int inet_aton (const char *, struct in_addr *);
+extern int flock(int, int);
+extern int inet_aton(const char *, struct in_addr *);
 #else /* __svr4__ */
 
 #ifdef sun
@@ -30,7 +30,7 @@ extern int inet_aton (const char *, struct in_addr *);
  * SunOS 4 has SA_INTERRUPT, but no SA_RESTART.
  */
 #ifndef SA_RESTART
-#define SA_RESTART	0
+#define SA_RESTART 0
 #endif
 #endif /* sun */
 
@@ -44,14 +44,14 @@ extern int inet_aton (const char *, struct in_addr *);
  * nothing to do with SA_ONESHOT.
  */
 #ifndef SA_INTERRUPT
-#define SA_INTERRUPT	0
+#define SA_INTERRUPT 0
 #endif /* SA_INTERRUPT */
 #endif /* linux */
 
-#ifdef ultrix 
-#include <sys/types.h>
-#include <netinet/in.h>
+#ifdef ultrix
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
 
 /*
  * Here's the really confusing one...  Under Ultrix, sigaction() works just
@@ -60,33 +60,33 @@ extern int inet_aton (const char *, struct in_addr *);
  * there's no way to suppress the interrupt.  Sigh.
  */
 #ifndef SA_INTERRUPT
-#define SA_INTERRUPT	0
+#define SA_INTERRUPT 0
 #endif
 #ifndef SA_RESTART
-#define SA_RESTART	0
+#define SA_RESTART 0
 #endif
 
-extern char *strdup (const char *);
-extern int inet_aton (const char *, struct in_addr *);
+extern char *strdup(const char *);
+extern int inet_aton(const char *, struct in_addr *);
 #endif /* ultrix */
 
 #ifdef BSD4_4
 #ifndef SA_INTERRUPT
-#define SA_INTERRUPT	0
+#define SA_INTERRUPT 0
 #endif
 #endif /* BSD4_4 */
 
 #if defined(ultrix) || defined(_IBMR2) || defined(NEED_GETUSERSHELL)
-extern char *getusershell (void);
+extern char *getusershell(void);
 #endif
 
 #if !defined(HAVE_SNPRINTF) || !defined(HAVE_VSNPRINTF)
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #endif
 
 #ifndef HAVE_SNPRINTF
-int snprintf (char *str,size_t count,const char *fmt,...);
+int snprintf(char *str, size_t count, const char *fmt, ...);
 #endif
 
 #ifndef HAVE_VSNPRINTF
@@ -99,7 +99,6 @@ int vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 #endif
 
 #if !defined(HAVE_PSELECT) || defined(__OpenBSD__)
-extern int pselect(int, fd_set * restrict, fd_set * restrict,
-                   fd_set * restrict, const struct timespec * restrict,
-                   const sigset_t * restrict);
+extern int pselect(int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
+                   const struct timespec *restrict, const sigset_t *restrict);
 #endif

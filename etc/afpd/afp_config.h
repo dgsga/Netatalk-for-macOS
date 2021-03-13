@@ -9,22 +9,22 @@
 #include <sys/cdefs.h>
 #endif /* HAVE_SYS_CDEFS_H */
 
-#include <atalk/server_child.h>
 #include <atalk/globals.h>
+#include <atalk/server_child.h>
 
 typedef struct AFPConfig {
-    AFPObj obj;
-    int fd, statuslen;
-    unsigned char *optcount;
-    char status[1400];
-    const void *defoptions, *signature;
+  AFPObj obj;
+  int fd, statuslen;
+  unsigned char *optcount;
+  char status[1400];
+  const void *defoptions, *signature;
 
-    afp_child_t *(*server_start)(struct AFPConfig *, struct AFPConfig *,
-                                 server_child *);
+  afp_child_t *(*server_start)(struct AFPConfig *, struct AFPConfig *,
+                               server_child *);
 
-    void (*server_cleanup)(const struct AFPConfig *);
+  void (*server_cleanup)(const struct AFPConfig *);
 
-    struct AFPConfig *next;
+  struct AFPConfig *next;
 } AFPConfig;
 
 extern AFPConfig *configinit(struct afp_options *);

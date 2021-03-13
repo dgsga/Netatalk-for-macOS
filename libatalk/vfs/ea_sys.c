@@ -17,15 +17,15 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
-#include <unistd.h>
-#include <stdint.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <dirent.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #if HAVE_ATTR_XATTR_H
 #include <attr/xattr.h>
@@ -42,19 +42,18 @@
 #endif
 
 #include <atalk/adouble.h>
-#include <atalk/ea.h>
 #include <atalk/afp.h>
-#include <atalk/logger.h>
-#include <atalk/volume.h>
-#include <atalk/vfs.h>
-#include <atalk/util.h>
-#include <atalk/unix.h>
 #include <atalk/compat.h>
+#include <atalk/ea.h>
+#include <atalk/logger.h>
+#include <atalk/unix.h>
+#include <atalk/util.h>
+#include <atalk/vfs.h>
+#include <atalk/volume.h>
 
 #ifndef ENOATTR
 #define ENOATTR ENODATA
 #endif
-
 
 /**********************************************************************************
  * EA VFS funcs for storing EAs in nativa filesystem EAs
@@ -80,51 +79,55 @@
  *
  * Copies EA size into rbuf in network order. Increments *rbuflen +4.
  */
-int sys_get_easize(VFS_FUNC_ARGS_EA_GETSIZE)
-{
-    ssize_t   ret;
-    uint32_t  attrsize;
+int sys_get_easize(VFS_FUNC_ARGS_EA_GETSIZE) {
+  ssize_t ret;
+  uint32_t attrsize;
 
-    LOG(log_debug7, logtype_afpd, "sys_getextattr_size(%s): attribute: \"%s\"", uname, attruname);
+  LOG(log_debug7, logtype_afpd, "sys_getextattr_size(%s): attribute: \"%s\"",
+      uname, attruname);
 
-    if ((oflag & O_NOFOLLOW) ) {
-        ret = sys_lgetxattr(uname, attruname, rbuf +4, 0);
-    }
-    else {
-        ret = sys_getxattr(uname, attruname,  rbuf +4, 0);
-    }
-    
-    if (ret == -1) {
-        memset(rbuf, 0, 4);
-        *rbuflen += 4;
-        switch(errno) {
-        case OPEN_NOFOLLOW_ERRNO:
-            /* its a symlink and client requested O_NOFOLLOW  */
-            LOG(log_debug, logtype_afpd, "sys_getextattr_size(%s): encountered symlink with kXAttrNoFollow", uname);
-            return AFP_OK;
+  if ((oflag & O_NOFOLLOW)) {
+    ret = sys_lgetxattr(uname, attruname, rbuf + 4, 0);
+  } else {
+    ret = sys_getxattr(uname, attruname, rbuf + 4, 0);
+  }
 
-        case ENOATTR:
-            return AFPERR_MISC;
-
-        default:
-            LOG(log_debug, logtype_afpd, "sys_getextattr_size: error: %s", strerror(errno));
-            return AFPERR_MISC;
-        }
-    }
-
-    if (ret > MAX_EA_SIZE) 
-      ret = MAX_EA_SIZE;
-
-    /* Start building reply packet */
-    LOG(log_debug7, logtype_afpd, "sys_getextattr_size(%s): attribute: \"%s\", size: %u", uname, attruname, ret);
-
-    /* length of attribute data */
-    attrsize = htonl((uint32_t)ret);
-    memcpy(rbuf, &attrsize, 4);
+  if (ret == -1) {
+    memset(rbuf, 0, 4);
     *rbuflen += 4;
+    switch (errno) {
+    case OPEN_NOFOLLOW_ERRNO:
+      /* its a symlink and client requested O_NOFOLLOW  */
+      LOG(log_debug, logtype_afpd,
+          "sys_getextattr_size(%s): encountered symlink with kXAttrNoFollow",
+          uname);
+      return AFP_OK;
 
-    ret = AFP_OK;
-    return ret;
+    case ENOATTR:
+      return AFPERR_MISC;
+
+    default:
+      LOG(log_debug, logtype_afpd, "sys_getextattr_size: error: %s",
+          strerror(errno));
+      return AFPERR_MISC;
+    }
+  }
+
+  if (ret > MAX_EA_SIZE)
+    ret = MAX_EA_SIZE;
+
+  /* Start building reply packet */
+  LOG(log_debug7, logtype_afpd,
+      "sys_getextattr_size(%s): attribute: \"%s\", size: %u", uname, attruname,
+      ret);
+
+  /* length of attribute data */
+  attrsize = htonl((uint32_t)ret);
+  memcpy(rbuf, &attrsize, 4);
+  *rbuflen += 4;
+
+  ret = AFP_OK;
+  return ret;
 }
 
 /*
@@ -148,52 +151,55 @@ int sys_get_easize(VFS_FUNC_ARGS_EA_GETSIZE)
  *
  * Copies EA into rbuf. Increments *rbuflen accordingly.
  */
-int sys_get_eacontent(VFS_FUNC_ARGS_EA_GETCONTENT)
-{
-    ssize_t   ret;
-    uint32_t  attrsize;
+int sys_get_eacontent(VFS_FUNC_ARGS_EA_GETCONTENT) {
+  ssize_t ret;
+  uint32_t attrsize;
 
-    /* Start building reply packet */
+  /* Start building reply packet */
 
-    maxreply -= MAX_REPLY_EXTRA_BYTES;
+  maxreply -= MAX_REPLY_EXTRA_BYTES;
 
-    if (maxreply > MAX_EA_SIZE)
-        maxreply = MAX_EA_SIZE;
+  if (maxreply > MAX_EA_SIZE)
+    maxreply = MAX_EA_SIZE;
 
-    LOG(log_debug7, logtype_afpd, "sys_getextattr_content(%s): attribute: \"%s\", size: %u", uname, attruname, maxreply);
+  LOG(log_debug7, logtype_afpd,
+      "sys_getextattr_content(%s): attribute: \"%s\", size: %u", uname,
+      attruname, maxreply);
 
-    if ((oflag & O_NOFOLLOW) ) {
-        ret = sys_lgetxattr(uname, attruname, rbuf +4, maxreply);
+  if ((oflag & O_NOFOLLOW)) {
+    ret = sys_lgetxattr(uname, attruname, rbuf + 4, maxreply);
+  } else {
+    ret = sys_getxattr(uname, attruname, rbuf + 4, maxreply);
+  }
+
+  if (ret == -1) {
+    memset(rbuf, 0, 4);
+    *rbuflen += 4;
+    switch (errno) {
+    case OPEN_NOFOLLOW_ERRNO:
+      /* its a symlink and client requested O_NOFOLLOW  */
+      LOG(log_debug, logtype_afpd,
+          "sys_getextattr_content(%s): encountered symlink with kXAttrNoFollow",
+          uname);
+      return AFP_OK;
+
+    case ENOATTR:
+      return AFPERR_MISC;
+
+    default:
+      LOG(log_error, logtype_afpd, "sys_getextattr_content(%s): error: %s",
+          attruname, strerror(errno));
+      return AFPERR_MISC;
     }
-    else {
-        ret = sys_getxattr(uname, attruname,  rbuf +4, maxreply);
-    }
-    
-    if (ret == -1) {
-        memset(rbuf, 0, 4);
-        *rbuflen += 4;
-        switch(errno) {
-        case OPEN_NOFOLLOW_ERRNO:
-            /* its a symlink and client requested O_NOFOLLOW  */
-            LOG(log_debug, logtype_afpd, "sys_getextattr_content(%s): encountered symlink with kXAttrNoFollow", uname);
-            return AFP_OK;
+  }
 
-        case ENOATTR:
-            return AFPERR_MISC;
+  /* remember where we must store length of attribute data in rbuf */
+  *rbuflen += 4 + ret;
 
-        default:
-            LOG(log_error, logtype_afpd, "sys_getextattr_content(%s): error: %s", attruname, strerror(errno));
-            return AFPERR_MISC;
-        }
-    }
+  attrsize = htonl((uint32_t)ret);
+  memcpy(rbuf, &attrsize, 4);
 
-    /* remember where we must store length of attribute data in rbuf */
-    *rbuflen += 4 +ret;
-
-    attrsize = htonl((uint32_t)ret);
-    memcpy(rbuf, &attrsize, 4);
-
-    return AFP_OK;
+  return AFP_OK;
 }
 
 /*
@@ -216,71 +222,75 @@ int sys_get_eacontent(VFS_FUNC_ARGS_EA_GETCONTENT)
  * Copies names of all EAs of uname as consecutive C strings into rbuf.
  * Increments *rbuflen accordingly.
  */
-int sys_list_eas(VFS_FUNC_ARGS_EA_LIST)
-{
-    ssize_t attrbuflen = *buflen;
-    int     ret, len, nlen;
-    char    *buf;
-    char    *ptr;
-        
-    buf = malloc(ATTRNAMEBUFSIZ);
-    if (!buf)
-        return AFPERR_MISC;
+int sys_list_eas(VFS_FUNC_ARGS_EA_LIST) {
+  ssize_t attrbuflen = *buflen;
+  int ret, len, nlen;
+  char *buf;
+  char *ptr;
 
-    if ((oflag & O_NOFOLLOW)) {
-        ret = sys_llistxattr(uname, buf, ATTRNAMEBUFSIZ);
-    }
-    else {
-        ret = sys_listxattr(uname, buf, ATTRNAMEBUFSIZ);
-    }
+  buf = malloc(ATTRNAMEBUFSIZ);
+  if (!buf)
+    return AFPERR_MISC;
 
-    if (ret == -1) switch(errno) {
-        case OPEN_NOFOLLOW_ERRNO:
-            /* its a symlink and client requested O_NOFOLLOW */
-            ret = AFPERR_BADTYPE;
-            goto exit;
-#ifdef HAVE_ATTROPEN            /* Solaris */
-        case ENOATTR:
-            ret = AFP_OK;
-            goto exit;
+  if ((oflag & O_NOFOLLOW)) {
+    ret = sys_llistxattr(uname, buf, ATTRNAMEBUFSIZ);
+  } else {
+    ret = sys_listxattr(uname, buf, ATTRNAMEBUFSIZ);
+  }
+
+  if (ret == -1)
+    switch (errno) {
+    case OPEN_NOFOLLOW_ERRNO:
+      /* its a symlink and client requested O_NOFOLLOW */
+      ret = AFPERR_BADTYPE;
+      goto exit;
+#ifdef HAVE_ATTROPEN /* Solaris */
+    case ENOATTR:
+      ret = AFP_OK;
+      goto exit;
 #endif
-        default:
-            LOG(log_error, logtype_afpd, "sys_list_extattr(%s): error opening atttribute dir: %s", uname, strerror(errno));
-            ret= AFPERR_MISC;
-            goto exit;
-    }
-    
-    ptr = buf;
-    while (ret > 0)  {
-        len = strlen(ptr);
-
-        /* Convert name to CH_UTF8_MAC and directly store in in the reply buffer */
-        if ( 0 >= ( nlen = convert_string(vol->v_volcharset, CH_UTF8_MAC, ptr, len, attrnamebuf + attrbuflen, 256)) ) {
-            ret = AFPERR_MISC;
-            goto exit;
-        }
-
-        LOG(log_debug7, logtype_afpd, "sys_list_extattr(%s): attribute: %s", uname, ptr);
-
-        attrbuflen += nlen + 1;
-        if (attrbuflen > (ATTRNAMEBUFSIZ - 256)) {
-            /* Next EA name could overflow, so bail out with error.
-               FIXME: evantually malloc/memcpy/realloc whatever.
-               Is it worth it ? */
-            LOG(log_warning, logtype_afpd, "sys_list_extattr(%s): running out of buffer for EA names", uname);
-            ret = AFPERR_MISC;
-            goto exit;
-        }
-        ret -= len +1;
-        ptr += len +1;
+    default:
+      LOG(log_error, logtype_afpd,
+          "sys_list_extattr(%s): error opening atttribute dir: %s", uname,
+          strerror(errno));
+      ret = AFPERR_MISC;
+      goto exit;
     }
 
-    ret = AFP_OK;
+  ptr = buf;
+  while (ret > 0) {
+    len = strlen(ptr);
+
+    /* Convert name to CH_UTF8_MAC and directly store in in the reply buffer */
+    if (0 >= (nlen = convert_string(vol->v_volcharset, CH_UTF8_MAC, ptr, len,
+                                    attrnamebuf + attrbuflen, 256))) {
+      ret = AFPERR_MISC;
+      goto exit;
+    }
+
+    LOG(log_debug7, logtype_afpd, "sys_list_extattr(%s): attribute: %s", uname,
+        ptr);
+
+    attrbuflen += nlen + 1;
+    if (attrbuflen > (ATTRNAMEBUFSIZ - 256)) {
+      /* Next EA name could overflow, so bail out with error.
+         FIXME: evantually malloc/memcpy/realloc whatever.
+         Is it worth it ? */
+      LOG(log_warning, logtype_afpd,
+          "sys_list_extattr(%s): running out of buffer for EA names", uname);
+      ret = AFPERR_MISC;
+      goto exit;
+    }
+    ret -= len + 1;
+    ptr += len + 1;
+  }
+
+  ret = AFP_OK;
 
 exit:
-    free(buf);
-    *buflen = attrbuflen;
-    return ret;
+  free(buf);
+  *buflen = attrbuflen;
+  return ret;
 }
 
 /*
@@ -302,48 +312,49 @@ exit:
  * Effects:
  *
  */
-int sys_set_ea(VFS_FUNC_ARGS_EA_SET)
-{
-    int attr_flag;
-    int ret;
+int sys_set_ea(VFS_FUNC_ARGS_EA_SET) {
+  int attr_flag;
+  int ret;
 
-    attr_flag = 0;
-    if ((oflag & O_CREAT) ) 
-        attr_flag |= XATTR_CREATE;
+  attr_flag = 0;
+  if ((oflag & O_CREAT))
+    attr_flag |= XATTR_CREATE;
 
-    else if ((oflag & O_TRUNC) ) 
-        attr_flag |= XATTR_REPLACE;
-    
-    if ((oflag & O_NOFOLLOW) ) {
-        ret = sys_lsetxattr(uname, attruname,  ibuf, attrsize,attr_flag);
+  else if ((oflag & O_TRUNC))
+    attr_flag |= XATTR_REPLACE;
+
+  if ((oflag & O_NOFOLLOW)) {
+    ret = sys_lsetxattr(uname, attruname, ibuf, attrsize, attr_flag);
+  } else {
+    ret = sys_setxattr(uname, attruname, ibuf, attrsize, attr_flag);
+  }
+
+  if (ret == -1) {
+    switch (errno) {
+    case OPEN_NOFOLLOW_ERRNO:
+      /* its a symlink and client requested O_NOFOLLOW  */
+      LOG(log_debug, logtype_afpd,
+          "sys_set_ea(\"%s/%s\", ea:'%s'): encountered symlink with "
+          "kXAttrNoFollow",
+          getcwdpath(), uname, attruname);
+      return AFP_OK;
+    case EEXIST:
+      LOG(log_debug, logtype_afpd,
+          "sys_set_ea(\"%s/%s\", ea:'%s'): EA already exists", getcwdpath(),
+          uname, attruname);
+      return AFPERR_EXIST;
+    default:
+      LOG(log_error, logtype_afpd,
+          "sys_set_ea(\"%s/%s\", ea:'%s', size: %u, flags: %s|%s|%s): %s",
+          getcwdpath(), uname, attruname, attrsize,
+          oflag & O_CREAT ? "XATTR_CREATE" : "-",
+          oflag & O_TRUNC ? "XATTR_REPLACE" : "-",
+          oflag & O_NOFOLLOW ? "O_NOFOLLOW" : "-", strerror(errno));
+      return AFPERR_MISC;
     }
-    else {
-        ret = sys_setxattr(uname, attruname,  ibuf, attrsize, attr_flag);
-    }
+  }
 
-    if (ret == -1) {
-        switch(errno) {
-        case OPEN_NOFOLLOW_ERRNO:
-            /* its a symlink and client requested O_NOFOLLOW  */
-            LOG(log_debug, logtype_afpd, "sys_set_ea(\"%s/%s\", ea:'%s'): encountered symlink with kXAttrNoFollow",
-                getcwdpath(), uname, attruname);
-            return AFP_OK;
-        case EEXIST:
-            LOG(log_debug, logtype_afpd, "sys_set_ea(\"%s/%s\", ea:'%s'): EA already exists",
-                getcwdpath(), uname, attruname);
-            return AFPERR_EXIST;
-        default:
-            LOG(log_error, logtype_afpd, "sys_set_ea(\"%s/%s\", ea:'%s', size: %u, flags: %s|%s|%s): %s",
-                getcwdpath(), uname, attruname, attrsize, 
-                oflag & O_CREAT ? "XATTR_CREATE" : "-",
-                oflag & O_TRUNC ? "XATTR_REPLACE" : "-",
-                oflag & O_NOFOLLOW ? "O_NOFOLLOW" : "-",
-                strerror(errno));
-            return AFPERR_MISC;
-        }
-    }
-
-    return AFP_OK;
+  return AFP_OK;
 }
 
 /*
@@ -364,176 +375,180 @@ int sys_set_ea(VFS_FUNC_ARGS_EA_SET)
  *
  * Removes EA attruname from file uname.
  */
-int sys_remove_ea(VFS_FUNC_ARGS_EA_REMOVE)
-{
-    int ret;
+int sys_remove_ea(VFS_FUNC_ARGS_EA_REMOVE) {
+  int ret;
 
-    if ((oflag & O_NOFOLLOW) ) {
-        ret = sys_lremovexattr(uname, attruname);
-    }
-    else {
-        ret = sys_removexattr(uname, attruname);
-    }
+  if ((oflag & O_NOFOLLOW)) {
+    ret = sys_lremovexattr(uname, attruname);
+  } else {
+    ret = sys_removexattr(uname, attruname);
+  }
 
-    if (ret == -1) {
-        switch(errno) {
-        case OPEN_NOFOLLOW_ERRNO:
-            /* its a symlink and client requested O_NOFOLLOW  */
-            LOG(log_debug, logtype_afpd, "sys_remove_ea(%s/%s): encountered symlink with kXAttrNoFollow", uname);
-            return AFP_OK;
-        case EACCES:
-            LOG(log_debug, logtype_afpd, "sys_remove_ea(%s/%s): error: %s", uname, attruname, strerror(errno));
-            return AFPERR_ACCESS;
-        default:
-            LOG(log_error, logtype_afpd, "sys_remove_ea(%s/%s): error: %s", uname, attruname, strerror(errno));
-            return AFPERR_MISC;
-        }
+  if (ret == -1) {
+    switch (errno) {
+    case OPEN_NOFOLLOW_ERRNO:
+      /* its a symlink and client requested O_NOFOLLOW  */
+      LOG(log_debug, logtype_afpd,
+          "sys_remove_ea(%s/%s): encountered symlink with kXAttrNoFollow",
+          uname);
+      return AFP_OK;
+    case EACCES:
+      LOG(log_debug, logtype_afpd, "sys_remove_ea(%s/%s): error: %s", uname,
+          attruname, strerror(errno));
+      return AFPERR_ACCESS;
+    default:
+      LOG(log_error, logtype_afpd, "sys_remove_ea(%s/%s): error: %s", uname,
+          attruname, strerror(errno));
+      return AFPERR_MISC;
     }
+  }
 
-    return AFP_OK;
+  return AFP_OK;
 }
 
 /*
  * @brief Copy EAs
  *
- * @note Supports *at semantics, therfor switches back and forth between sfd and cwd
+ * @note Supports *at semantics, therfor switches back and forth between sfd and
+ * cwd
  */
-int sys_ea_copyfile(VFS_FUNC_ARGS_COPYFILE)
-{
-  	int ret = 0;
-    int cwd = -1;
-	ssize_t size;
-	char *names = NULL, *end_names, *name, *value = NULL;
-	unsigned int setxattr_ENOTSUP = 0;
+int sys_ea_copyfile(VFS_FUNC_ARGS_COPYFILE) {
+  int ret = 0;
+  int cwd = -1;
+  ssize_t size;
+  char *names = NULL, *end_names, *name, *value = NULL;
+  unsigned int setxattr_ENOTSUP = 0;
+
+  if (sfd != -1) {
+    if ((cwd = open(".", O_RDONLY)) == -1) {
+      LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant open cwd: %s",
+          strerror(errno));
+      ret = -1;
+      goto getout;
+    }
+  }
+
+  if (sfd != -1) {
+    if (fchdir(sfd) == -1) {
+      LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to sfd: %s",
+          strerror(errno));
+      ret = -1;
+      goto getout;
+    }
+  }
+
+  size = sys_listxattr(src, NULL, 0);
+  if (size < 0) {
+    if (errno != ENOSYS && errno != ENOTSUP) {
+      ret = -1;
+    }
+    goto getout;
+  }
+  names = malloc(size + 1);
+  if (names == NULL) {
+    ret = -1;
+    goto getout;
+  }
+  size = sys_listxattr(src, names, size);
+  if (size < 0) {
+    ret = -1;
+    goto getout;
+  } else {
+    names[size] = '\0';
+    end_names = names + size;
+  }
+
+  if (sfd != -1) {
+    if (fchdir(cwd) == -1) {
+      LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to cwd: %s",
+          strerror(errno));
+      ret = -1;
+      goto getout;
+    }
+  }
+
+  for (name = names; name != end_names; name = strchr(name, '\0') + 1) {
+    void *old_value;
+
+    /* check if this attribute shall be preserved */
+    if (!*name)
+      continue;
 
     if (sfd != -1) {
-        if ((cwd = open(".", O_RDONLY)) == -1) {
-            LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant open cwd: %s",
-                strerror(errno));
-            ret = -1;
-            goto getout;
-        }
+      if (fchdir(sfd) == -1) {
+        LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to sfd: %s",
+            strerror(errno));
+        ret = -1;
+        goto getout;
+      }
+    }
+
+    size = sys_getxattr(src, name, NULL, 0);
+    if (size < 0) {
+      ret = -1;
+      continue;
+    }
+    value = realloc(old_value = value, size);
+    if (size != 0 && value == NULL) {
+      free(old_value);
+      ret = -1;
+    }
+    size = sys_getxattr(src, name, value, size);
+    if (size < 0) {
+      ret = -1;
+      continue;
     }
 
     if (sfd != -1) {
-        if (fchdir(sfd) == -1) {
-            LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to sfd: %s",
-                strerror(errno));
-            ret = -1;
-            goto getout;
-        }
+      if (fchdir(cwd) == -1) {
+        LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to cwd: %s",
+            strerror(errno));
+        ret = -1;
+        goto getout;
+      }
     }
 
-	size = sys_listxattr(src, NULL, 0);
-	if (size < 0) {
-		if (errno != ENOSYS && errno != ENOTSUP) {
-			ret = -1;
-		}
-		goto getout;
-	}
-	names = malloc(size+1);
-	if (names == NULL) {
-		ret = -1;
-		goto getout;
-	}
-	size = sys_listxattr(src, names, size);
-	if (size < 0) {
-		ret = -1;
-		goto getout;
-	} else {
-		names[size] = '\0';
-		end_names = names + size;
-	}
-
-    if (sfd != -1) {
-        if (fchdir(cwd) == -1) {
-            LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to cwd: %s",
-                strerror(errno));
-            ret = -1;
-            goto getout;
+    if (sys_setxattr(dst, name, value, size, 0) != 0) {
+      if (errno == ENOTSUP)
+        setxattr_ENOTSUP++;
+      else {
+        if (errno == ENOSYS) {
+          ret = -1;
+          /* no hope of getting any further */
+          break;
+        } else {
+          ret = -1;
         }
+      }
     }
-
-	for (name = names; name != end_names; name = strchr(name, '\0') + 1) {
-		void *old_value;
-
-		/* check if this attribute shall be preserved */
-		if (!*name)
-			continue;
-
-        if (sfd != -1) {
-            if (fchdir(sfd) == -1) {
-                LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to sfd: %s",
-                    strerror(errno));
-                ret = -1;
-                goto getout;
-            }
-        }
-
-		size = sys_getxattr (src, name, NULL, 0);
-		if (size < 0) {
-			ret = -1;
-			continue;
-		}
-		value = realloc(old_value = value, size);
-		if (size != 0 && value == NULL) {
-			free(old_value);
-			ret = -1;
-		}
-		size = sys_getxattr(src, name, value, size);
-		if (size < 0) {
-			ret = -1;
-			continue;
-		}
-
-        if (sfd != -1) {
-            if (fchdir(cwd) == -1) {
-                LOG(log_error, logtype_afpd, "sys_ea_copyfile: cant chdir to cwd: %s",
-                    strerror(errno));
-                ret = -1;
-                goto getout;
-            }
-        }
-
-		if (sys_setxattr(dst, name, value, size, 0) != 0) {
-			if (errno == ENOTSUP)
-				setxattr_ENOTSUP++;
-			else {
-				if (errno == ENOSYS) {
-					ret = -1;
-					/* no hope of getting any further */
-					break;
-				} else {
-					ret = -1;
-				}
-			}
-		}
-	}
-	if (setxattr_ENOTSUP) {
-		errno = ENOTSUP;
-		ret = -1;
-	}
+  }
+  if (setxattr_ENOTSUP) {
+    errno = ENOTSUP;
+    ret = -1;
+  }
 
 getout:
-    if (cwd != -1)
-        close(cwd);
-        
-	free(value);
-	free(names);
+  if (cwd != -1)
+    close(cwd);
 
-    if (ret == -1) {
-        switch(errno) {
-        case ENOENT:
-            /* no attribute */
-            break;
-        case EACCES:
-            LOG(log_debug, logtype_afpd, "sys_ea_copyfile(%s, %s): error: %s", src, dst, strerror(errno));
-            return AFPERR_ACCESS;
-        default:
-            LOG(log_error, logtype_afpd, "sys_ea_copyfile(%s, %s): error: %s", src, dst, strerror(errno));
-            return AFPERR_MISC;
-        }
+  free(value);
+  free(names);
+
+  if (ret == -1) {
+    switch (errno) {
+    case ENOENT:
+      /* no attribute */
+      break;
+    case EACCES:
+      LOG(log_debug, logtype_afpd, "sys_ea_copyfile(%s, %s): error: %s", src,
+          dst, strerror(errno));
+      return AFPERR_ACCESS;
+    default:
+      LOG(log_error, logtype_afpd, "sys_ea_copyfile(%s, %s): error: %s", src,
+          dst, strerror(errno));
+      return AFPERR_MISC;
     }
+  }
 
-    return AFP_OK;
+  return AFP_OK;
 }

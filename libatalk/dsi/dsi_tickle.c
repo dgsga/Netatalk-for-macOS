@@ -9,23 +9,22 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <string.h>
 #include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 
 #include <atalk/dsi.h>
 #include <netatalk/endian.h>
 
 /* server generated tickles. as this is only called by the tickle handler,
  * we don't need to block signals. */
-int dsi_tickle(DSI *dsi)
-{
+int dsi_tickle(DSI *dsi) {
   char block[DSI_BLOCKSIZ];
   u_int16_t id;
-  
+
   if ((dsi->flags & DSI_SLEEPING) || dsi->in_write)
-      return 1;
+    return 1;
 
   id = htons(dsi_serverID(dsi));
 
@@ -37,4 +36,3 @@ int dsi_tickle(DSI *dsi)
 
   return dsi_stream_write(dsi, block, DSI_BLOCKSIZ, DSI_NOWAIT);
 }
-

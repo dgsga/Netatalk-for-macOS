@@ -21,8 +21,8 @@
 #ifndef HASH_H
 #define HASH_H
 
-#include <limits.h>
 #include <atalk/hash.h>
+#include <limits.h>
 
 extern hash_t *hash_create(hashcount_t, hash_comp_t, hash_fun_t);
 
@@ -34,8 +34,8 @@ extern void hash_free_nodes(hash_t *);
 
 extern void hash_free(hash_t *);
 
-extern hash_t *hash_init(hash_t *, hashcount_t, hash_comp_t,
-                         hash_fun_t, hnode_t **, hashcount_t);
+extern hash_t *hash_init(hash_t *, hashcount_t, hash_comp_t, hash_fun_t,
+                         hnode_t **, hashcount_t);
 
 extern void hash_insert(hash_t *, hnode_t *, const void *);
 
