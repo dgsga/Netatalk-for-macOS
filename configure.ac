@@ -1,9 +1,9 @@
 dnl configure.in for netatalk
 
-AC_INIT([netatalk], [m4_esyscmd([cat VERSION])])
-AC_CANONICAL_SYSTEM
+AC_INIT([netatalk],[m4_esyscmd([cat VERSION])])
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([subdir-objects])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIRS([macros])
 AM_MAINTAINER_MODE([enable])
 AM_SILENT_RULES([yes])
@@ -11,12 +11,10 @@ AM_SILENT_RULES([yes])
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
-AC_PROG_CC_C99
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_LIBTOOL_DLOPEN
-LT_INIT
+LT_INIT([dlopen])
 RANLIB='ranlib -no_warning_for_no_symbols'
 AC_PROG_GREP
 AC_PROG_PS
@@ -25,7 +23,7 @@ AM_PROG_CC_C_O
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h stdint.h strings.h time.h sys/param.h sys/fcntl.h sys/file.h sys/ioctl.h sys/time.h sys/mnttab.h sys/statvfs.h sys/stat.h sys/vfs.h mntent.h syslog.h unistd.h termios.h sys/termios.h netdb.h sgtty.h ufs/quota.h mount.h statfs.h sys/types.h dlfcn.h errno.h sys/errno.h sys/uio.h langinfo.h locale.h sys/filio.h)
 AC_CHECK_HEADERS([sys/mount.h], , , 
@@ -42,16 +40,14 @@ AC_TYPE_MODE_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_STRUCT_ST_RDEV
-AC_HEADER_TIME
 AC_STRUCT_TM
 
 dnl --------------------------------------------------------------------------
 dnl check if dlsym needs to add an underscore, uses libtool macros 
 dnl --------------------------------------------------------------------------
-AC_LTDL_DLLIB
+LT_LIB_DLLOAD
 AC_CHECK_FUNCS(dlopen dlsym dlclose)
-AC_LTDL_DLSYM_USCORE
+LT_FUNC_DLSYM_USCORE
 if test x"$libltdl_cv_need_uscore" = xyes; then
     AC_DEFINE(DLSYM_PREPEND_UNDERSCORE, 1, [BSD compatibility macro])
 fi
@@ -62,9 +58,7 @@ AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_HEADER_MAJOR
 AC_FUNC_MMAP
-AC_TYPE_SIGNAL
 AC_FUNC_UTIME_NULL
-AC_FUNC_WAIT3
 AC_CHECK_FUNCS(getcwd gethostname gettimeofday getusershell mkdir rmdir select socket strdup strcasestr strstr strtoul strchr memcpy)
 AC_CHECK_FUNCS(backtrace_symbols setlocale nl_langinfo strlcpy strlcat setlinebuf dirfd pselect access pread pwrite)
 AC_CHECK_FUNCS(waitpid getcwd strdup strndup strnlen strtoul strerror chown fchown chmod fchmod chroot link mknod mknod64)
@@ -560,17 +554,15 @@ if test x"$with_acl_support" = x"yes" ; then
 		AC_CACHE_CHECK([for POSIX ACL support],netatalk_cv_HAVE_POSIX_ACLS,[
 			acl_LIBS=$LIBS
 			LIBS="$LIBS $ACL_LIBS"
-			AC_TRY_LINK([
+			AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 				#include <sys/types.h>
 				#include <sys/acl.h>
-			],[
+			]], [[
 				acl_t acl;
 				int entry_id;
 				acl_entry_t *entry_p;
 				return acl_get_entry(acl, entry_id, entry_p);
-			],
-			[netatalk_cv_HAVE_POSIX_ACLS=yes],
-			[netatalk_cv_HAVE_POSIX_ACLS=no
+			]])],[netatalk_cv_HAVE_POSIX_ACLS=yes],[netatalk_cv_HAVE_POSIX_ACLS=no
                 with_acl_support=no])
 			LIBS=$acl_LIBS
 		])
@@ -580,16 +572,14 @@ if test x"$with_acl_support" = x"yes" ; then
 			AC_CACHE_CHECK([for acl_get_perm_np],netatalk_cv_HAVE_ACL_GET_PERM_NP,[
 				acl_LIBS=$LIBS
 				LIBS="$LIBS $ACL_LIBS"
-				AC_TRY_LINK([
+				AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 					#include <sys/types.h>
 					#include <sys/acl.h>
-				],[
+				]], [[
 					acl_permset_t permset_d;
 					acl_perm_t perm;
 					return acl_get_perm_np(permset_d, perm);
-				],
-				[netatalk_cv_HAVE_ACL_GET_PERM_NP=yes],
-				[netatalk_cv_HAVE_ACL_GET_PERM_NP=no])
+				]])],[netatalk_cv_HAVE_ACL_GET_PERM_NP=yes],[netatalk_cv_HAVE_ACL_GET_PERM_NP=no])
 				LIBS=$acl_LIBS
 			])
 			if test x"$netatalk_cv_HAVE_ACL_GET_PERM_NP" = x"yes"; then
@@ -667,18 +657,16 @@ if test x"$ac_cv_func_getxattr" = x"yes" ; then
 	AC_CACHE_CHECK([whether xattr interface takes additional options], smb_attr_cv_xattr_add_opt, [
 		old_LIBS=$LIBS
 		LIBS="$LIBS $ACL_LIBS"
-		AC_TRY_COMPILE([
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 			#include <sys/types.h>
 			#if HAVE_ATTR_XATTR_H
 			#include <attr/xattr.h>
 			#elif HAVE_SYS_XATTR_H
 			#include <sys/xattr.h>
 			#endif
-		],[
+		]], [[
 			getxattr(0, 0, 0, 0, 0, 0);
-		],
-	        [smb_attr_cv_xattr_add_opt=yes],
-		[smb_attr_cv_xattr_add_opt=no;LIBS=$old_LIBS])
+		]])],[smb_attr_cv_xattr_add_opt=yes],[smb_attr_cv_xattr_add_opt=no;LIBS=$old_LIBS])
 	])
 	if test x"$smb_attr_cv_xattr_add_opt" = x"yes"; then
 		AC_DEFINE(XATTR_ADD_OPT, 1, [xattr functions have additional options])
@@ -695,7 +683,7 @@ AC_DEFINE_UNQUOTED(EA_MODULES,["$neta_cv_eas"],[Available Extended Attributes mo
 dnl --------------------- Check if realpath() takes NULL
 AC_CACHE_CHECK([if the realpath function allows a NULL argument],
     neta_cv_REALPATH_TAKES_NULL, [
-        AC_TRY_RUN([
+        AC_RUN_IFELSE([AC_LANG_SOURCE([[
             #include <stdio.h>
             #include <limits.h>
             #include <signal.h>
@@ -709,11 +697,8 @@ AC_CACHE_CHECK([if the realpath function allows a NULL argument],
                 signal(SIGSEGV, exit_on_core);
                 newpath = realpath("/tmp", NULL);
                 exit((newpath != NULL) ? 0 : 1);
-            }],
-            neta_cv_REALPATH_TAKES_NULL=yes,
-            neta_cv_REALPATH_TAKES_NULL=no,
-            neta_cv_REALPATH_TAKES_NULL=cross
-        )
+            }]])],[neta_cv_REALPATH_TAKES_NULL=yes],[neta_cv_REALPATH_TAKES_NULL=no],[neta_cv_REALPATH_TAKES_NULL=cross
+        ])
     ]
 )
 
@@ -746,7 +731,7 @@ AM_CONDITIONAL(HAVE_ATFUNCS, test x"$ac_neta_haveatfuncs" = x"yes")
 
 dnl --------------------- generate files
 
-AC_OUTPUT([Makefile
+AC_CONFIG_FILES([Makefile
 	bin/Makefile
 	bin/ad/Makefile
 	bin/adv1tov2/Makefile
@@ -799,9 +784,10 @@ AC_OUTPUT([Makefile
 	sys/netatalk/Makefile
 	test/Makefile
 	test/afpd/Makefile
-	],
-	[chmod a+x distrib/config/netatalk-config contrib/shell_utils/apple_*]
-)
+	])
+AC_CONFIG_COMMANDS([default],[chmod a+x distrib/config/netatalk-config contrib/shell_utils/apple_*
+],[])
+AC_OUTPUT
 
 AC_NETATALK_LIBS_SUMMARY
 AC_NETATALK_CONFIG_SUMMARY
